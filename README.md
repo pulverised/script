@@ -1,3 +1,19 @@
+
+# Roblox Scripts Portfolio 🎮
+
+Welcome to my collection of Roblox scripts!  
+This repository is a showcase of my scripting skills — featuring weapons, NPC AI, and unique abilities.  
+
+---
+
+## 🎬 Demo
+![LaserGun Demo](images/lasergun.gif)  
+*(Example GIF showing LaserGun firing)*  
+
+---
+
+## 📂 Project Information
+
 Scripts Included:
 - softlock.lua      : First person aimlock which is a soft pull not a snap.
 
