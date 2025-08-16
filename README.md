@@ -2,12 +2,12 @@
 # Roblox Scripts Portfolio 🎮
 
 Welcome to my collection of Roblox scripts!  
-This repository is a showcase of my scripting skills — featuring weapons, NPC AI, and unique abilities.  
+This repository is a showcase of my scripting skills — featuring weapons, and unique abilities.  
 
 ---
 
 ## 🎬 Demo
-![LaserGun Demo](images/lasergun.gif)  
+![LaserGun Demo](https://tenor.com/view/monster-versus-vs-alien-monster-vs-alien-gif-16037253809360562033)  
 *(Example GIF showing LaserGun firing)*  
 
 ---
