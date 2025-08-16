@@ -5,7 +5,7 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local AimStrength = 0.10
-local LockRadius = 100 -- Radius in pixels from center of screen
+local LockRadius = 100 -- the circle radius of how close they have to be within your cursor to pull.
 
 local AimbotEnabled = false
 local CurrentTarget, TargetDiedConnection = nil, nil
