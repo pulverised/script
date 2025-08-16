@@ -1,7 +1,7 @@
 
-# Roblox Scripts Portfolio 🎮
+# Roblox Lua 💻
 
-Welcome to my collection of Roblox scripts!  
+Welcome to my collection of Roblox scripts and code!  
 This repository is a showcase of my scripting skills — featuring weapons, and unique abilities.  
 
 
