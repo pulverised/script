@@ -4,11 +4,21 @@
 Welcome to my collection of Roblox scripts!  
 This repository is a showcase of my scripting skills — featuring weapons, and unique abilities.  
 
+
+
+## 👤 About Me
+Hi! I’m a Roblox scripter who creates tools, abilities, and game systems.  
+I try to focus on controller-friendly and PC features, elemental powers and unique gameplay scripts.  
+
+## 🔗 Connect with Me
+[![GitHub](https://img.shields.io/badge/GitHub-000?logo=github&logoColor=white)](https://github.com/pulverised)
+[![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)](https://discordapp.com/users/1237312966509203480)
+
 ---
 
 ## 🎬 Demo
-![LaserGun Demo](https://tenor.com/view/monster-versus-vs-alien-monster-vs-alien-gif-16037253809360562033)  
-*(Example GIF showing LaserGun firing)*  
+Soon...
+*(gif of the elements soon enough.)*  
 
 ---
 
