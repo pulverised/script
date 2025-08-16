@@ -27,6 +27,15 @@ Soon...
 Scripts Included:
 - softlock.lua      : First person aimlock which is a soft pull not a snap.
 
+---
+
+## Roblox Studio Scripts
+
+Whatever studio scripts you look at it will tell you where to add what as in "StarterPlayerScripts" or "StarterCharacterScripts" same with local or server scripts!
+---
+
+## Using Exploit Scripts
+
 Installation / Usage:
 1. Clone or download this repository.
 2. Open your Roblox Executor / Roblox app if mobile.
@@ -45,6 +54,8 @@ Notes:
 - Some scripts may require a more powerful executor to run correctly.
 - Executors may be updated by their developers; always use the latest version for best compatibility.
 - Mobile executors are not officially supported. Only a fair few are such as; Krnl and Codex.
+
+---
 
 Contributing:
 - Report issues or suggest new features via GitHub issues.
