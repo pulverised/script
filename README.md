@@ -32,6 +32,7 @@ Scripts Included:
 ## Roblox Studio Scripts
 
 Whatever studio scripts you look at it will tell you where to add what as in "StarterPlayerScripts" or "StarterCharacterScripts" same with local or server scripts!
+
 ---
 
 ## Using Exploit Scripts
