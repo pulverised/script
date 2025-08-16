@@ -1,0 +1,87 @@
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local AimStrength = 0.10
+local LockRadius = 100 -- Radius in pixels from center of screen
+
+local AimbotEnabled = false
+local CurrentTarget, TargetDiedConnection = nil, nil
+
+local function ClearTarget()
+	if TargetDiedConnection then TargetDiedConnection:Disconnect() end
+	TargetDiedConnection, CurrentTarget, AimbotEnabled = nil, nil, false
+end
+
+local function IsValidTarget(player)
+	if not player or player == LocalPlayer or player.Team == LocalPlayer.Team then return false end
+	local char = player.Character
+	if not char then return false end
+	local head = char:FindFirstChild("Head")
+	local hum = char:FindFirstChild("Humanoid")
+	if not head or not hum or hum.Health <= 0 then return false end
+
+	local origin = Camera.CFrame.Position
+	local dir = (head.Position - origin)
+	local rayParams = RaycastParams.new()
+	rayParams.FilterDescendantsInstances = {LocalPlayer.Character}
+	rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+	local hit = workspace:Raycast(origin, dir, rayParams)
+	return (not hit) or hit.Instance:IsDescendantOf(char)
+end
+
+local function GetClosestPlayer()
+	local closest, shortest = nil, math.huge
+	local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if IsValidTarget(plr) then
+			local headPos = plr.Character.Head.Position - Vector3.new(0, 0.5, 0)
+			local screenPos, onScreen = Camera:WorldToViewportPoint(headPos)
+			if onScreen then
+				local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+				if dist < shortest and dist <= LockRadius then
+					shortest, closest = dist, plr
+				end
+			end
+		end
+	end
+
+	return closest
+end
+
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if input.UserInputType == Enum.UserInputType.Gamepad1 and input.KeyCode == Enum.KeyCode.ButtonR2 then
+		CurrentTarget = GetClosestPlayer()
+		if CurrentTarget then
+			AimbotEnabled = true
+			local hum = CurrentTarget.Character:FindFirstChild("Humanoid")
+			if hum then
+				TargetDiedConnection = hum.Died:Connect(ClearTarget)
+			end
+		else
+			ClearTarget()
+		end
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gp)
+	if gp then return end
+	if input.UserInputType == Enum.UserInputType.Gamepad1 and input.KeyCode == Enum.KeyCode.ButtonR2 then
+		ClearTarget()
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if AimbotEnabled and CurrentTarget and IsValidTarget(CurrentTarget) then
+		local headPos = CurrentTarget.Character.Head.Position - Vector3.new(0, 0.5, 0)
+		local dir = (headPos - Camera.CFrame.Position).Unit
+		local look = Camera.CFrame.LookVector:Lerp(dir, AimStrength)
+		Camera.CFrame = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + look)
+	elseif AimbotEnabled then
+		ClearTarget()
+	end
+end)
