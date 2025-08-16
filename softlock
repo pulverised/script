@@ -1,3 +1,9 @@
+
+--[[
+  This is a simple soft lock which is a FPS lock and it'll have a soft pull once triggered.
+  Use a controller, execute the script below, go into first person, hold in your trigger button and it'll pull softly
+]]
+
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
