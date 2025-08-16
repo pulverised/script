@@ -1,6 +1,3 @@
-Project Name: Roblox Scripts Collection
-Description: A collection of Roblox scripts for NPCs, guns, abilities, and controller features.
-
 Scripts Included:
 - softlock.lua      : First person aimlock which is a soft pull not a snap.
 
