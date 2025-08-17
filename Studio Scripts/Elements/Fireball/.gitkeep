@@ -1,1 +1,26 @@
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+ 
+local FireballEvent = ReplicatedStorage:WaitForChild("FireballEvent")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = workspace.CurrentCamera
+ 
+local function getTargetPosition()
+    if mouse and mouse.Hit then
+        return mouse.Hit.p
+    else
+        return camera.CFrame.Position + camera.CFrame.LookVector * 100
+    end
+end
+ 
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.F or input.KeyCode == Enum.KeyCode.ButtonY then
+        local targetPos = getTargetPosition()
+        FireballEvent:FireServer(targetPos)
+    end
+end)
 
