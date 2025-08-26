@@ -11,8 +11,6 @@ Hi! I’m a Roblox scripter who creates tools, abilities, and game systems.
 I try to focus on controller-friendly and PC features, elemental powers and unique gameplay scripts.  
 
 ## 🔗 Connect with Me
-[![GitHub](https://img.shields.io/badge/GitHub-000?logo=github&logoColor=white)](https://github.com/pulverised)
-[![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)](https://discordapp.com/users/1237312966509203480)
 
 ---
 
