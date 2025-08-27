@@ -739,44 +739,58 @@ addToggle(teamESPRow, false, function(state)
     end
 end)
 
--- Aim Section
-sectionTitle(main, "Aim")
+-- Team Section
+sectionTitle(main, "Team")
 
--- Aim Part dropdown
-local aimRow = makeRow(main, "Choose Aim Part")
--- Dropdown code (simplified for brevity)
+-- Join Criminal Button Row
+local teamRow = makeRow(main, "Join Criminal", "Sit on the block to become a criminal")
 do
-	local options = {"Head", "Torso", "HumanoidRootPart", "Random"}
-	local base = Instance.new("TextButton")
-	base.Size = UDim2.new(0,112,0,28)
-	base.Position = UDim2.new(1,-112,0.5,-14)
-	base.BackgroundColor3 = Color3.fromRGB(28,28,28)
-	base.Text = ""
-	base.Parent = aimRow:FindFirstChild("Right")
-	roundify(base,8)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0,112,0,28)
+    button.Position = UDim2.new(1,-112,0.5,-14)
+    button.BackgroundColor3 = Color3.fromRGB(28,28,28)
+    button.Text = "Join Criminal"
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    button.TextColor3 = COL_TEXT
+    button.Parent = teamRow:FindFirstChild("Right")
+    roundify(button,8)
 
-	local current = Instance.new("TextLabel")
-	current.BackgroundTransparency = 1
-	current.Size = UDim2.new(1,-26,1,0)
-	current.Position = UDim2.new(0,8,0,0)
-	current.Font = Enum.Font.GothamBold
-	current.TextSize = 16
-	current.TextXAlignment = Enum.TextXAlignment.Right
-	current.TextColor3 = COL_TEXT
-	current.Text = options[1]
-	current.Parent = base
+    -- Run script when clicked
+    button.MouseButton1Click:Connect(function()
+        local crimpad = workspace.Warrior.Body.Seats:GetChildren()[3]
+        local oldpos = crimpad.Position
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
 
-	base.MouseButton1Click:Connect(function()
-		current.Text = options[math.random(1,#options)]
-		print("Aim Part:", current.Text)
-	end)
+        local function getTargetHRP()
+            if LocalPlayer.Character then
+                return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            end
+            return nil
+        end
+
+        crimpad.Size = Vector3.new(10, 1, 5)
+        crimpad.Transparency = 0
+        crimpad.BrickColor = BrickColor.new("Bright red")
+        crimpad.Material = Enum.Material.Neon
+
+        local hrp = getTargetHRP()
+        if hrp then
+            crimpad.Position = hrp.Position - Vector3.new(0, hrp.Size.Y/2 + crimpad.Size.Y/2, 0)
+        end
+
+        task.delay(5, function()
+            crimpad.Position = oldpos
+            crimpad.Size = Vector3.new(1,1,1)
+            crimpad.Transparency = 1
+            crimpad.BrickColor = BrickColor.new("Bright red")
+            crimpad.Material = Enum.Material.SmoothPlastic
+        end)
+
+        print("Criminal pad used. Old position:", oldpos)
+    end)
 end
-
--- Aimlock toggle
-local aimLockRow = makeRow(main, "Aimlock", "Lock camera onto player")
-addToggle(aimLockRow, false, function(state)
-    print("Aimlock:", state)
-end)
 
 -- Body Section
 sectionTitle(main, "Body")
