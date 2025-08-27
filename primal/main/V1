@@ -820,17 +820,17 @@ end)
 -- TextBox for RGB input (always visible below the toggle)
 local tracerColorBox = Instance.new("TextBox")
 tracerColorBox.Size = UDim2.new(0, 120, 0, 28)
-tracerColorBox.Position = UDim2.new(0, 10, 0, 36) -- under the toggle
+tracerColorBox.Position = UDim2.new(0, 10, 0, 36) -- sous le toggle
 tracerColorBox.BackgroundColor3 = Color3.fromRGB(28,28,28)
 tracerColorBox.TextColor3 = Color3.fromRGB(255,255,255)
 tracerColorBox.Font = Enum.Font.Gotham
 tracerColorBox.TextSize = 16
-tracerColorBox.Text = "255,255,255" -- default color
+tracerColorBox.Text = "255,255,255" -- couleur par défaut
 tracerColorBox.ClearTextOnFocus = false
 tracerColorBox.Parent = farming
 roundify(tracerColorBox, 6)
 
--- Apply color when user presses Enter
+-- Applique la couleur quand l’utilisateur appuie sur Entrée
 tracerColorBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local text = tracerColorBox.Text
@@ -841,15 +841,22 @@ tracerColorBox.FocusLost:Connect(function(enterPressed)
             g = math.clamp(g,0,255)
             b = math.clamp(b,0,255)
             local newColor = Color3.fromRGB(r, g, b)
-            -- Apply this color to your tracer system
+
+            -- Met à jour la variable globale pour ton système de tracer
             _G.TracerColor = newColor
             print("Tracer color set to:", newColor)
+
+            -- Met à jour directement BulletColor (Color3Value)
+            local player = game:GetService("Players").LocalPlayer
+            local settings = player:WaitForChild("Status"):WaitForChild("Settings")
+            if settings:FindFirstChild("BulletColor") and settings.BulletColor:IsA("Color3Value") then
+                settings.BulletColor.Value = newColor
+            end
         else
-            tracerColorBox.Text = "255,255,255" -- revert if invalid
+            tracerColorBox.Text = "255,255,255" -- revert si invalide
         end
     end
 end)
-
 
 local killer = newPage("Rage")
 sectionTitle(killer, "Rage")
