@@ -4,6 +4,43 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
+
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- Only run on mobile
+if not UserInputService.TouchEnabled then return end
+
+-- Wait for PlayerGui
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Create a ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MobileButtonGui"
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
+
+-- Create the button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "MobileToggleButton"
+toggleButton.Size = UDim2.new(0, 120, 0, 40)
+toggleButton.Position = UDim2.new(0, 20, 0, 20)
+toggleButton.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Text = "Toggle GUI"
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 16
+toggleButton.Parent = screenGui
+
+-- Open/Close the GUI when tapped
+toggleButton.Activated:Connect(function()
+    local gui = playerGui:FindFirstChild("Primal Cheats")
+    if gui then
+        gui.Enabled = not gui.Enabled -- toggle the GUI
+    end
+end)
+
+
 -- === HOSTILE TELEPORTER MODULE ===
 local HostileTeleporter = {}
 local running = false
