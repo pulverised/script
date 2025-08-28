@@ -140,7 +140,11 @@ local function monitorPlayer(player)
     end
 end
 
--- Start / Stop functions
+
+
+
+
+
 function HostileTeleporter.Start()
     if running then return end
     running = true
@@ -167,6 +171,120 @@ end
 
 function HostileTeleporter.Stop()
     running = false
+    for _, character in ipairs(trackedCharacters) do
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Anchored = false end
+    end
+    trackedCharacters = {}
+end
+
+-- === POLICE/WARDEN TELEPORTER MODULE ===
+local PoliceWardenTeleporter = {}
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local playersFolder = workspace:WaitForChild("Players")
+local RunService = game:GetService("RunService")
+
+local DISTANCE_AHEAD = -5
+local UPDATE_INTERVAL = 1
+local trackedCharacters = {}
+local loopConnection
+
+-- Helper functions
+local function getTargetHRP()
+    if LocalPlayer.Character then
+        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    end
+    return nil
+end
+
+local function isTargetPlayer(character)
+    local player = Players:GetPlayerFromCharacter(character)
+    if not player or player == LocalPlayer then
+        return false
+    end
+    if player.Team and (player.Team.Name == "Guards" or player.Team.Name == "Warden") then
+        return true
+    end
+    return false
+end
+
+local function teleportInFront(character, targetHRP)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChild("Humanoid")
+    if hrp and targetHRP and humanoid then
+        if not humanoid.Sit then
+            local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
+            hrp.CFrame = CFrame.new(forwardPos)
+            hrp.Anchored = true
+        end
+    end
+end
+
+local function trackCharacter(character)
+    for _, c in ipairs(trackedCharacters) do
+        if c == character then return end
+    end
+    if isTargetPlayer(character) then
+        table.insert(trackedCharacters, character)
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Anchored = true end
+    end
+end
+
+local function untrackCharacter(character)
+    for i, c in ipairs(trackedCharacters) do
+        if c == character then
+            local hrp = c:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = false end
+            table.remove(trackedCharacters, i)
+            break
+        end
+    end
+end
+
+local function monitorPlayer(player)
+    player:GetPropertyChangedSignal("Team"):Connect(function()
+        local character = player.Character
+        if character then
+            if isTargetPlayer(character) then
+                trackCharacter(character)
+            else
+                untrackCharacter(character)
+            end
+        end
+    end)
+end
+
+-- Start teleporting
+function PoliceWardenTeleporter.Start()
+    for _, character in ipairs(playersFolder:GetChildren()) do
+        trackCharacter(character)
+    end
+
+    playersFolder.ChildAdded:Connect(trackCharacter)
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        monitorPlayer(player)
+    end
+    Players.PlayerAdded:Connect(monitorPlayer)
+
+    loopConnection = RunService.Heartbeat:Connect(function()
+        local targetHRP = getTargetHRP()
+        if targetHRP then
+            for _, character in ipairs(trackedCharacters) do
+                teleportInFront(character, targetHRP)
+            end
+        end
+    end)
+end
+
+-- Stop teleporting
+function PoliceWardenTeleporter.Stop()
+    if loopConnection then
+        loopConnection:Disconnect()
+        loopConnection = nil
+    end
     for _, character in ipairs(trackedCharacters) do
         local hrp = character:FindFirstChild("HumanoidRootPart")
         if hrp then hrp.Anchored = false end
@@ -1108,6 +1226,17 @@ addToggle(hostileTPRow, false, function(state)
         HostileTeleporter.Start()
     else
         HostileTeleporter.Stop()
+    end
+end)
+
+
+-- police teleporter
+local policeWardenTPRow = makeRow(killer, "Police Teleporter", "Teleport Police nerd to you")
+addToggle(policeWardenTPRow, false, function(state)
+    if state then
+        PoliceWardenTeleporter.Start()
+    else
+        PoliceWardenTeleporter.Stop()
     end
 end)
 
