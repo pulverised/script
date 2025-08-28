@@ -1292,7 +1292,7 @@ local Spinbot = {}
 
 local running = false
 local connection
-local speed = 10 -- default spin speed
+local speed = 50 -- default spin speed
 
 function Spinbot.Start()
     if running then return end
