@@ -1287,6 +1287,49 @@ addToggle(policeWardenTPRow, false, function(state)
     end
 end)
 
+-- ========= Spinbot Module =========
+local Spinbot = {}
+
+local running = false
+local connection
+local speed = 10 -- default spin speed
+
+function Spinbot.Start()
+    if running then return end
+    running = true
+
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if running then
+            hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speed), 0)
+        end
+    end)
+end
+
+function Spinbot.Stop()
+    if not running then return end
+    running = false
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
+
+-- spinbot
+local spinbotRow = makeRow(killer, "Spinbot", "Spin your character around automatically")
+addToggle(spinbotRow, false, function(state)
+    if state then
+        Spinbot.Start()
+    else
+        Spinbot.Stop()
+    end
+end)
+
+
 local misc = newPage("Misc")
 sectionTitle(misc, "Misc")
 
