@@ -873,13 +873,33 @@ tracerColorBox.FocusLost:Connect(function(enterPressed)
 end)
 
 -- ===== GUN SKINS SYSTEM =====
+local LocalPlayer = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local COL_TEXT = Color3.fromRGB(255, 255, 255) -- text color
+
+-- Toggle UI
 local gunSkinsRow = makeRow(farming, "Gun Skins", "Enable/disable gun skins")
 local gunSkinsToggle = addToggle(gunSkinsRow:FindFirstChild("Right"), false, function(state)
     _G.GunSkinsEnabled = state
     applyGunSkin(_G.SelectedGunSkin)
 end)
 
--- Dropdown row for selecting skin
+-- Skin options
+local skinOptions = {
+    ["Blackoutt"] = "rbxassetid://12936441454",
+    ["CAMO"] = "rbxassetid://18438387808",
+    ["Electric Stripes"] = "rbxassetid://14630225641",
+    ["Fishy"] = "rbxassetid://18162163437",
+    ["Gift"] = "rbxassetid://15474139695",
+    ["Gift Wrap"] = "rbxassetid://18438246185",
+    ["Inferno"] = "rbxassetid://7866373261",
+    ["Street Art"] = "rbxassetid://14630862743",
+    ["Dark Matter"] = "rbxassetid://14630237541",
+}
+
+_G.SelectedGunSkin = "Blackoutt"
+
+-- Dropdown UI
 local skinOptionsRow = makeRow(farming, "Select Gun Skin")
 local dropdownBase = Instance.new("TextButton")
 dropdownBase.Size = UDim2.new(0, 112, 0, 28)
@@ -897,25 +917,10 @@ currentSkinLabel.Font = Enum.Font.GothamBold
 currentSkinLabel.TextSize = 16
 currentSkinLabel.TextXAlignment = Enum.TextXAlignment.Right
 currentSkinLabel.TextColor3 = COL_TEXT
-currentSkinLabel.Text = "Blackoutt"
+currentSkinLabel.Text = _G.SelectedGunSkin
 currentSkinLabel.Parent = dropdownBase
 
--- Skin options table
-local skinOptions = {
-    ["Blackoutt"] = "rbxassetid://12936441454",
-    ["CAMO"] = "rbxassetid://18438387808",
-    ["Electric Stripes"] = "rbxassetid://14630225641",
-    ["Fishy"] = "rbxassetid://18162163437",
-    ["Gift"] = "rbxassetid://15474139695",
-    ["Gift Wrap"] = "rbxassetid://18438246185",
-    ["Inferno"] = "rbxassetid://7866373261",
-    ["Street Art"] = "rbxassetid://14630862743",
-    ["Dark Matter"] = "rbxassetid://14630237541",
-}
-
-_G.SelectedGunSkin = "Blackoutt"
-
--- ScrollingFrame for mobile scroll
+-- ===== DROPDOWN FRAME =====
 local maxVisible = 5
 local itemHeight = 28
 local dropdownHeight = math.min(#skinOptions, maxVisible) * itemHeight
@@ -931,19 +936,18 @@ optionsFrame.ScrollBarImageColor3 = Color3.fromRGB(180,180,180)
 optionsFrame.Active = true
 optionsFrame.Parent = dropdownBase
 optionsFrame.ZIndex = 999
+optionsFrame.CanvasSize = UDim2.new(0,0,0,0)
 
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,2)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = optionsFrame
 
-local function updateCanvas()
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     optionsFrame.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
-end
-layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
-task.defer(updateCanvas)
+end)
 
--- Function to apply decal to a part
+-- ===== DECAL FUNCTIONS =====
 local minPartSize = 1
 local function applyDecalToPart(part, decalId)
     for _, child in ipairs(part:GetChildren()) do
@@ -960,7 +964,6 @@ local function applyDecalToPart(part, decalId)
     end
 end
 
--- Apply skin to tool
 local function applyDecalToTool(tool)
     if not _G.GunSkinsEnabled then return end
     local decalId = skinOptions[_G.SelectedGunSkin]
@@ -971,7 +974,6 @@ local function applyDecalToTool(tool)
     end
 end
 
--- Apply skin to all tools
 function applyGunSkin(skinName)
     if not skinName then return end
     _G.SelectedGunSkin = skinName
@@ -991,19 +993,15 @@ end
 
 -- Update for tools added later
 LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
-    if tool:IsA("Tool") then
-        applyDecalToTool(tool)
-    end
+    if tool:IsA("Tool") then applyDecalToTool(tool) end
 end)
 LocalPlayer.CharacterAdded:Connect(function(char)
     char.ChildAdded:Connect(function(tool)
-        if tool:IsA("Tool") then
-            applyDecalToTool(tool)
-        end
+        if tool:IsA("Tool") then applyDecalToTool(tool) end
     end)
 end)
 
--- Create option buttons
+-- ===== CREATE DROPDOWN BUTTONS =====
 for skinName, _ in pairs(skinOptions) do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1,0,0,itemHeight)
@@ -1017,19 +1015,20 @@ for skinName, _ in pairs(skinOptions) do
 
     btn.MouseButton1Click:Connect(function()
         currentSkinLabel.Text = skinName
-        applyGunSkin(skinName)
+        _G.SelectedGunSkin = skinName
         optionsFrame.Visible = false
+        applyGunSkin(skinName)
     end)
 end
 
--- Dropdown toggle
+-- ===== DROPDOWN TOGGLE =====
 local dropdownOpen = false
 dropdownBase.MouseButton1Click:Connect(function()
     dropdownOpen = not dropdownOpen
     optionsFrame.Visible = dropdownOpen
 end)
 
--- Auto-close dropdown on clicking outside
+-- Auto-close dropdown
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if dropdownOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
         local mousePos = UserInputService:GetMouseLocation()
@@ -1305,7 +1304,7 @@ optionsFrame.ScrollBarThickness = 6
 optionsFrame.ScrollBarImageColor3 = Color3.fromRGB(180,180,180)
 optionsFrame.Active = true
 optionsFrame.Parent = dropdownBase
-optionsFrame.ZIndex = 999
+optionsFrame.ZIndex = 998
 
 -- Layout
 local layout = Instance.new("UIListLayout")
