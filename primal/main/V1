@@ -951,6 +951,123 @@ local main = newPage("Main")
 
 -- MAIN PAGE CONTENT
 sectionTitle(main, "Esp")
+-- =========================
+-- Hostile Detector
+-- =========================
+local HostileDetector = {}
+local runningHostile = false
+local playerConnectionsHostile = {}
+local globalConnectionsHostile = {}
+
+local HIGHLIGHT_COLOR = Color3.fromRGB(255, 0, 255)
+local IGNORED_TEAMS = {["Guards"]=true, ["Warden"]=true}
+
+local function setHighlightHostile(character, enabled)
+    if not character then return end
+    local highlight = character:FindFirstChild("HostileHighlight")
+    if enabled then
+        if not highlight then
+            highlight = Instance.new("Highlight")
+            highlight.Name = "HostileHighlight"
+            highlight.FillColor = HIGHLIGHT_COLOR
+            highlight.OutlineColor = Color3.fromRGB(255,255,255)
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = character
+        end
+    else
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+end
+
+local function isIgnored(player)
+    return player.Team and IGNORED_TEAMS[player.Team.Name]
+end
+
+local function updatePlayerHostile(player)
+    if player == Players.LocalPlayer then return end
+    local character = player.Character
+    if not character then return end
+    local status = player:FindFirstChild("Status")
+    if not status then return end
+    local hostile = status:FindFirstChild("Hostile")
+    if not hostile then return end
+    if not isIgnored(player) and hostile.Value == true then
+        setHighlightHostile(character, true)
+    else
+        setHighlightHostile(character, false)
+    end
+end
+
+local function monitorPlayerHostile(player)
+    if not runningHostile then return end
+    local conns = {}
+
+    table.insert(conns, player.CharacterAdded:Connect(function()
+        task.wait(1)
+        updatePlayerHostile(player)
+    end))
+    table.insert(conns, player.CharacterRemoving:Connect(function()
+        for _, c in ipairs(conns) do c:Disconnect() end
+    end))
+    table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
+        updatePlayerHostile(player)
+    end))
+    local status = player:FindFirstChild("Status") or player:WaitForChild("Status",5)
+    if status then
+        local hostile = status:FindFirstChild("Hostile")
+        if hostile then
+            table.insert(conns, hostile.Changed:Connect(function()
+                updatePlayerHostile(player)
+            end))
+        end
+    end
+    playerConnectionsHostile[player] = conns
+end
+
+function HostileDetector.Start()
+    if runningHostile then return end
+    runningHostile = true
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then
+            monitorPlayerHostile(player)
+        end
+    end
+    table.insert(globalConnectionsHostile, Players.PlayerAdded:Connect(function(player)
+        monitorPlayerHostile(player)
+        task.wait(1)
+        for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
+    end))
+    table.insert(globalConnectionsHostile, Players.PlayerRemoving:Connect(function()
+        for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
+    end))
+    task.spawn(function()
+        while runningHostile do
+            for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
+            task.wait(2)
+        end
+    end)
+end
+
+function HostileDetector.Stop()
+    runningHostile = false
+    for player, conns in pairs(playerConnectionsHostile) do
+        for _, c in ipairs(conns) do c:Disconnect() end
+    end
+    playerConnectionsHostile = {}
+    for _, c in ipairs(globalConnectionsHostile) do
+        c:Disconnect()
+    end
+    globalConnectionsHostile = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            local highlight = player.Character:FindFirstChild("HostileHighlight")
+            if highlight then highlight:Destroy() end
+        end
+    end
+end
+
 
 -- Hostile Detector toggle
 local autoBuyRow = makeRow(main, "Hostile Detector", "Shows all hostile prisoners and criminals")
@@ -961,6 +1078,7 @@ addToggle(autoBuyRow, false, function(state)
         HostileDetector.Stop()
     end
 end)
+
 
 -- Team Esp toggle
 local teamESPRow = makeRow(main, "Team ESP", "Shows players through walls and colors by team")
@@ -1003,7 +1121,7 @@ do
             return nil
         end
 
-        crimpad.Size = Vector3.new(10, 1, 5)
+        crimpad.Size = Vector3.new(5, 1, 5)
         crimpad.Transparency = 0
         crimpad.BrickColor = BrickColor.new("Bright red")
         crimpad.Material = Enum.Material.Neon
@@ -1015,9 +1133,9 @@ do
 
         task.delay(5, function()
             crimpad.Position = oldpos
-            crimpad.Size = Vector3.new(1,1,1)
+            crimpad.Size = Vector3.new(2,1,2)
             crimpad.Transparency = 1
-            crimpad.BrickColor = BrickColor.new("Bright red")
+            crimpad.BrickColor = BrickColor.new("Black")
             crimpad.Material = Enum.Material.SmoothPlastic
         end)
 
