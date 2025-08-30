@@ -4,13 +4,13 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
---// Game Checker for GUI
+--// game check
 local correctPlaceIds = { 
     [214169] = true,          -- Prison Life V3
     [85247362414047] = true   -- Prisoner Life
 }
 
---// GUI Setup
+--// gui stuff
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "GameCheckGUI"
@@ -42,7 +42,7 @@ msg.TextSize = 16
 msg.TextWrapped = true
 msg.Text = "This script only works in Prison Life or PLV3."
 
--- Prison Life button
+-- pl button
 local plBtn = Instance.new("TextButton", frame)
 plBtn.Size = UDim2.new(0.45, 0, 0, 35)
 plBtn.Position = UDim2.new(0.05, 0, 1, -45)
@@ -52,7 +52,7 @@ plBtn.Font = Enum.Font.SourceSansBold
 plBtn.TextSize = 16
 plBtn.Text = "▶ Join PL"
 
--- PLV3 button
+-- plv3 button
 local plv3Btn = Instance.new("TextButton", frame)
 plv3Btn.Size = UDim2.new(0.45, 0, 0, 35)
 plv3Btn.Position = UDim2.new(0.5, 0, 1, -45)
@@ -62,7 +62,7 @@ plv3Btn.Font = Enum.Font.SourceSansBold
 plv3Btn.TextSize = 16
 plv3Btn.Text = "▶ Join PLV3"
 
---// Button Functions
+--// functions
 plBtn.MouseButton1Click:Connect(function()
     game:GetService("TeleportService"):Teleport(85247362414047, player) -- Teleport to Prisoner Life
 end)
@@ -71,13 +71,10 @@ plv3Btn.MouseButton1Click:Connect(function()
     game:GetService("TeleportService"):Teleport(214169, player) -- Teleport to PLV3
 end)
 
---// Check if in correct game
+--// if correct game
 if not correctPlaceIds[game.PlaceId] then
     frame.Visible = true
 end
-
-
-
 
 -- Executor
 
