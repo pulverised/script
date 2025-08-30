@@ -1870,8 +1870,9 @@ end)
 -- Settings
 local settings = newPage("Settings")
 sectionTitle(settings, "Appearance")
-local colorRow = makeRow(settings, "GUI Theme", "Pick a color for the GUI")
+local colorRow = makeRow(settings, "Gui color picker", "Pick a color for the entire GUI")
 
+-- Button to open color picker
 local colorButton = Instance.new("TextButton")
 colorButton.Size = UDim2.new(0, 100, 0, 30)
 colorButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
@@ -1881,7 +1882,7 @@ colorButton.Font = Enum.Font.Gotham
 colorButton.TextSize = 14
 colorButton.Parent = colorRow
 
--- Color picker popup frame
+-- Popup frame for color presets
 local pickerFrame = Instance.new("Frame")
 pickerFrame.Size = UDim2.new(0, 240, 0, 50)
 pickerFrame.Position = UDim2.new(0, 110, 0, 0)
@@ -1889,7 +1890,7 @@ pickerFrame.Visible = false
 pickerFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 pickerFrame.Parent = colorRow
 
--- Preset colors
+-- Example preset colors
 local presets = {
 	Color3.fromRGB(255, 75, 75),   -- red
 	Color3.fromRGB(75, 255, 75),   -- green
@@ -1899,6 +1900,23 @@ local presets = {
 	Color3.fromRGB(255, 175, 75),  -- orange
 }
 
+-- Function to recursively recolor all Frames and TextButtons in a container
+local function recolorGui(container, color)
+	for _, child in ipairs(container:GetChildren()) do
+		if child:IsA("Frame") or child:IsA("TextButton") then
+			child.BackgroundColor3 = color
+		end
+		-- optionally update strokes if you use them
+		local stroke = child:FindFirstChildOfClass("UIStroke")
+		if stroke then
+			stroke.Color = color
+		end
+		-- recurse
+		recolorGui(child, color)
+	end
+end
+
+-- Apply color when a preset is clicked
 for i, col in ipairs(presets) do
 	local c = Instance.new("TextButton")
 	c.Size = UDim2.new(0, 35, 0, 35)
@@ -1908,9 +1926,9 @@ for i, col in ipairs(presets) do
 	c.Parent = pickerFrame
 
 	c.MouseButton1Click:Connect(function()
-		-- Apply color to your whole GUI
-		settings.Parent.BackgroundColor3 = col  -- change main frame bg
-		colorButton.BackgroundColor3 = col      -- show selected color on button
+		-- recolor entire GUI dynamically
+		recolorGui(game.Players.LocalPlayer.PlayerGui:WaitForChild("YourScreenGuiNameHere"), col)
+		colorButton.BackgroundColor3 = col
 		pickerFrame.Visible = false
 	end)
 end
