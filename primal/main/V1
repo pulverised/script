@@ -746,21 +746,31 @@ body.BackgroundTransparency = 1
 body.Parent = window
 
 -- Sidebar
-local sidebar = Instance.new("Frame")
+local sidebar = Instance.new("ScrollingFrame")
 sidebar.Name = "Sidebar"
 sidebar.Size = UDim2.new(0, 210, 1, -20)
 sidebar.Position = UDim2.new(0, 10, 0, 10)
 sidebar.BackgroundColor3 = COL_PANEL
 sidebar.BorderSizePixel = 0
+sidebar.ScrollBarThickness = 6
+sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y
+sidebar.ScrollingDirection = Enum.ScrollingDirection.Y  -- <-- vertical only
 sidebar.Parent = body
 roundify(sidebar, 10)
 
+-- UIListLayout to stack buttons
 local list = Instance.new("UIListLayout")
 list.Padding = UDim.new(0, 8)
 list.SortOrder = Enum.SortOrder.LayoutOrder
 list.Parent = sidebar
 
--- Content holder
+-- padding top/bottom
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0, 10)
+padding.PaddingBottom = UDim.new(0, 10)
+padding.Parent = sidebar
+
+-- Content holder 
 local contentHolder = Instance.new("Frame")
 contentHolder.Size = UDim2.new(1, -230, 1, -20)
 contentHolder.Position = UDim2.new(0, 220, 0, 10)
@@ -1857,14 +1867,68 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
+-- Settings
+local settings = newPage("Settings")
+sectionTitle(settings, "Appearance")
+local colorRow = makeRow(settings, "GUI Theme", "Pick a color for the GUI")
+
+local colorButton = Instance.new("TextButton")
+colorButton.Size = UDim2.new(0, 100, 0, 30)
+colorButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+colorButton.Text = "Pick Color"
+colorButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+colorButton.Font = Enum.Font.Gotham
+colorButton.TextSize = 14
+colorButton.Parent = colorRow
+
+-- Color picker popup frame
+local pickerFrame = Instance.new("Frame")
+pickerFrame.Size = UDim2.new(0, 240, 0, 50)
+pickerFrame.Position = UDim2.new(0, 110, 0, 0)
+pickerFrame.Visible = false
+pickerFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+pickerFrame.Parent = colorRow
+
+-- Preset colors
+local presets = {
+	Color3.fromRGB(255, 75, 75),   -- red
+	Color3.fromRGB(75, 255, 75),   -- green
+	Color3.fromRGB(75, 75, 255),   -- blue
+	Color3.fromRGB(255, 255, 75),  -- yellow
+	Color3.fromRGB(200, 75, 255),  -- purple
+	Color3.fromRGB(255, 175, 75),  -- orange
+}
+
+for i, col in ipairs(presets) do
+	local c = Instance.new("TextButton")
+	c.Size = UDim2.new(0, 35, 0, 35)
+	c.Position = UDim2.new(0, (i-1)*40, 0, 7)
+	c.BackgroundColor3 = col
+	c.Text = ""
+	c.Parent = pickerFrame
+
+	c.MouseButton1Click:Connect(function()
+		-- Apply color to your whole GUI
+		settings.Parent.BackgroundColor3 = col  -- change main frame bg
+		colorButton.BackgroundColor3 = col      -- show selected color on button
+		pickerFrame.Visible = false
+	end)
+end
+
+-- Toggle picker visibility
+colorButton.MouseButton1Click:Connect(function()
+	pickerFrame.Visible = not pickerFrame.Visible
+end)
+
 
 -- SIDEBAR TABS
 local tabs = {
-	{ name = "Home",      page = home },
-	{ name = "Main",      page = main },
-	{ name = "Visuals",   page = farming },
-	{ name = "Rage",      page = killer },
-	{ name = "Misc",      page = misc },
+	{ name = "Home",    page = home },
+	{ name = "Main",    page = main },
+	{ name = "Visuals", page = farming },
+	{ name = "Rage",    page = killer },
+	{ name = "Misc",    page = misc },
+	{ name = "Settings", page = settings },
 }
 
 local buttons = {}
