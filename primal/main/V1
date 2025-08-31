@@ -1889,86 +1889,48 @@ Event:FireServer(
 )
 end)
 
--- Settings
-local settings = newPage("Settings")
-sectionTitle(settings, "Appearance")
-local colorRow = makeRow(settings, "Gui color picker", "Pick a color for the entire GUI")
+-- Keys adder
+local miscRow = makeRow(misc, "Add Skins", "Click to add all skins to your account")
 
--- Button to open color picker
-local colorButton = Instance.new("TextButton")
-colorButton.Size = UDim2.new(0, 100, 0, 30)
-colorButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-colorButton.Text = "Pick Color"
-colorButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-colorButton.Font = Enum.Font.Gotham
-colorButton.TextSize = 14
-colorButton.Parent = colorRow
+-- Create button
+local testButton = Instance.new("TextButton")
+testButton.Size = UDim2.new(0, 100, 0, 30)
+testButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+testButton.Text = "Add all skins"
+testButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+testButton.Font = Enum.Font.Gotham
+testButton.TextSize = 14
+testButton.Parent = miscRow
 
--- Popup frame for color presets
-local pickerFrame = Instance.new("Frame")
-pickerFrame.Size = UDim2.new(0, 240, 0, 50)
-pickerFrame.Position = UDim2.new(0, 110, 0, 0)
-pickerFrame.Visible = false
-pickerFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-pickerFrame.Parent = colorRow
+-- Functionality when clicked
+testButton.MouseButton1Click:Connect(function()
+    print("Misc Button Clicked!")
+local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
 
--- Example preset colors
-local presets = {
-	Color3.fromRGB(255, 75, 75),   -- red
-	Color3.fromRGB(75, 255, 75),   -- green
-	Color3.fromRGB(75, 75, 255),   -- blue
-	Color3.fromRGB(255, 255, 75),  -- yellow
-	Color3.fromRGB(200, 75, 255),  -- purple
-	Color3.fromRGB(255, 175, 75),  -- orange
+local skins = {
+    "24k Gold",
+    "24k Gold Pistol",
+    "Anoidzed Red",
+    "Galaxy",
+    "Super Soaker",
+    "The Patriot",
+    "Woodland"
 }
 
--- Function to recursively recolor all Frames and TextButtons in a container
-local function recolorGui(container, color)
-	for _, child in ipairs(container:GetChildren()) do
-		if child:IsA("Frame") or child:IsA("TextButton") then
-			child.BackgroundColor3 = color
-		end
-		-- optionally update strokes if you use them
-		local stroke = child:FindFirstChildOfClass("UIStroke")
-		if stroke then
-			stroke.Color = color
-		end
-		-- recurse
-		recolorGui(child, color)
-	end
+for _, skin in ipairs(skins) do
+    award:InvokeServer(skin)
 end
-
--- Apply color when a preset is clicked
-for i, col in ipairs(presets) do
-	local c = Instance.new("TextButton")
-	c.Size = UDim2.new(0, 35, 0, 35)
-	c.Position = UDim2.new(0, (i-1)*40, 0, 7)
-	c.BackgroundColor3 = col
-	c.Text = ""
-	c.Parent = pickerFrame
-
-	c.MouseButton1Click:Connect(function()
-		-- recolor entire GUI dynamically
-		recolorGui(game.Players.LocalPlayer.PlayerGui:WaitForChild("YourScreenGuiNameHere"), col)
-		colorButton.BackgroundColor3 = col
-		pickerFrame.Visible = false
-	end)
-end
-
--- Toggle picker visibility
-colorButton.MouseButton1Click:Connect(function()
-	pickerFrame.Visible = not pickerFrame.Visible
 end)
+
 
 
 -- SIDEBAR TABS
 local tabs = {
-	{ name = "Home",    page = home },
-	{ name = "Main",    page = main },
-	{ name = "Visuals", page = farming },
-	{ name = "Rage",    page = killer },
-	{ name = "Misc",    page = misc },
-	{ name = "Settings", page = settings },
+    { name = "Home",    page = home },
+    { name = "Main",    page = main },
+    { name = "Visuals", page = farming },
+    { name = "Rage",    page = killer },
+    { name = "Misc",    page = misc },
 }
 
 local buttons = {}
