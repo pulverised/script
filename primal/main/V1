@@ -1867,6 +1867,28 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
+-- Keys adder
+local miscRow = makeRow(misc, "Add Keys", "Click to add 10 keys")
+
+-- Create button
+local testButton = Instance.new("TextButton")
+testButton.Size = UDim2.new(0, 100, 0, 30)
+testButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+testButton.Text = "Add 10 Keys"
+testButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+testButton.Font = Enum.Font.Gotham
+testButton.TextSize = 14
+testButton.Parent = miscRow
+
+-- Functionality when clicked
+testButton.MouseButton1Click:Connect(function()
+    print("Misc Button Clicked!")
+local Event = game:GetService("ReplicatedStorage").Rankup
+Event:FireServer(
+    10
+)
+end)
+
 -- Settings
 local settings = newPage("Settings")
 sectionTitle(settings, "Appearance")
