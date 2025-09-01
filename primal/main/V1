@@ -124,13 +124,13 @@ else
 end
 local Event = game:GetService("ReplicatedStorage").Events.Message
 firesignal(Event.OnClientEvent, 
-    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#FF0000\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>",
+    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#4575D5\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>",
     "CashAward"
 )
 
 local Event = game:GetService("ReplicatedStorage").Events.SystemMessage
 firesignal(Event.OnClientEvent, 
-    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#FF0000\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>"
+    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#4575D5\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>"
 )
 task.wait(2)
 
