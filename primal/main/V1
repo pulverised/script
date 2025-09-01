@@ -1922,6 +1922,45 @@ for _, skin in ipairs(skins) do
 end
 end)
 
+-- Auto Farm
+local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
+local sell = game:GetService("ReplicatedStorage").SkinFolder.Events.Sell
+
+local skins = {
+    "24k Gold",
+    "24k Gold Pistol",
+    "Anoidzed Red",
+    "Galaxy",
+    "Super Soaker",
+    "The Patriot",
+    "Woodland"
+}
+
+_G.AutoSkinFarmEnabled = false
+
+local function startAutoFarm()
+    task.spawn(function()
+        while _G.AutoSkinFarmEnabled do
+            for _, skin in ipairs(skins) do
+                pcall(function()
+                    award:InvokeServer(skin)
+                    sell:FireServer(skin)
+                end)
+            end
+            task.wait(1) -- prevents spamming too fast
+        end
+    end)
+end
+
+-- Add the toggle row in the Misc tab
+local autoFarmRow = makeRow(misc, "Auto Skin Farm", "Automatically awards and sells skins")
+addToggle(autoFarmRow, false, function(state)
+    _G.AutoSkinFarmEnabled = state
+    if state then
+        startAutoFarm()
+    end
+end)
+
 
 
 -- SIDEBAR TABS
