@@ -1667,6 +1667,7 @@ local StaffList = {
     [1562173]    = "hethr",
     [104529797]  = "d1anna",
     [5309987]    = "ntaosi",
+    [4036616925] = "EndOfTheLine_YTVC3",
     [417258098]  = "xA_lfa",
     [2230856063] = "Rez"
 }
