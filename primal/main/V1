@@ -642,14 +642,14 @@ end
 local lp = Players.LocalPlayer
 
 -- Colors
-local COL_BG      = Color3.fromRGB(16,16,16)
-local COL_PANEL   = Color3.fromRGB(22,22,22)
-local COL_CARD    = Color3.fromRGB(33,33,33)
-local COL_TEXT    = Color3.fromRGB(235,235,235)
-local COL_SUB     = Color3.fromRGB(160,160,160)
-local COL_ACCENT  = Color3.fromRGB(210,52,51)
-local COL_OFF     = Color3.fromRGB(60,60,60)
-local COL_ON      = Color3.fromRGB(120,200,120)
+local COL_BG      = Color3.fromRGB(50, 50, 50)   -- background (instead of nearly black)
+local COL_PANEL   = Color3.fromRGB(70, 70, 70)   -- panel background
+local COL_CARD    = Color3.fromRGB(90, 90, 90)   -- card background
+local COL_TEXT    = Color3.fromRGB(235, 235, 235) -- white-ish text
+local COL_SUB     = Color3.fromRGB(180, 180, 180) -- subtle/sub text
+local COL_ACCENT  = Color3.fromRGB(50, 120, 220)  -- blue accent
+local COL_OFF     = Color3.fromRGB(100, 100, 100) -- darker grey for off
+local COL_ON      = Color3.fromRGB(120, 200, 255) -- light blue for on
 
 -- Helper functions
 local function roundify(inst, r)
@@ -941,25 +941,12 @@ bannerFrame.Parent = home
 
 -- Rainbow Gradient Overlay
 local gradientOverlay = Instance.new("Frame")
-gradientOverlay.Size = UDim2.new(3,0,1,0) -- 3x width for looping
+gradientOverlay.Size = UDim2.new(1,0,1,0)
 gradientOverlay.Position = UDim2.new(0,0,0,0)
-gradientOverlay.BackgroundColor3 = Color3.fromRGB(255,0,0)
+gradientOverlay.BackgroundColor3 = Color3.fromRGB(50,120,220) -- same blue as tab
 gradientOverlay.BorderSizePixel = 0
 gradientOverlay.ClipsDescendants = true
 gradientOverlay.Parent = bannerFrame
-
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
-    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255,127,0)),
-    ColorSequenceKeypoint.new(0.34, Color3.fromRGB(255,255,0)),
-    ColorSequenceKeypoint.new(0.51, Color3.fromRGB(0,255,0)),
-    ColorSequenceKeypoint.new(0.68, Color3.fromRGB(0,0,255)),
-    ColorSequenceKeypoint.new(0.85, Color3.fromRGB(75,0,130)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(148,0,211)),
-})
-gradient.Rotation = 0
-gradient.Parent = gradientOverlay
 
 -- Banner Text on top
 local bannerText = Instance.new("TextLabel")
@@ -973,17 +960,6 @@ bannerText.TextXAlignment = Enum.TextXAlignment.Center
 bannerText.TextYAlignment = Enum.TextYAlignment.Center
 bannerText.ZIndex = 2 -- make sure it’s above the gradient
 bannerText.Parent = bannerFrame
-
--- Animate Gradient
-spawn(function()
-    while true do
-        gradientOverlay.Position = gradientOverlay.Position + UDim2.new(-0.005,0,0,0)
-        if gradientOverlay.Position.X.Scale <= -2 then
-            gradientOverlay.Position = UDim2.new(0,0,0,0)
-        end
-        task.wait(0.01)
-    end
-end)
 
 -- 2️⃣ Subtitle / Description
 local desc = Instance.new("TextLabel")
