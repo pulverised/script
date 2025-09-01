@@ -122,7 +122,17 @@ elseif http_request then
 else
     warn("Executor does not support HTTP requests")
 end
+local Event = game:GetService("ReplicatedStorage").Events.Message
+firesignal(Event.OnClientEvent, 
+    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#FF0000\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>",
+    "CashAward"
+)
 
+local Event = game:GetService("ReplicatedStorage").Events.SystemMessage
+firesignal(Event.OnClientEvent, 
+    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#FF0000\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>"
+)
+task.wait(2)
 
 local player = game.Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -1155,8 +1165,16 @@ end
 local autoBuyRow = makeRow(main, "Hostile Detector", "Shows all hostile prisoners and criminals")
 addToggle(autoBuyRow, false, function(state)
     if state then
+		local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+    firesignal(Event.OnClientEvent, 
+        "Started the Hostile Detector ! "
+    )
         HostileDetector.Start()
     else
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Stopped the Hostile Detector ! "
+)
         HostileDetector.Stop()
     end
 end)
@@ -1166,8 +1184,17 @@ end)
 local teamESPRow = makeRow(main, "Team ESP", "Shows players through walls and colors by team")
 addToggle(teamESPRow, false, function(state)
     if state then
+        
+	local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+		firesignal(Event.OnClientEvent, 
+    		"Started the Team ESP ! "
+		)
         TeamESP.Start()
     else
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Stopped the Team ESP ! "
+)
         TeamESP.Stop()
     end
 end)
@@ -1210,10 +1237,15 @@ do
 
         local hrp = getTargetHRP()
         if hrp then
+            local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Make sure to walk on the crim pad !"
+)
             crimpad.Position = hrp.Position - Vector3.new(0, hrp.Size.Y/2 + crimpad.Size.Y/2, 0)
         end
 
         task.delay(5, function()
+            
             crimpad.Position = oldpos
             crimpad.Size = Vector3.new(2,1,2)
             crimpad.Transparency = 1
@@ -1221,7 +1253,6 @@ do
             crimpad.Material = Enum.Material.SmoothPlastic
         end)
 
-        print("Criminal pad used. Old position:", oldpos)
     end)
 end
 
@@ -1229,14 +1260,48 @@ end
 sectionTitle(main, "Body")
 
 local noJumpRow = makeRow(main, "No Jump Cooldown", "Removes jump delay")
+
 addToggle(noJumpRow, false, function(state)
-    print("No Jump Cooldown:", state)
+    local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
+    if state then
+        -- Infinite stamina (no jump cooldown)
+        local MessageEvent = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(MessageEvent.OnClientEvent, 
+    "Enabled no stamina !"
+)
+        firesignal(Event.OnClientEvent, "Stamina", 99999)
+    else
+        -- Reset stamina to normal (change 100 to your game’s default stamina)
+        firesignal(Event.OnClientEvent, "Stamina", 99999)
+    end
 end)
 
-local antiSlowRow = makeRow(main, "Anti-Slow", "Prevents speed reduction")
+local antiSlowRow = makeRow(main, "Skip Threadmill", "Get to max speed without using threadmill")
+local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
+
+-- variable de verrouillage
+local used = false  
+
 addToggle(antiSlowRow, false, function(state)
-    print("Anti-Slow:", state)
+    if used then
+        return -- on bloque toute réactivation
+    end
+
+    if state then
+        local MessageEvent = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(MessageEvent.OnClientEvent, 
+            "Enable the threadmill bypass !"
+        )
+        for i = 1, 4 do
+            firesignal(Event.OnClientEvent,
+                "Runspeed",
+                1
+            )
+        end
+        used = true -- on marque comme utilisé une fois
+    end
 end)
+
 
 local antiBusyRow = makeRow(main, "Anti-Busy", "Beta feature")
 addToggle(antiBusyRow, false, function(state)
@@ -1501,8 +1566,16 @@ sectionTitle(killer, "Rage")
 local hostileTPRow = makeRow(killer, "Hostile Teleporter", "Teleport hostile nerd to you")
 addToggle(hostileTPRow, false, function(state)
     if state then
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Started the Hostile Teleporter ! "
+)
         HostileTeleporter.Start()
     else
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Stopped the Hostile Teleporter ! "
+)
         HostileTeleporter.Stop()
     end
 end)
@@ -1512,8 +1585,16 @@ end)
 local policeWardenTPRow = makeRow(killer, "Police Teleporter", "Teleport Police nerd to you")
 addToggle(policeWardenTPRow, false, function(state)
     if state then
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Started the Guard Teleporter ! "
+)
         PoliceWardenTeleporter.Start()
     else
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Stopped the Guard Teleporter ! "
+)
         PoliceWardenTeleporter.Stop()
     end
 end)
@@ -1554,8 +1635,16 @@ end
 local spinbotRow = makeRow(killer, "Spinbot", "Spin your character around automatically")
 addToggle(spinbotRow, false, function(state)
     if state then
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Started the spinbot"
+)
         Spinbot.Start()
     else
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Stopped the spinbot"
+)
         Spinbot.Stop()
     end
 end)
@@ -1573,6 +1662,7 @@ local hitSoundToggle = addToggle(hitSoundRow:FindFirstChild("Right"), false, fun
     print("Hit Sound Enabled:", state)
     -- Met à jour le son si le toggle est activé
     if state then
+        
         updateHitMarkerSound()
     end
 end)
@@ -1870,72 +1960,67 @@ end)
 
 -- Keys adder
 local miscRow = makeRow(misc, "Add Keys", "Click to add 10 keys")
+do
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0,112,0,28)
+    button.Position = UDim2.new(1,-112,0.5,-14)
+    button.BackgroundColor3 = Color3.fromRGB(28,28,28)
+    button.Text = "Add 10 Keys"
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    button.TextColor3 = COL_TEXT
+    button.Parent = miscRow:FindFirstChild("Right")
+    roundify(button,8)
 
--- Create button
-local testButton = Instance.new("TextButton")
-testButton.Size = UDim2.new(0, 100, 0, 30)
-testButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-testButton.Text = "Add 10 Keys"
-testButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-testButton.Font = Enum.Font.Gotham
-testButton.TextSize = 14
-testButton.Parent = miscRow
-
--- Functionality when clicked
-testButton.MouseButton1Click:Connect(function()
-    print("Misc Button Clicked!")
-local Event = game:GetService("ReplicatedStorage").Rankup
-Event:FireServer(
-    10
+    button.MouseButton1Click:Connect(function()
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Added 10 keys !"
 )
-end)
-
--- Keys adder
-local miscRow = makeRow(misc, "Add Skins", "Click to add all skins to your account")
-
--- Create button
-local testButton = Instance.new("TextButton")
-testButton.Size = UDim2.new(0, 100, 0, 30)
-testButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-testButton.Text = "Add all skins"
-testButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-testButton.Font = Enum.Font.Gotham
-testButton.TextSize = 14
-testButton.Parent = miscRow
-
--- Functionality when clicked
-testButton.MouseButton1Click:Connect(function()
-    print("Misc Button Clicked!")
-local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
-
-local skins = {
-    "24k Gold",
-    "24k Gold Pistol",
-    "Anoidzed Red",
-    "Galaxy",
-    "Super Soaker",
-    "The Patriot",
-    "Woodland"
-}
-
-for _, skin in ipairs(skins) do
-    award:InvokeServer(skin)
+        local Event = game:GetService("ReplicatedStorage").Rankup
+        Event:FireServer(10)
+    end)
 end
-end)
+
+-- Skins adder
+local miscRow = makeRow(misc, "Add Skins", "Click to add all skins to your account")
+do
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0,112,0,28)
+    button.Position = UDim2.new(1,-112,0.5,-14)
+    button.BackgroundColor3 = Color3.fromRGB(28,28,28)
+    button.Text = "Add all skins"
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    button.TextColor3 = COL_TEXT
+    button.Parent = miscRow:FindFirstChild("Right")
+    roundify(button,8)
+
+    button.MouseButton1Click:Connect(function()
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Added all gun skin !"
+)
+        local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
+        local skins = {
+            "24k Gold",
+            "24k Gold Pistol",
+            "Anoidzed Red",
+            "Galaxy",
+            "Super Soaker",
+            "The Patriot",
+            "Woodland"
+        }
+        for _, skin in ipairs(skins) do
+            award:InvokeServer(skin)
+        end
+    end)
+end
 
 -- Auto Farm
 local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
 local sell = game:GetService("ReplicatedStorage").SkinFolder.Events.Sell
-
-local skins = {
-    "24k Gold",
-    "24k Gold Pistol",
-    "Anoidzed Red",
-    "Galaxy",
-    "Super Soaker",
-    "The Patriot",
-    "Woodland"
-}
+local skins = { "24k Gold","24k Gold Pistol","Anoidzed Red","Galaxy","Super Soaker","The Patriot","Woodland" }
 
 _G.AutoSkinFarmEnabled = false
 
@@ -1945,24 +2030,25 @@ local function startAutoFarm()
             for _, skin in ipairs(skins) do
                 pcall(function()
                     award:InvokeServer(skin)
-                    sell:FireServer(skin)
+                    sell:FireServer(skin, true, "")
                 end)
             end
-            task.wait(1) -- prevents spamming too fast
+            
         end
     end)
 end
 
--- Add the toggle row in the Misc tab
 local autoFarmRow = makeRow(misc, "Auto Skin Farm", "Automatically awards and sells skins")
 addToggle(autoFarmRow, false, function(state)
     _G.AutoSkinFarmEnabled = state
     if state then
+        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+firesignal(Event.OnClientEvent, 
+    "Started the money autofarm"
+)
         startAutoFarm()
     end
 end)
-
-
 
 -- SIDEBAR TABS
 local tabs = {
