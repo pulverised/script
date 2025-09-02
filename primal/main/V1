@@ -2016,7 +2016,7 @@ local function startAutoFarm()
     end)
 end
 
-local autoFarmRow = makeRow(misc, "Auto Skin Farm", "Automatically awards and sells skins")
+local autoFarmRow = makeRow(misc, "Rapid Auto Skin Farm", "Automatically awards and sells skins with rapid speed")
 addToggle(autoFarmRow, false, function(state)
     _G.AutoSkinFarmEnabled = state
     local Event = game:GetService("ReplicatedStorage").Events.Tooltip
@@ -2025,6 +2025,36 @@ addToggle(autoFarmRow, false, function(state)
         startAutoFarm()
     else
         firesignal(Event.OnClientEvent, "Stopped the money autofarm")
+    end
+end)
+
+-- Slower Auto Farm
+local slowFarmEnabled = false
+
+local function startSlowAutoFarm()
+    task.spawn(function()
+        while slowFarmEnabled do
+            for _, skin in ipairs(skins) do
+                pcall(function()
+                    award:InvokeServer(skin)
+                    sell:FireServer(skin, true, "")
+                end)
+            end
+            task.wait(0.5) -- slower, safer loop (2x per second)
+        end
+    end)
+end
+
+-- UI row for slower farm
+local slowFarmRow = makeRow(misc, "Slower Auto Farm", "Automatically awards and sells skins slower")
+addToggle(slowFarmRow, false, function(state)
+    slowFarmEnabled = state
+    local Event = game:GetService("ReplicatedStorage").Events.Tooltip
+    if state then
+        firesignal(Event.OnClientEvent, "Started the slower auto farm")
+        startSlowAutoFarm()
+    else
+        firesignal(Event.OnClientEvent, "Stopped the slower auto farm")
     end
 end)
 
