@@ -2004,12 +2004,14 @@ local function startAutoFarm()
     task.spawn(function()
         while _G.AutoSkinFarmEnabled do
             for _, skin in ipairs(skins) do
-                pcall(function()
-                    award:InvokeServer(skin)
-                    sell:FireServer(skin, true, "")
+                task.spawn(function()
+                    pcall(function()
+                        award:InvokeServer(skin)
+                        sell:FireServer(skin, true, "")
+                    end)
                 end)
             end
-            
+            task.wait(0.01) -- tiny delay to prevent crashes
         end
     end)
 end
@@ -2017,12 +2019,12 @@ end
 local autoFarmRow = makeRow(misc, "Auto Skin Farm", "Automatically awards and sells skins")
 addToggle(autoFarmRow, false, function(state)
     _G.AutoSkinFarmEnabled = state
+    local Event = game:GetService("ReplicatedStorage").Events.Tooltip
     if state then
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Started the money autofarm"
-)
+        firesignal(Event.OnClientEvent, "Started the money autofarm")
         startAutoFarm()
+    else
+        firesignal(Event.OnClientEvent, "Stopped the money autofarm")
     end
 end)
 
