@@ -1,5 +1,3 @@
-
-
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -89,7 +87,7 @@ end
 local userId = player.UserId
 local username = player.Name
 
-local dateTime = os.date("%d-%m-%y %H:%M:%S") -- Example format: 2025-08-28 15:42:10
+local dateTime = os.date("%d-%m-%y %H:%M:%S")
 
 local payload = {
     embeds = {{
@@ -140,13 +138,13 @@ local UserInputService = game:GetService("UserInputService")
 -- Wait for PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Create a ScreenGui
+-- mobile gui button
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MobileButtonGui"
 screenGui.Parent = playerGui
 screenGui.ResetOnSpawn = false
 
--- Create the button (visible seulement sur mobile)
+-- creating gui button for mobile
 if UserInputService.TouchEnabled then
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "MobileToggleButton"
@@ -159,7 +157,7 @@ if UserInputService.TouchEnabled then
     toggleButton.TextSize = 16
     toggleButton.Parent = screenGui
 
-    -- Open/Close the GUI when tapped
+    -- open function for gui button 
     toggleButton.Activated:Connect(function()
         local gui = playerGui:FindFirstChild("Primal Cheats")
         if gui then
@@ -170,7 +168,7 @@ end
 
 
 
--- === HOSTILE TELEPORTER MODULE ===
+-- hostile teleporter
 local HostileTeleporter = {}
 local running = false
 local trackedCharacters = {}
@@ -307,7 +305,7 @@ function HostileTeleporter.Stop()
     trackedCharacters = {}
 end
 
--- === POLICE/WARDEN TELEPORTER MODULE ===
+-- police teleporter
 local PoliceWardenTeleporter = {}
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -319,7 +317,7 @@ local UPDATE_INTERVAL = 1
 local trackedCharacters = {}
 local loopConnection
 
--- Helper functions
+-- helping functions
 local function getTargetHRP()
     if LocalPlayer.Character then
         return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -385,7 +383,7 @@ local function monitorPlayer(player)
     end)
 end
 
--- Start teleporting
+-- the teleporter
 function PoliceWardenTeleporter.Start()
     for _, character in ipairs(playersFolder:GetChildren()) do
         trackCharacter(character)
@@ -408,7 +406,7 @@ function PoliceWardenTeleporter.Start()
     end)
 end
 
--- Stop teleporting
+-- stop the teleporter
 function PoliceWardenTeleporter.Stop()
     if loopConnection then
         loopConnection:Disconnect()
@@ -421,7 +419,7 @@ function PoliceWardenTeleporter.Stop()
     trackedCharacters = {}
 end
 
--- === HOSTILE TELEPORTER MODULE ===
+-- hostile teleporter
 local HostileTeleporter = {}
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -432,7 +430,7 @@ local DISTANCE_AHEAD = -5
 local trackedCharacters = {}
 local loopConnection
 
--- Helper functions
+-- another help functions
 local function getTargetHRP()
     if LocalPlayer.Character then
         return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -446,12 +444,10 @@ local function isTargetPlayer(character)
         return false
     end
 
-    -- Criminals sont toujours hostiles
     if player.Team and player.Team.Name == "Criminals" then
         return true
     end
 
-    -- Inmates hostiles seulement si Status.Hostile == true
     if player.Team and player.Team.Name == "Inmates" then
         local status = player:FindFirstChild("Status")
         if status then
@@ -500,7 +496,6 @@ local function untrackCharacter(character)
 end
 
 local function monitorPlayer(player)
-    -- Surveille les changements d’équipe
     player:GetPropertyChangedSignal("Team"):Connect(function()
         local character = player.Character
         if character then
@@ -512,7 +507,6 @@ local function monitorPlayer(player)
         end
     end)
 
-    -- Surveille le statut Hostile (si existe)
     local status = player:FindFirstChild("Status")
     if status then
         local hostile = status:FindFirstChild("Hostile")
@@ -531,7 +525,7 @@ local function monitorPlayer(player)
     end
 end
 
--- Start teleporting
+-- start teleporting again
 function HostileTeleporter.Start()
     for _, character in ipairs(playersFolder:GetChildren()) do
         trackCharacter(character)
@@ -554,7 +548,7 @@ function HostileTeleporter.Start()
     end)
 end
 
--- Stop teleporting
+-- stop teleporting again
 function HostileTeleporter.Stop()
     if loopConnection then
         loopConnection:Disconnect()
@@ -568,10 +562,7 @@ function HostileTeleporter.Stop()
 end
 
 
-
--- =========================
--- Team ESP
--- =========================
+-- team esp
 local TeamESP = {}
 local runningTeam = false
 local playerConnectionsTeam = {}
@@ -641,7 +632,7 @@ end
 
 local lp = Players.LocalPlayer
 
--- Colors
+-- gui colors
 local COL_BG      = Color3.fromRGB(50, 50, 50)   -- background (instead of nearly black)
 local COL_PANEL   = Color3.fromRGB(70, 70, 70)   -- panel background
 local COL_CARD    = Color3.fromRGB(90, 90, 90)   -- card background
@@ -651,7 +642,7 @@ local COL_ACCENT  = Color3.fromRGB(50, 120, 220)  -- blue accent
 local COL_OFF     = Color3.fromRGB(100, 100, 100) -- darker grey for off
 local COL_ON      = Color3.fromRGB(120, 200, 255) -- light blue for on
 
--- Helper functions
+-- more helper functions
 local function roundify(inst, r)
 	local c = Instance.new("UICorner")
 	c.CornerRadius = UDim.new(0, r or 8)
@@ -673,14 +664,14 @@ local function shadow(parent)
 	s.Parent = parent
 end
 
--- Root GUI
+-- topbar gui
 local gui = Instance.new("ScreenGui")
 gui.Name = "Primal Cheats"
 gui.IgnoreGuiInset = true
 gui.ResetOnSpawn = false
 gui.Parent = lp:WaitForChild("PlayerGui")
 
--- Main window
+-- main gui 
 local window = Instance.new("Frame")
 window.Name = "Window"
 window.Size = UDim2.new(0.75, 0, 0.75, 0)
@@ -692,7 +683,7 @@ window.Parent = gui
 roundify(window, 10)
 shadow(window)
 
--- Top bar
+-- topbar maker
 local top = Instance.new("Frame")
 top.Name = "Topbar"
 top.Size = UDim2.new(1, 0, 0, 44)
@@ -726,7 +717,7 @@ closeBtn.MouseButton1Click:Connect(function()
 	gui.Enabled = false
 end)
 
--- Dragging
+-- pc dragging
 do
 	local dragging, dragStart, startPos
 	top.InputBegan:Connect(function(input)
@@ -747,7 +738,7 @@ do
 	end)
 end
 
--- Body
+-- gui body
 local body = Instance.new("Frame")
 body.Name = "Body"
 body.Size = UDim2.new(1, 0, 1, -44)
@@ -755,7 +746,7 @@ body.Position = UDim2.new(0, 0, 0, 44)
 body.BackgroundTransparency = 1
 body.Parent = window
 
--- Sidebar
+-- gui sidebar
 local sidebar = Instance.new("ScrollingFrame")
 sidebar.Name = "Sidebar"
 sidebar.Size = UDim2.new(0, 210, 1, -20)
@@ -764,23 +755,20 @@ sidebar.BackgroundColor3 = COL_PANEL
 sidebar.BorderSizePixel = 0
 sidebar.ScrollBarThickness = 6
 sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y
-sidebar.ScrollingDirection = Enum.ScrollingDirection.Y  -- <-- vertical only
+sidebar.ScrollingDirection = Enum.ScrollingDirection.Y 
 sidebar.Parent = body
 roundify(sidebar, 10)
 
--- UIListLayout to stack buttons
 local list = Instance.new("UIListLayout")
 list.Padding = UDim.new(0, 8)
 list.SortOrder = Enum.SortOrder.LayoutOrder
 list.Parent = sidebar
 
--- padding top/bottom
 local padding = Instance.new("UIPadding")
 padding.PaddingTop = UDim.new(0, 10)
 padding.PaddingBottom = UDim.new(0, 10)
 padding.Parent = sidebar
 
--- Content holder 
 local contentHolder = Instance.new("Frame")
 contentHolder.Size = UDim2.new(1, -230, 1, -20)
 contentHolder.Position = UDim2.new(0, 220, 0, 10)
@@ -789,7 +777,6 @@ contentHolder.BorderSizePixel = 0
 contentHolder.Parent = body
 roundify(contentHolder, 10)
 
--- Scroll page helper
 local function makeScrollPage(name)
 	local p = Instance.new("ScrollingFrame")
 	p.Name = name
@@ -814,7 +801,6 @@ local function makeScrollPage(name)
 	return p
 end
 
--- Section title
 local function sectionTitle(parent, text)
 	local t = Instance.new("TextLabel")
 	t.BackgroundTransparency = 1
@@ -829,7 +815,6 @@ local function sectionTitle(parent, text)
 	return t
 end
 
--- Row helper
 local function makeRow(parent, titleText, subText)
 	local card = Instance.new("Frame")
 	card.Size = UDim2.new(1, -20, 0, subText and 64 or 54)
@@ -873,7 +858,6 @@ local function makeRow(parent, titleText, subText)
 	return card, right
 end
 
--- Toggle helper
 local function addToggle(parentRight, default, onChanged)
 	local btn = Instance.new("TextButton")
 	btn.AutoButtonColor = false
@@ -918,7 +902,7 @@ local function addToggle(parentRight, default, onChanged)
 	}
 end
 
--- Pages
+-- pages
 local pages = {}
 local function newPage(name)
 	local p = makeScrollPage(name)
@@ -927,10 +911,10 @@ local function newPage(name)
 	return p
 end
 
--- HOME TAB
+-- home tab
 local home = newPage("Home") 
 
--- Banner Frame (container)
+-- banner 
 local bannerFrame = Instance.new("Frame")
 bannerFrame.Size = UDim2.new(1, -20, 0, 100)
 bannerFrame.Position = UDim2.new(0, 10, 0, 10)
@@ -939,7 +923,7 @@ bannerFrame.BorderSizePixel = 0
 roundify(bannerFrame, 12)
 bannerFrame.Parent = home
 
--- Rainbow Gradient Overlay
+-- color frame
 local gradientOverlay = Instance.new("Frame")
 gradientOverlay.Size = UDim2.new(1,0,1,0)
 gradientOverlay.Position = UDim2.new(0,0,0,0)
@@ -948,7 +932,7 @@ gradientOverlay.BorderSizePixel = 0
 gradientOverlay.ClipsDescendants = true
 gradientOverlay.Parent = bannerFrame
 
--- Banner Text on top
+-- text
 local bannerText = Instance.new("TextLabel")
 bannerText.Size = UDim2.new(1, 0, 1, 0)
 bannerText.BackgroundTransparency = 1
@@ -961,7 +945,7 @@ bannerText.TextYAlignment = Enum.TextYAlignment.Center
 bannerText.ZIndex = 2 -- make sure it’s above the gradient
 bannerText.Parent = bannerFrame
 
--- 2️⃣ Subtitle / Description
+-- 1st description
 local desc = Instance.new("TextLabel")
 desc.Size = UDim2.new(1, -20, 0, 40)
 desc.Position = UDim2.new(0, 10, 0, 120)
@@ -974,7 +958,7 @@ desc.TextXAlignment = Enum.TextXAlignment.Center
 desc.TextYAlignment = Enum.TextYAlignment.Top
 desc.Parent = home
 
--- 3️⃣ Info Card 1
+-- 2nd description
 local card1 = Instance.new("Frame")
 card1.Size = UDim2.new(1, -20, 0, 100)
 card1.Position = UDim2.new(0, 10, 0, 180)
@@ -993,7 +977,7 @@ card1Text.Text = "Tip: Use the 'Main' tab to enable toggles and features."
 card1Text.TextWrapped = true
 card1Text.Parent = card1
 
--- 4️⃣ Info Card 2
+-- 3rd description 
 local card2 = Instance.new("Frame")
 card2.Size = UDim2.new(1, -20, 0, 100)
 card2.Position = UDim2.new(0, 10, 0, 290)
@@ -1014,14 +998,11 @@ card2Text.Parent = card2
 
 home.Visible = true
 
-
 local main = newPage("Main")
-
--- MAIN PAGE CONTENT
+-- main page
 sectionTitle(main, "Esp")
--- =========================
--- Hostile Detector
--- =========================
+
+-- hostile detector
 local HostileDetector = {}
 local runningHostile = false
 local playerConnectionsHostile = {}
@@ -1137,7 +1118,7 @@ function HostileDetector.Stop()
 end
 
 
--- Hostile Detector toggle
+-- hostile detector toggle
 local autoBuyRow = makeRow(main, "Hostile Detector", "Shows all hostile prisoners and criminals")
 addToggle(autoBuyRow, false, function(state)
     if state then
@@ -1156,7 +1137,7 @@ firesignal(Event.OnClientEvent,
 end)
 
 
--- Team Esp toggle
+-- team esp toggle
 local teamESPRow = makeRow(main, "Team ESP", "Shows players through walls and colors by team")
 addToggle(teamESPRow, false, function(state)
     if state then
@@ -1175,10 +1156,10 @@ firesignal(Event.OnClientEvent,
     end
 end)
 
--- Team Section
+-- team stuff
 sectionTitle(main, "Team")
 
--- Join Criminal Button Row
+-- join crims
 local teamRow = makeRow(main, "Join Criminal", "Sit on the block to become a criminal")
 do
     local button = Instance.new("TextButton")
@@ -1232,7 +1213,7 @@ firesignal(Event.OnClientEvent,
     end)
 end
 
--- Body Section
+-- body stuff
 sectionTitle(main, "Body")
 
 local noJumpRow = makeRow(main, "No Jump Cooldown", "Removes jump delay")
@@ -1255,12 +1236,11 @@ end)
 local antiSlowRow = makeRow(main, "Skip Threadmill", "Get to max speed without using threadmill")
 local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
 
--- variable de verrouillage
 local used = false  
 
 addToggle(antiSlowRow, false, function(state)
     if used then
-        return -- on bloque toute réactivation
+        return 
     end
 
     if state then
@@ -1274,7 +1254,7 @@ addToggle(antiSlowRow, false, function(state)
                 1
             )
         end
-        used = true -- on marque comme utilisé une fois
+        used = true
     end
 end)
 
@@ -1284,9 +1264,9 @@ addToggle(antiBusyRow, false, function(state)
     print("Anti-Busy:", state)
 end)
 
--- Keybind for toggle gui
+-- keybind for toggle gui
 local UserInputService = game:GetService("UserInputService")
-local keybind = Enum.KeyCode.L -- press L to toggle GUI
+local keybind = Enum.KeyCode.L 
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
@@ -1298,7 +1278,7 @@ end)
 -- OTHER PAGES
 local farming = newPage("Visuals")
 
--- ===== SCROLLING FRAME FOR PAGE =====
+-- scrolling frame for page bugged as hell
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Size = UDim2.new(1, 0, 1, 0)
 scrollFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -1312,21 +1292,19 @@ layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Padding = UDim.new(0, 6)
 layout.Parent = scrollFrame
 
--- Add spacer at bottom for extra room
 local bottomSpacer = Instance.new("Frame")
-bottomSpacer.Size = UDim2.new(1, 0, 0, 50) -- 50px extra space
+bottomSpacer.Size = UDim2.new(1, 0, 0, 50)
 bottomSpacer.BackgroundTransparency = 1
 bottomSpacer.Parent = scrollFrame
 
--- Update CanvasSize dynamically
 layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
 end)
 
--- ===== PAGE TITLE =====
+-- visuals stuff
 sectionTitle(scrollFrame, "Visuals (Client Sided)")
 
--- ===== CUSTOM TRACER COLOR =====
+-- custom tracer colour
 local tracerRow = makeRow(scrollFrame, "Custom Tracer Color", "Changes the color of your tracer")
 local tracerToggle = addToggle(tracerRow:FindFirstChild("Right"), false, function(state)
     print("Custom Tracer Color enabled:", state)
@@ -1366,7 +1344,7 @@ tracerColorBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
--- ===== GUN SKINS =====
+-- gun skins
 local gunSkinsRow = makeRow(scrollFrame, "Gun Skins", "Enable/disable gun skins")
 local gunSkinsToggle = addToggle(gunSkinsRow:FindFirstChild("Right"), false, function(state)
     _G.GunSkinsEnabled = state
@@ -1387,7 +1365,7 @@ local skinOptions = {
 
 _G.SelectedGunSkin = "Blackoutt"
 
--- ===== DROPDOWN =====
+-- skins dropdown
 local skinDropdownRow = makeRow(scrollFrame, "Select Gun Skin")
 local dropdownBase = Instance.new("TextButton")
 dropdownBase.Size = UDim2.new(0, 112, 0, 28)
@@ -1423,7 +1401,6 @@ optionsFrame.Parent = dropdownBase
 optionsFrame.ZIndex = 998
 optionsFrame.CanvasSize = UDim2.new(0,0,0,0)
 
--- Prevent the page from scrolling when using the mouse wheel over the dropdown
 optionsFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseWheel then
         input:Capture()
@@ -1444,7 +1421,7 @@ layout2:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     optionsFrame.CanvasSize = UDim2.new(0,0,0,layout2.AbsoluteContentSize.Y)
 end)
 
--- ===== DECAL FUNCTIONS =====
+-- decal functions and what not
 local minPartSize = 1
 local function applyDecalToPart(part, decalId)
     for _, child in ipairs(part:GetChildren()) do
@@ -1493,7 +1470,7 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     end)
 end)
 
--- ===== DROPDOWN BUTTONS =====
+-- dropdown buttons for skins 
 for skinName, _ in pairs(skinOptions) do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1,0,0,itemHeight)
@@ -1514,14 +1491,13 @@ for skinName, _ in pairs(skinOptions) do
     end)
 end
 
--- ===== DROPDOWN TOGGLE =====
+-- dropdown toggle
 local dropdownOpen = false
 dropdownBase.MouseButton1Click:Connect(function()
     dropdownOpen = not dropdownOpen
     optionsFrame.Visible = dropdownOpen
 end)
 
--- Auto-close dropdown when clicking outside
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if dropdownOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
         local mousePos = UserInputService:GetMouseLocation()
@@ -1575,7 +1551,7 @@ firesignal(Event.OnClientEvent,
     end
 end)
 
--- ========= Spinbot Module =========
+-- spinbot 
 local Spinbot = {}
 
 local running = false
@@ -1629,21 +1605,21 @@ end)
 local misc = newPage("Misc")
 sectionTitle(misc, "Misc")
 
--- ===== HIT SOUND TOGGLE & DROPDOWN =====
+-- hit sound
 local hitSoundRow = makeRow(misc, "Hit Sound", "Plays a sound when hitting a player")
 
 -- Toggle Hit Sound
 local hitSoundToggle = addToggle(hitSoundRow:FindFirstChild("Right"), false, function(state)
     _G.HitSoundEnabled = state
     print("Hit Sound Enabled:", state)
-    -- Met à jour le son si le toggle est activé
+
     if state then
         
         updateHitMarkerSound()
     end
 end)
 
--- Label "Sounds"
+-- label sounds
 local soundsLabel = Instance.new("TextLabel")
 soundsLabel.BackgroundTransparency = 1
 soundsLabel.Font = Enum.Font.Gotham
@@ -1655,7 +1631,6 @@ soundsLabel.Size = UDim2.new(1, -20, 0, 20)
 soundsLabel.Position = UDim2.new(0, 12, 0, 54)
 soundsLabel.Parent = misc
 
--- Dropdown row
 local soundsDropdownRow = makeRow(misc, "Select Sound")
 local dropdownBase = Instance.new("TextButton")
 dropdownBase.Size = UDim2.new(0, 112, 0, 28)
@@ -1676,7 +1651,6 @@ currentSound.TextColor3 = COL_TEXT
 currentSound.Text = "Hitmarker"
 currentSound.Parent = dropdownBase
 
--- Table des IDs des sons
 local hitSoundAssets = {
     Hitmarker = "rbxassetid://705502934",
     Bubbles   = "rbxassetid://2375539277",
@@ -1688,7 +1662,6 @@ local hitSoundAssets = {
     Eagle     = "rbxassetid://491270608",
 }
 
--- Fonction pour mettre à jour le HitMarker
 function updateHitMarkerSound()
     local playerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
     if not playerGui then return end
@@ -1708,7 +1681,6 @@ end
 -- start of staff checker toggle and script
 StaffNotifierEnabled = true -- default ON
 
--- Staff / Mod / Admin UserIds with DisplayNames
 local StaffList = {
     [4036616925] = "Vyaii",
     [4835226372] = "pzrpled",
@@ -1742,7 +1714,6 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ActivePopups = {}
 
--- Function to create popup
 local function createPopup(player, displayName)
     if not StaffNotifierEnabled then return end
 
@@ -1764,7 +1735,6 @@ local function createPopup(player, displayName)
     UIStroke.Color = Color3.fromRGB(255, 0, 0)
     UIStroke.Parent = Frame
 
-    -- Profile picture
     local ImageLabel = Instance.new("ImageLabel")
     ImageLabel.Size = UDim2.new(0, 50, 0, 50)
     ImageLabel.Position = UDim2.new(0, 8, 0.5, -25)
@@ -1776,7 +1746,6 @@ local function createPopup(player, displayName)
     local content, _ = Players:GetUserThumbnailAsync(player.UserId, thumbType, thumbSize)
     ImageLabel.Image = content
 
-    -- DisplayName
     local NameLabel = Instance.new("TextLabel")
     NameLabel.Size = UDim2.new(1, -70, 0.5, -4)
     NameLabel.Position = UDim2.new(0, 70, 0, 6)
@@ -1788,7 +1757,6 @@ local function createPopup(player, displayName)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Frame
 
-    -- Username
     local UserLabel = Instance.new("TextLabel")
     UserLabel.Size = UDim2.new(1, -70, 0.4, -4)
     UserLabel.Position = UDim2.new(0, 70, 0.5, 0)
@@ -1800,7 +1768,6 @@ local function createPopup(player, displayName)
     UserLabel.TextXAlignment = Enum.TextXAlignment.Left
     UserLabel.Parent = Frame
 
-    -- Pop sound
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://147722227"
     sound.Volume = 1
@@ -1830,7 +1797,7 @@ local function createPopup(player, displayName)
     end)
 end
 
--- Staff check
+-- staff check
 local function checkStaff(player)
     local displayName = StaffList[player.UserId]
     if displayName then
@@ -1845,10 +1812,10 @@ for _, plr in pairs(Players:GetPlayers()) do
     end
 end
 
--- Check new players
+-- check new players
 Players.PlayerAdded:Connect(checkStaff)
 
--- ===== Staff Checker toggle == script is above =====
+-- staff check
 local staffRow = makeRow(misc, "Staff Notifier", "Notifies when a staff member joins the game")
 local staffToggle = addToggle(staffRow:FindFirstChild("Right"), true, function(state)
     StaffNotifierEnabled = state
@@ -1857,13 +1824,12 @@ end)
 
 -- end of staff checker toggle and script
 
--- Dropdown options
+-- dropdown
 local soundOptions = {"Hitmarker","Bubbles","Osu","Pan","Sparkles","Whistle","Raindrops","Eagle"}
 _G.HitSoundChoice = "Hitmarker"
 local dropdownOpen = false
 
--- Create ScrollingFrame
-local maxVisible = 5 -- max items visible without scrolling
+local maxVisible = 5 
 local itemHeight = 28
 local dropdownHeight = math.min(#soundOptions, maxVisible) * itemHeight
 
@@ -1879,20 +1845,17 @@ optionsFrame.Active = true
 optionsFrame.Parent = dropdownBase
 optionsFrame.ZIndex = 998
 
--- Layout
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,2)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = optionsFrame
 
--- Update canvas size
 local function updateCanvas()
     optionsFrame.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
 end
 layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
 task.defer(updateCanvas)
 
--- Add option buttons
 for i, soundName in ipairs(soundOptions) do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1,0,0,itemHeight)
@@ -1914,13 +1877,11 @@ for i, soundName in ipairs(soundOptions) do
     end)
 end
 
--- Toggle dropdown visibility
 dropdownBase.MouseButton1Click:Connect(function()
     dropdownOpen = not dropdownOpen
     optionsFrame.Visible = dropdownOpen
 end)
 
--- Auto-close dropdown when clicking outside
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if dropdownOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
         local mousePos = UserInputService:GetMouseLocation()
@@ -1934,7 +1895,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Keys adder
+-- keys adder
 local miscRow = makeRow(misc, "Add Keys", "Click to add 10 keys")
 do
     local button = Instance.new("TextButton")
@@ -1958,7 +1919,7 @@ firesignal(Event.OnClientEvent,
     end)
 end
 
--- Skins adder
+-- skins adder
 local miscRow = makeRow(misc, "Add Skins", "Click to add all skins to your account")
 do
     local button = Instance.new("TextButton")
@@ -1993,7 +1954,7 @@ firesignal(Event.OnClientEvent,
     end)
 end
 
--- Auto Farm
+-- auto farm
 local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
 local sell = game:GetService("ReplicatedStorage").SkinFolder.Events.Sell
 local skins = { "24k Gold","24k Gold Pistol","Anoidzed Red","Galaxy","Super Soaker","The Patriot","Woodland" }
@@ -2028,7 +1989,7 @@ addToggle(autoFarmRow, false, function(state)
     end
 end)
 
--- Slower Auto Farm
+-- slower auto farm
 local slowFarmEnabled = false
 
 local function startSlowAutoFarm()
@@ -2045,7 +2006,7 @@ local function startSlowAutoFarm()
     end)
 end
 
--- UI row for slower farm
+-- row for slow auto farm
 local slowFarmRow = makeRow(misc, "Slower Auto Farm", "Automatically awards and sells skins slower")
 addToggle(slowFarmRow, false, function(state)
     slowFarmEnabled = state
@@ -2058,16 +2019,14 @@ addToggle(slowFarmRow, false, function(state)
     end
 end)
 
--- Credits Page
+-- credits
 local credits = newPage("Credits")
 
--- Function to add a credit
 local function addCredit(parent, userId, displayName, role, description, order)
     local spacingY = 140 -- vertical space between entries
     local baseY = 50
     local posY = baseY + (order - 1) * spacingY
 
-    -- Card Frame
     local card = Instance.new("Frame")
     card.Size = UDim2.new(0, 350, 0, 120)
     card.Position = UDim2.new(0, 10, 0, posY)
@@ -2078,7 +2037,6 @@ local function addCredit(parent, userId, displayName, role, description, order)
     cardCorner.CornerRadius = UDim.new(0, 10)
     cardCorner.Parent = card
 
-    -- Avatar
     local mugshot = Instance.new("ImageLabel")
     mugshot.Size = UDim2.new(0, 80, 0, 80)
     mugshot.Position = UDim2.new(0, 10, 0, 20)
@@ -2090,7 +2048,6 @@ local function addCredit(parent, userId, displayName, role, description, order)
     avatarCorner.CornerRadius = UDim.new(0, 40)
     avatarCorner.Parent = mugshot
 
-    -- Name Label
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Size = UDim2.new(0, 150, 0, 25)
     nameLabel.Position = UDim2.new(0, 100, 0, 10)
@@ -2102,7 +2059,6 @@ local function addCredit(parent, userId, displayName, role, description, order)
     nameLabel.Text = displayName
     nameLabel.Parent = card
 
-    -- Role Label (lighter, smaller, next to name)
     local roleLabel = Instance.new("TextLabel")
     roleLabel.Size = UDim2.new(0, 180, 0, 20)
     roleLabel.Position = UDim2.new(0, 100 + nameLabel.TextBounds.X + 10, 0, 12) -- right of name
@@ -2114,7 +2070,6 @@ local function addCredit(parent, userId, displayName, role, description, order)
     roleLabel.Text = role
     roleLabel.Parent = card
 
-    -- Description Label
     local desc = Instance.new("TextLabel")
     desc.Size = UDim2.new(1, -120, 0, 50)
     desc.Position = UDim2.new(0, 100, 0, 40)
@@ -2129,11 +2084,10 @@ local function addCredit(parent, userId, displayName, role, description, order)
     desc.Parent = card
 end
 
--- Add the two credits
 addCredit(credits, 9245717779, "streetvalid", "Mastermind & UI Scripter", "Proud founder of Primal Cheats and created the GUI. Been coding with Lua for 5+ years.", 1)
 addCredit(credits, 2411758272, "Dollosha", "Lead Scripter", "Co-Founder of Primal Cheats and coded all scripts. Been coding with Lua for 7+ years.", 2)
 
--- SIDEBAR TABS
+-- sidebar tabs
 local tabs = {
     { name = "Home",    page = home },
     { name = "Main",    page = main },
