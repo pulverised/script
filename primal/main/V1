@@ -1,2141 +1,1103 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-
---// game check
-local correctPlaceIds = { 
-    [214169] = true,          -- Prison Life V3
-    [85247362414047] = true   -- Prisoner Life
-}
-
---// gui stuff
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "GameCheckGUI"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
-
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 300, 0, 150)
-frame.Position = UDim2.new(0.5, -150, 0.5, -75)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.Visible = false
-
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(255, 50, 50)
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 20
-title.Text = "❌ Wrong Game!"
-
-local msg = Instance.new("TextLabel", frame)
-msg.Size = UDim2.new(1, -20, 0, 50)
-msg.Position = UDim2.new(0, 10, 0, 45)
-msg.BackgroundTransparency = 1
-msg.TextColor3 = Color3.fromRGB(255, 255, 255)
-msg.Font = Enum.Font.SourceSans
-msg.TextSize = 16
-msg.TextWrapped = true
-msg.Text = "This script only works in Prison Life or PLV3."
-
--- pl button
-local plBtn = Instance.new("TextButton", frame)
-plBtn.Size = UDim2.new(0.45, 0, 0, 35)
-plBtn.Position = UDim2.new(0.05, 0, 1, -45)
-plBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-plBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-plBtn.Font = Enum.Font.SourceSansBold
-plBtn.TextSize = 16
-plBtn.Text = "▶ Join PL"
-
--- plv3 button
-local plv3Btn = Instance.new("TextButton", frame)
-plv3Btn.Size = UDim2.new(0.45, 0, 0, 35)
-plv3Btn.Position = UDim2.new(0.5, 0, 1, -45)
-plv3Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-plv3Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-plv3Btn.Font = Enum.Font.SourceSansBold
-plv3Btn.TextSize = 16
-plv3Btn.Text = "▶ Join PLV3"
-
---// functions
-plBtn.MouseButton1Click:Connect(function()
-    game:GetService("TeleportService"):Teleport(85247362414047, player) -- Teleport to Prisoner Life
-end)
-
-plv3Btn.MouseButton1Click:Connect(function()
-    game:GetService("TeleportService"):Teleport(214169, player) -- Teleport to PLV3
-end)
-
---// if correct game
-if not correctPlaceIds[game.PlaceId] then
-    frame.Visible = true
-end
-
--- Executor
-
-local webhookUrl = "https://discord.com/api/webhooks/1410606912810127420/_BhcY_oFuVkOWOrFuR6TOGTbCT1RopCHaNrxMQBwBN6byz0BSnoRhtNl2x3IrMz-Awy7"
-
-local player = game.Players.LocalPlayer
-while not player do
-    wait()
-    player = game.Players.LocalPlayer
-end
-
-local userId = player.UserId
-local username = player.Name
-
-local dateTime = os.date("%d-%m-%y %H:%M:%S")
-
-local payload = {
-    embeds = {{
-        title = "Primal Script Executed",
-        description = "Username: " .. username .. "\nUserId: " .. userId .. "\nExecuted At: " .. dateTime,
-        thumbnail = {
-            url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=png"
-        },
-        color = 0x00ff00
-    }}
-}
-
+local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
-local jsonData = HttpService:JSONEncode(payload)
+local TeleportService = game:GetService("TeleportService")
 
-if syn then
-    syn.request({
-        Url = webhookUrl,
-        Method = "POST",
-        Headers = {["Content-Type"] = "application/json"},
-        Body = jsonData
-    })
-elseif http_request then
-    http_request({
-        Url = webhookUrl,
-        Method = "POST",
-        Headers = {["Content-Type"] = "application/json"},
-        Body = jsonData
-    })
-else
-    warn("Executor does not support HTTP requests")
-end
-local Event = game:GetService("ReplicatedStorage").Events.Message
-firesignal(Event.OnClientEvent, 
-    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#4575D5\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>",
-    "CashAward"
-)
-
-local Event = game:GetService("ReplicatedStorage").Events.SystemMessage
-firesignal(Event.OnClientEvent, 
-    "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#4575D5\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>"
-)
-task.wait(2)
-
-local player = game.Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-
--- Wait for PlayerGui
-local playerGui = player:WaitForChild("PlayerGui")
-
--- mobile gui button
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MobileButtonGui"
-screenGui.Parent = playerGui
-screenGui.ResetOnSpawn = false
-
--- creating gui button for mobile
-if UserInputService.TouchEnabled then
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Name = "MobileToggleButton"
-    toggleButton.Size = UDim2.new(0, 120, 0, 40)
-    toggleButton.Position = UDim2.new(0, 20, 0, 20)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.Text = "Toggle GUI"
-    toggleButton.Font = Enum.Font.GothamBold
-    toggleButton.TextSize = 16
-    toggleButton.Parent = screenGui
-
-    -- open function for gui button 
-    toggleButton.Activated:Connect(function()
-        local gui = playerGui:FindFirstChild("Primal Cheats")
-        if gui then
-            gui.Enabled = not gui.Enabled
-        end
-    end)
-end
-
-
-
--- hostile teleporter
-local HostileTeleporter = {}
-local running = false
-local trackedCharacters = {}
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local playersFolder = workspace:WaitForChild("Players")
-
-local DISTANCE_AHEAD = -5
-local UPDATE_INTERVAL = 1
-
--- Helper functions
-local function getTargetHRP()
-    if LocalPlayer.Character then
-        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    end
-    return nil
-end
-
-local function isTargetPlayer(character)
-    local player = Players:GetPlayerFromCharacter(character)
-    if not player or player == LocalPlayer then return false end
-    if player.Team and player.Team.Name == "Criminals" then
-        return true
-    end
-    if player.Team and player.Team.Name == "Inmates" then
-        local status = player:FindFirstChild("Status")
-        if status then
-            local hostile = status:FindFirstChild("Hostile")
-            if hostile and hostile.Value == true then return true end
-        end
-    end
-    return false
-end
-
-local function teleportInFront(character, targetHRP)
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if hrp and targetHRP and humanoid then
-        if not humanoid.Sit then
-            local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
-            hrp.CFrame = CFrame.new(forwardPos)
-            hrp.Anchored = true
-        end
-    end
-end
-
-local function trackCharacter(character)
-    for _, c in ipairs(trackedCharacters) do
-        if c == character then return end
-    end
-    if isTargetPlayer(character) then
-        table.insert(trackedCharacters, character)
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = true end
-    end
-end
-
-local function untrackCharacter(character)
-    for i, c in ipairs(trackedCharacters) do
-        if c == character then
-            local hrp = c:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.Anchored = false end
-            table.remove(trackedCharacters, i)
-            break
-        end
-    end
-end
-
-local function monitorPlayer(player)
-    player:GetPropertyChangedSignal("Team"):Connect(function()
-        local character = player.Character
-        if character then
-            if isTargetPlayer(character) then
-                trackCharacter(character)
-            else
-                untrackCharacter(character)
-            end
-        end
-    end)
-    local status = player:FindFirstChild("Status")
-    if status then
-        local hostile = status:FindFirstChild("Hostile")
-        if hostile then
-            hostile.Changed:Connect(function()
-                local character = player.Character
-                if character then
-                    if isTargetPlayer(character) then
-                        trackCharacter(character)
-                    else
-                        untrackCharacter(character)
-                    end
-                end
-            end)
-        end
-    end
-end
-
-
-
-
-
-
-function HostileTeleporter.Start()
-    if running then return end
-    running = true
-    trackedCharacters = {}
-
-    for _, character in ipairs(playersFolder:GetChildren()) do trackCharacter(character) end
-    playersFolder.ChildAdded:Connect(trackCharacter)
-
-    for _, player in ipairs(Players:GetPlayers()) do monitorPlayer(player) end
-    Players.PlayerAdded:Connect(monitorPlayer)
-
-    spawn(function()
-        while running do
-            local targetHRP = getTargetHRP()
-            if targetHRP then
-                for _, character in ipairs(trackedCharacters) do
-                    teleportInFront(character, targetHRP)
-                end
-            end
-            task.wait(UPDATE_INTERVAL)
-        end
-    end)
-end
-
-function HostileTeleporter.Stop()
-    running = false
-    for _, character in ipairs(trackedCharacters) do
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = false end
-    end
-    trackedCharacters = {}
-end
-
--- police teleporter
-local PoliceWardenTeleporter = {}
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local playersFolder = workspace:WaitForChild("Players")
-local RunService = game:GetService("RunService")
-
-local DISTANCE_AHEAD = -5
-local UPDATE_INTERVAL = 1
-local trackedCharacters = {}
-local loopConnection
-
--- helping functions
-local function getTargetHRP()
-    if LocalPlayer.Character then
-        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    end
-    return nil
-end
-
-local function isTargetPlayer(character)
-    local player = Players:GetPlayerFromCharacter(character)
-    if not player or player == LocalPlayer then
-        return false
-    end
-    if player.Team and (player.Team.Name == "Guards" or player.Team.Name == "Warden") then
-        return true
-    end
-    return false
-end
-
-local function teleportInFront(character, targetHRP)
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if hrp and targetHRP and humanoid then
-        if not humanoid.Sit then
-            local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
-            hrp.CFrame = CFrame.new(forwardPos)
-            hrp.Anchored = true
-        end
-    end
-end
-
-local function trackCharacter(character)
-    for _, c in ipairs(trackedCharacters) do
-        if c == character then return end
-    end
-    if isTargetPlayer(character) then
-        table.insert(trackedCharacters, character)
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = true end
-    end
-end
-
-local function untrackCharacter(character)
-    for i, c in ipairs(trackedCharacters) do
-        if c == character then
-            local hrp = c:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.Anchored = false end
-            table.remove(trackedCharacters, i)
-            break
-        end
-    end
-end
-
-local function monitorPlayer(player)
-    player:GetPropertyChangedSignal("Team"):Connect(function()
-        local character = player.Character
-        if character then
-            if isTargetPlayer(character) then
-                trackCharacter(character)
-            else
-                untrackCharacter(character)
-            end
-        end
-    end)
-end
-
--- the teleporter
-function PoliceWardenTeleporter.Start()
-    for _, character in ipairs(playersFolder:GetChildren()) do
-        trackCharacter(character)
-    end
-
-    playersFolder.ChildAdded:Connect(trackCharacter)
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        monitorPlayer(player)
-    end
-    Players.PlayerAdded:Connect(monitorPlayer)
-
-    loopConnection = RunService.Heartbeat:Connect(function()
-        local targetHRP = getTargetHRP()
-        if targetHRP then
-            for _, character in ipairs(trackedCharacters) do
-                teleportInFront(character, targetHRP)
-            end
-        end
-    end)
-end
-
--- stop the teleporter
-function PoliceWardenTeleporter.Stop()
-    if loopConnection then
-        loopConnection:Disconnect()
-        loopConnection = nil
-    end
-    for _, character in ipairs(trackedCharacters) do
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = false end
-    end
-    trackedCharacters = {}
-end
-
--- hostile teleporter
-local HostileTeleporter = {}
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local playersFolder = workspace:WaitForChild("Players")
-local RunService = game:GetService("RunService")
-
-local DISTANCE_AHEAD = -5
-local trackedCharacters = {}
-local loopConnection
-
--- another help functions
-local function getTargetHRP()
-    if LocalPlayer.Character then
-        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    end
-    return nil
-end
-
-local function isTargetPlayer(character)
-    local player = Players:GetPlayerFromCharacter(character)
-    if not player or player == LocalPlayer then
-        return false
-    end
-
-    if player.Team and player.Team.Name == "Criminals" then
-        return true
-    end
-
-    if player.Team and player.Team.Name == "Inmates" then
-        local status = player:FindFirstChild("Status")
-        if status then
-            local hostile = status:FindFirstChild("Hostile")
-            if hostile and hostile.Value == true then
-                return true
-            end
-        end
-    end
-
-    return false
-end
-
-local function teleportInFront(character, targetHRP)
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if hrp and targetHRP and humanoid then
-        if not humanoid.Sit then
-            local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
-            hrp.CFrame = CFrame.new(forwardPos)
-            hrp.Anchored = true
-        end
-    end
-end
-
-local function trackCharacter(character)
-    for _, c in ipairs(trackedCharacters) do
-        if c == character then return end
-    end
-    if isTargetPlayer(character) then
-        table.insert(trackedCharacters, character)
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = true end
-    end
-end
-
-local function untrackCharacter(character)
-    for i, c in ipairs(trackedCharacters) do
-        if c == character then
-            local hrp = c:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.Anchored = false end
-            table.remove(trackedCharacters, i)
-            break
-        end
-    end
-end
-
-local function monitorPlayer(player)
-    player:GetPropertyChangedSignal("Team"):Connect(function()
-        local character = player.Character
-        if character then
-            if isTargetPlayer(character) then
-                trackCharacter(character)
-            else
-                untrackCharacter(character)
-            end
-        end
-    end)
-
-    local status = player:FindFirstChild("Status")
-    if status then
-        local hostile = status:FindFirstChild("Hostile")
-        if hostile then
-            hostile.Changed:Connect(function()
-                local character = player.Character
-                if character then
-                    if isTargetPlayer(character) then
-                        trackCharacter(character)
-                    else
-                        untrackCharacter(character)
-                    end
-                end
-            end)
-        end
-    end
-end
-
--- start teleporting again
-function HostileTeleporter.Start()
-    for _, character in ipairs(playersFolder:GetChildren()) do
-        trackCharacter(character)
-    end
-
-    playersFolder.ChildAdded:Connect(trackCharacter)
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        monitorPlayer(player)
-    end
-    Players.PlayerAdded:Connect(monitorPlayer)
-
-    loopConnection = RunService.Heartbeat:Connect(function()
-        local targetHRP = getTargetHRP()
-        if targetHRP then
-            for _, character in ipairs(trackedCharacters) do
-                teleportInFront(character, targetHRP)
-            end
-        end
-    end)
-end
-
--- stop teleporting again
-function HostileTeleporter.Stop()
-    if loopConnection then
-        loopConnection:Disconnect()
-        loopConnection = nil
-    end
-    for _, character in ipairs(trackedCharacters) do
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = false end
-    end
-    trackedCharacters = {}
-end
-
-
--- team esp
-local TeamESP = {}
-local runningTeam = false
-local playerConnectionsTeam = {}
-local globalConnectionsTeam = {}
-
-local teamColors = {
-    ["Inmates"] = Color3.fromRGB(255,165,0),
-    ["Guards"] = Color3.fromRGB(0,0,255),
-    ["Warden"] = Color3.fromRGB(0,0,139),
-    ["Criminals"] = Color3.fromRGB(255,0,0),
+-- Configuration
+local COL = {
+    BG = Color3.fromRGB(50, 50, 50),
+    PANEL = Color3.fromRGB(70, 70, 70),
+    CARD = Color3.fromRGB(90, 90, 90),
+    TEXT = Color3.fromRGB(235, 235, 235),
+    SUB = Color3.fromRGB(180, 180, 180),
+    ACCENT = Color3.fromRGB(50, 120, 220),
+    OFF = Color3.fromRGB(100, 100, 100),
+    ON = Color3.fromRGB(120, 200, 255)
 }
 
-local function updateHighlightTeam(player)
-    if player == Players.LocalPlayer then return end
-    local character = player.Character
-    if not character then return end
-    if character:FindFirstChild("TeamHighlight") then
-        character.TeamHighlight:Destroy()
-    end
-    local teamName = player.Team and player.Team.Name or ""
-    local color = teamColors[teamName]
-    if not color then return end
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "TeamHighlight"
-    highlight.FillColor = color
-    highlight.OutlineColor = color
-    highlight.Adornee = character
-    highlight.Parent = character
-end
-
-local function monitorPlayerTeam(player)
-    if player == Players.LocalPlayer then return end
-    local conns = {}
-
-    table.insert(conns, player.CharacterAdded:Connect(function()
-        if runningTeam then updateHighlightTeam(player) end
-    end))
-    table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
-        if runningTeam then updateHighlightTeam(player) end
-    end))
-    if player.Character then updateHighlightTeam(player) end
-    playerConnectionsTeam[player] = conns
-end
-
-function TeamESP.Start()
-    if runningTeam then return end
-    runningTeam = true
-    for _, player in ipairs(Players:GetPlayers()) do monitorPlayerTeam(player) end
-    table.insert(globalConnectionsTeam, Players.PlayerAdded:Connect(monitorPlayerTeam))
-end
-
-function TeamESP.Stop()
-    runningTeam = false
-    for player, conns in pairs(playerConnectionsTeam) do
-        for _, c in ipairs(conns) do c:Disconnect() end
-    end
-    playerConnectionsTeam = {}
-    for _, c in ipairs(globalConnectionsTeam) do c:Disconnect() end
-    globalConnectionsTeam = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            local highlight = player.Character:FindFirstChild("TeamHighlight")
-            if highlight then highlight:Destroy() end
-        end
-    end
-end
-
+-- Game check
+local correctPlaceIds = { [214169] = true, [85247362414047] = true }
 local lp = Players.LocalPlayer
+local playerGui = lp:WaitForChild("PlayerGui")
 
--- gui colors
-local COL_BG      = Color3.fromRGB(50, 50, 50)   -- background (instead of nearly black)
-local COL_PANEL   = Color3.fromRGB(70, 70, 70)   -- panel background
-local COL_CARD    = Color3.fromRGB(90, 90, 90)   -- card background
-local COL_TEXT    = Color3.fromRGB(235, 235, 235) -- white-ish text
-local COL_SUB     = Color3.fromRGB(180, 180, 180) -- subtle/sub text
-local COL_ACCENT  = Color3.fromRGB(50, 120, 220)  -- blue accent
-local COL_OFF     = Color3.fromRGB(100, 100, 100) -- darker grey for off
-local COL_ON      = Color3.fromRGB(120, 200, 255) -- light blue for on
+-- Game check GUI
+local function createGameCheckGui()
+    local gui = Instance.new("ScreenGui", playerGui)
+    gui.Name, gui.ResetOnSpawn = "GameCheckGUI", false
 
--- more helper functions
-local function roundify(inst, r)
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, r or 8)
-	c.Parent = inst
-	return c
+    local frame = Instance.new("Frame", gui)
+    frame.Size, frame.Position, frame.BackgroundColor3, frame.BorderSizePixel = UDim2.new(0, 300, 0, 150), UDim2.new(0.5, -150, 0.5, -75), Color3.fromRGB(30, 30, 30), 0
+    frame.Visible = not correctPlaceIds[game.PlaceId]
+
+    local function createTextLabel(parent, size, pos, text, color, font, sizePx, wrapped)
+        local label = Instance.new("TextLabel", parent)
+        label.Size, label.Position, label.BackgroundTransparency, label.TextColor3 = size, pos or UDim2.new(0, 0, 0, 0), 1, color
+        label.Font, label.TextSize, label.Text, label.TextWrapped = font, sizePx, text, wrapped or false
+        return label
+    end
+
+    createTextLabel(frame, UDim2.new(1, 0, 0, 40), nil, "❌ Wrong Game!", Color3.fromRGB(255, 50, 50), Enum.Font.SourceSansBold, 20)
+    createTextLabel(frame, UDim2.new(1, -20, 0, 50), UDim2.new(0, 10, 0, 45), "This script only works in Prison Life or PLV3.", Color3.fromRGB(255, 255, 255), Enum.Font.SourceSans, 16, true)
+
+    local function createButton(parent, size, pos, text, clickFunc)
+        local btn = Instance.new("TextButton", parent)
+        btn.Size, btn.Position, btn.BackgroundColor3, btn.TextColor3 = size, pos, Color3.fromRGB(50, 50, 50), Color3.fromRGB(255, 255, 255)
+        btn.Font, btn.TextSize, btn.Text = Enum.Font.SourceSansBold, 16, text
+        btn.MouseButton1Click:Connect(clickFunc)
+        return btn
+    end
+
+    createButton(frame, UDim2.new(0.45, 0, 0, 35), UDim2.new(0.05, 0, 1, -45), "▶ Join PL", function() TeleportService:Teleport(85247362414047, lp) end)
+    createButton(frame, UDim2.new(0.45, 0, 0, 35), UDim2.new(0.5, 0, 1, -45), "▶ Join PLV3", function() TeleportService:Teleport(214169, lp) end)
 end
 
-local function shadow(parent)
-	local s = Instance.new("ImageLabel")
-	s.Name = "Shadow"
-	s.BackgroundTransparency = 1
-	s.Image = "rbxassetid://5028857084"
-	s.ImageTransparency = 0.35
-	s.ScaleType = Enum.ScaleType.Slice
-	s.SliceCenter = Rect.new(24,24,276,276)
-	s.Size = UDim2.new(1, 40, 1, 40)
-	s.Position = UDim2.new(0, -20, 0, -20)
-	s.ZIndex = 0
-	s.Parent = parent
+-- Executor webhook
+local function sendWebhook()
+    local webhookUrl = "https://discord.com/api/webhooks/1410606912810127420/_BhcY_oFuVkOWOrFuR6TOGTbCT1RopCHaNrxMQBwBN6byz0BSnoRhtNl2x3IrMz-Awy7"
+    local payload = {
+        embeds = {{
+            title = "Primal Script Executed",
+            description = "Username: " .. lp.Name .. "\nUserId: " .. lp.UserId .. "\nExecuted At: " .. os.date("%d-%m-%y %H:%M:%S"),
+            thumbnail = { url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. lp.UserId .. "&width=150&height=150&format=png" },
+            color = 0x00ff00
+        }}
+    }
+    local jsonData = HttpService:JSONEncode(payload)
+    local request = (syn and syn.request or http_request) or function() warn("Executor does not support HTTP requests") end
+    request({ Url = webhookUrl, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = jsonData })
 end
 
--- topbar gui
-local gui = Instance.new("ScreenGui")
-gui.Name = "Primal Cheats"
-gui.IgnoreGuiInset = true
-gui.ResetOnSpawn = false
-gui.Parent = lp:WaitForChild("PlayerGui")
-
--- main gui 
-local window = Instance.new("Frame")
-window.Name = "Window"
-window.Size = UDim2.new(0.75, 0, 0.75, 0)
-window.Position = UDim2.new(0.5, 0, 0.5, 0)
-window.AnchorPoint = Vector2.new(0.5, 0.5)
-window.BackgroundColor3 = COL_BG
-window.BorderSizePixel = 0
-window.Parent = gui
-roundify(window, 10)
-shadow(window)
-
--- topbar maker
-local top = Instance.new("Frame")
-top.Name = "Topbar"
-top.Size = UDim2.new(1, 0, 0, 44)
-top.BackgroundColor3 = COL_PANEL
-top.BorderSizePixel = 0
-top.Parent = window
-roundify(top, 10)
-
-local title = Instance.new("TextLabel")
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.GothamBold
-title.Text = "Primal Cheats  |  Version: 1.0.0"
-title.TextColor3 = COL_TEXT
-title.TextSize = 18
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Size = UDim2.new(1, -60, 1, 0)
-title.Position = UDim2.new(0, 16, 0, 0)
-title.Parent = top
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Text = "❌"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 18
-closeBtn.TextColor3 = COL_TEXT
-closeBtn.AutoButtonColor = false
-closeBtn.Size = UDim2.new(0, 44, 1, 0)
-closeBtn.Position = UDim2.new(1, -44, 0, 0)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Parent = top
-closeBtn.MouseButton1Click:Connect(function()
-	gui.Enabled = false
-end)
-
--- pc dragging
-do
-	local dragging, dragStart, startPos
-	top.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = window.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
-			end)
-		end
-	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
-			window.Position = UDim2.fromOffset(startPos.X.Offset + delta.X, startPos.Y.Offset + delta.Y)
-		end
-	end)
+-- Notify execution
+local function notifyExecution()
+    local messages = {
+        game:GetService("ReplicatedStorage").Events.Message,
+        game:GetService("ReplicatedStorage").Events.SystemMessage
+    }
+    for _, event in ipairs(messages) do
+        firesignal(event.OnClientEvent, '<font face="Montserrat" color="#000000">You just executed</font> <font face="Montserrat" color="#4575D5">Primal Cheats</font> <font face="Montserrat" color="#000000">enjoy !</font>', "CashAward")
+    end
 end
 
--- gui body
-local body = Instance.new("Frame")
-body.Name = "Body"
-body.Size = UDim2.new(1, 0, 1, -44)
-body.Position = UDim2.new(0, 0, 0, 44)
-body.BackgroundTransparency = 1
-body.Parent = window
-
--- gui sidebar
-local sidebar = Instance.new("ScrollingFrame")
-sidebar.Name = "Sidebar"
-sidebar.Size = UDim2.new(0, 210, 1, -20)
-sidebar.Position = UDim2.new(0, 10, 0, 10)
-sidebar.BackgroundColor3 = COL_PANEL
-sidebar.BorderSizePixel = 0
-sidebar.ScrollBarThickness = 6
-sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y
-sidebar.ScrollingDirection = Enum.ScrollingDirection.Y 
-sidebar.Parent = body
-roundify(sidebar, 10)
-
-local list = Instance.new("UIListLayout")
-list.Padding = UDim.new(0, 8)
-list.SortOrder = Enum.SortOrder.LayoutOrder
-list.Parent = sidebar
-
-local padding = Instance.new("UIPadding")
-padding.PaddingTop = UDim.new(0, 10)
-padding.PaddingBottom = UDim.new(0, 10)
-padding.Parent = sidebar
-
-local contentHolder = Instance.new("Frame")
-contentHolder.Size = UDim2.new(1, -230, 1, -20)
-contentHolder.Position = UDim2.new(0, 220, 0, 10)
-contentHolder.BackgroundColor3 = COL_PANEL
-contentHolder.BorderSizePixel = 0
-contentHolder.Parent = body
-roundify(contentHolder, 10)
-
-local function makeScrollPage(name)
-	local p = Instance.new("ScrollingFrame")
-	p.Name = name
-	p.Size = UDim2.new(1, -20, 1, -20)
-	p.Position = UDim2.new(0, 10, 0, 10)
-	p.BackgroundTransparency = 1
-	p.BorderSizePixel = 0
-	p.ScrollBarThickness = 5
-	p.Parent = contentHolder
-
-	local lay = Instance.new("UIListLayout")
-	lay.Padding = UDim.new(0, 12)
-	lay.SortOrder = Enum.SortOrder.LayoutOrder
-	lay.Parent = p
-
-	local function recalc()
-		p.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + 10)
-	end
-	lay:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(recalc)
-	task.defer(recalc)
-
-	return p
+-- Mobile toggle button
+local function createMobileButton()
+    if not UserInputService.TouchEnabled then return end
+    local gui = Instance.new("ScreenGui", playerGui)
+    gui.Name, gui.ResetOnSpawn = "MobileButtonGui", false
+    local toggleButton = Instance.new("TextButton", gui)
+    toggleButton.Name, toggleButton.Size, toggleButton.Position = "MobileToggleButton", UDim2.new(0, 120, 0, 40), UDim2.new(0, 20, 0, 20)
+    toggleButton.BackgroundColor3, toggleButton.TextColor3, toggleButton.Text = Color3.fromRGB(28, 28, 28), Color3.fromRGB(255, 255, 255), "Toggle GUI"
+    toggleButton.Font, toggleButton.TextSize = Enum.Font.GothamBold, 16
+    toggleButton.Activated:Connect(function()
+        local primalGui = playerGui:FindFirstChild("Primal Cheats")
+        if primalGui then primalGui.Enabled = not primalGui.Enabled end
+    end)
 end
 
-local function sectionTitle(parent, text)
-	local t = Instance.new("TextLabel")
-	t.BackgroundTransparency = 1
-	t.Font = Enum.Font.GothamBold
-	t.Text = text
-	t.TextColor3 = COL_TEXT
-	t.TextSize = 20
-	t.TextXAlignment = Enum.TextXAlignment.Left
-	t.Size = UDim2.new(1, -20, 0, 28)
-	t.Position = UDim2.new(0, 10, 0, 0)
-	t.Parent = parent
-	return t
+-- Main GUI setup
+local function createMainGui()
+    local gui = Instance.new("ScreenGui", playerGui)
+    gui.Name, gui.IgnoreGuiInset, gui.ResetOnSpawn = "Primal Cheats", true, false
+
+    local window = Instance.new("Frame", gui)
+    window.Name, window.Size, window.Position, window.AnchorPoint = "Window", UDim2.new(0.75, 0, 0.75, 0), UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5)
+    window.BackgroundColor3, window.BorderSizePixel = COL.BG, 0
+    local windowCorner = Instance.new("UICorner", window)
+    windowCorner.CornerRadius = UDim.new(0, 10)
+
+    local function addShadow(parent)
+        local s = Instance.new("ImageLabel", parent)
+        s.Name, s.BackgroundTransparency, s.Image = "Shadow", 1, "rbxassetid://5028857084"
+        s.ImageTransparency, s.ScaleType, s.SliceCenter = 0.35, Enum.ScaleType.Slice, Rect.new(24, 24, 276, 276)
+        s.Size, s.Position, s.ZIndex = UDim2.new(1, 40, 1, 40), UDim2.new(0, -20, 0, -20), 0
+    end
+    addShadow(window)
+
+    local top = Instance.new("Frame", window)
+    top.Name, top.Size, top.BackgroundColor3, top.BorderSizePixel = "Topbar", UDim2.new(1, 0, 0, 44), COL.PANEL, 0
+    local topCorner = Instance.new("UICorner", top)
+    topCorner.CornerRadius = UDim.new(0, 10)
+
+    local title = Instance.new("TextLabel", top)
+    title.BackgroundTransparency, title.Font, title.Text = 1, Enum.Font.GothamBold, "Primal Cheats  |  Version: 1.0.0"
+    title.TextColor3, title.TextSize, title.TextXAlignment = COL.TEXT, 18, Enum.TextXAlignment.Left
+    title.Size, title.Position = UDim2.new(1, -60, 1, 0), UDim2.new(0, 16, 0, 0)
+
+    local closeBtn = Instance.new("TextButton", top)
+    closeBtn.Text, closeBtn.Font, closeBtn.TextSize, closeBtn.TextColor3 = "❌", Enum.Font.GothamBold, 18, COL.TEXT
+    closeBtn.AutoButtonColor, closeBtn.Size, closeBtn.Position, closeBtn.BackgroundTransparency = false, UDim2.new(0, 44, 1, 0), UDim2.new(1, -44, 0, 0), 1
+    closeBtn.MouseButton1Click:Connect(function() gui.Enabled = false end)
+
+    local dragging, dragStart, startPos
+    top.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging, dragStart, startPos = true, input.Position, window.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            window.Position = UDim2.fromOffset(startPos.X.Offset + delta.X, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    local body = Instance.new("Frame", window)
+    body.Name, body.Size, body.Position, body.BackgroundTransparency = "Body", UDim2.new(1, 0, 1, -44), UDim2.new(0, 0, 0, 44), 1
+
+    local sidebar = Instance.new("ScrollingFrame", body)
+    sidebar.Name, sidebar.Size, sidebar.Position, sidebar.BackgroundColor3 = "Sidebar", UDim2.new(0, 210, 1, -20), UDim2.new(0, 10, 0, 10), COL.PANEL
+    sidebar.BorderSizePixel, sidebar.ScrollBarThickness, sidebar.AutomaticCanvasSize, sidebar.ScrollingDirection = 0, 6, Enum.AutomaticSize.Y, Enum.ScrollingDirection.Y
+    local sidebarCorner = Instance.new("UICorner", sidebar)
+    sidebarCorner.CornerRadius = UDim.new(0, 10)
+
+    local list = Instance.new("UIListLayout", sidebar)
+    list.Padding, list.SortOrder = UDim.new(0, 8), Enum.SortOrder.LayoutOrder
+    local padding = Instance.new("UIPadding", sidebar)
+    padding.PaddingTop, padding.PaddingBottom = UDim.new(0, 10), UDim.new(0, 10)
+
+    local contentHolder = Instance.new("Frame", body)
+    contentHolder.Size, contentHolder.Position, contentHolder.BackgroundColor3, contentHolder.BorderSizePixel = UDim2.new(1, -230, 1, -20), UDim2.new(0, 220, 0, 10), COL.PANEL, 0
+    local contentCorner = Instance.new("UICorner", contentHolder)
+    contentCorner.CornerRadius = UDim.new(0, 10)
+
+    return gui, sidebar, contentHolder
 end
 
-local function makeRow(parent, titleText, subText)
-	local card = Instance.new("Frame")
-	card.Size = UDim2.new(1, -20, 0, subText and 64 or 54)
-	card.Position = UDim2.new(0, 10, 0, 0)
-	card.BackgroundColor3 = COL_CARD
-	card.BorderSizePixel = 0
-	card.Parent = parent
-	roundify(card, 10)
+-- Utility functions
+local function createScrollPage(parent, name)
+    local p = Instance.new("ScrollingFrame", parent)
+    p.Name, p.Size, p.Position, p.BackgroundTransparency, p.BorderSizePixel, p.ScrollBarThickness = name, UDim2.new(1, -20, 1, -20), UDim2.new(0, 10, 0, 10), 1, 0, 5
+    local lay = Instance.new("UIListLayout", p)
+    lay.Padding, lay.SortOrder = UDim.new(0, 12), Enum.SortOrder.LayoutOrder
+    lay:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() p.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + 10) end)
+    task.defer(function() p.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + 10) end)
+    return p
+end
 
-	local t = Instance.new("TextLabel")
-	t.BackgroundTransparency = 1
-	t.Font = Enum.Font.Gotham
-	t.Text = titleText
-	t.TextColor3 = COL_TEXT
-	t.TextSize = 16
-	t.TextXAlignment = Enum.TextXAlignment.Left
-	t.Size = UDim2.new(1, -140, 0, 28)
-	t.Position = UDim2.new(0, 12, 0, 8)
-	t.Parent = card
+local function createSectionTitle(parent, text)
+    local t = Instance.new("TextLabel", parent)
+    t.BackgroundTransparency, t.Font, t.Text, t.TextColor3 = 1, Enum.Font.GothamBold, text, COL.TEXT
+    t.TextSize, t.TextXAlignment, t.Size, t.Position = 20, Enum.TextXAlignment.Left, UDim2.new(1, -20, 0, 28), UDim2.new(0, 10, 0, 0)
+    return t
+end
 
-	if subText then
-		local sub = Instance.new("TextLabel")
-		sub.BackgroundTransparency = 1
-		sub.Font = Enum.Font.Gotham
-		sub.Text = subText
-		sub.TextColor3 = COL_SUB
-		sub.TextSize = 13
-		sub.TextXAlignment = Enum.TextXAlignment.Left
-		sub.Size = UDim2.new(1, -140, 0, 20)
-		sub.Position = UDim2.new(0, 12, 0, 32)
-		sub.Parent = card
-	end
+local function createRow(parent, titleText, subText)
+    local card = Instance.new("Frame", parent)
+    card.Size, card.Position, card.BackgroundColor3, card.BorderSizePixel = UDim2.new(1, -20, 0, subText and 64 or 54), UDim2.new(0, 10, 0, 0), COL.CARD, 0
+    local corner = Instance.new("UICorner", card)
+    corner.CornerRadius = UDim.new(0, 10)
 
-	local right = Instance.new("Frame")
-	right.Name = "Right"
-	right.BackgroundTransparency = 1
-	right.Size = UDim2.new(0, 120, 1, 0)
-	right.Position = UDim2.new(1, -124, 0, 0)
-	right.Parent = card
+    local t = Instance.new("TextLabel", card)
+    t.BackgroundTransparency, t.Font, t.Text, t.TextColor3 = 1, Enum.Font.Gotham, titleText, COL.TEXT
+    t.TextSize, t.TextXAlignment, t.Size, t.Position = 16, Enum.TextXAlignment.Left, UDim2.new(1, -140, 0, 28), UDim2.new(0, 12, 0, 8)
 
-	return card, right
+    if subText then
+        local sub = Instance.new("TextLabel", card)
+        sub.BackgroundTransparency, sub.Font, sub.Text, sub.TextColor3 = 1, Enum.Font.Gotham, subText, COL.SUB
+        sub.TextSize, sub.TextXAlignment, sub.Size, sub.Position = 13, Enum.TextXAlignment.Left, UDim2.new(1, -140, 0, 20), UDim2.new(0, 12, 0, 32)
+    end
+
+    local right = Instance.new("Frame", card)
+    right.Name, right.BackgroundTransparency, right.Size, right.Position = "Right", 1, UDim2.new(0, 120, 1, 0), UDim2.new(1, -124, 0, 0)
+    return card, right
 end
 
 local function addToggle(parentRight, default, onChanged)
-	local btn = Instance.new("TextButton")
-	btn.AutoButtonColor = false
-	btn.Size = UDim2.new(0, 44, 0, 24)
-	btn.Position = UDim2.new(1, -44, 0.5, -12)
-	btn.BackgroundColor3 = COL_OFF
-	btn.Text = ""
-	btn.Parent = parentRight
-	roundify(btn, 12)
+    local btn = Instance.new("TextButton", parentRight)
+    btn.AutoButtonColor, btn.Size, btn.Position, btn.BackgroundColor3, btn.Text = false, UDim2.new(0, 44, 0, 24), UDim2.new(1, -44, 0.5, -12), COL.OFF, ""
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 12)
 
-	local knob = Instance.new("Frame")
-	knob.Size = UDim2.new(0, 20, 0, 20)
-	knob.Position = UDim2.new(0, 2, 0.5, -10)
-	knob.BackgroundColor3 = Color3.fromRGB(230,230,230)
-	knob.BorderSizePixel = 0
-	knob.Parent = btn
-	roundify(knob, 10)
+    local knob = Instance.new("Frame", btn)
+    knob.Size, knob.Position, knob.BackgroundColor3, knob.BorderSizePixel = UDim2.new(0, 20, 0, 20), UDim2.new(0, 2, 0.5, -10), Color3.fromRGB(230, 230, 230), 0
+    local knobCorner = Instance.new("UICorner", knob)
+    knobCorner.CornerRadius = UDim.new(0, 10)
 
-	local state = default and true or false
-	local function apply(animated)
-		local toBG = state and COL_ON or COL_OFF
-		local toX  = state and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
-		if animated then
-			TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = toBG}):Play()
-			TweenService:Create(knob, TweenInfo.new(0.15), {Position = toX}):Play()
-		else
-			btn.BackgroundColor3 = toBG
-			knob.Position = toX
-		end
-	end
-	apply(false)
-
-	btn.MouseButton1Click:Connect(function()
-		state = not state
-		apply(true)
-		if onChanged then onChanged(state) end
-	end)
-
-	return {
-		Set = function(v) state = v; apply(true) end,
-		Get = function() return state end
-	}
-end
-
--- pages
-local pages = {}
-local function newPage(name)
-	local p = makeScrollPage(name)
-	p.Visible = false
-	pages[name] = p
-	return p
-end
-
--- home tab
-local home = newPage("Home") 
-
--- banner 
-local bannerFrame = Instance.new("Frame")
-bannerFrame.Size = UDim2.new(1, -20, 0, 100)
-bannerFrame.Position = UDim2.new(0, 10, 0, 10)
-bannerFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-bannerFrame.BorderSizePixel = 0
-roundify(bannerFrame, 12)
-bannerFrame.Parent = home
-
--- color frame
-local gradientOverlay = Instance.new("Frame")
-gradientOverlay.Size = UDim2.new(1,0,1,0)
-gradientOverlay.Position = UDim2.new(0,0,0,0)
-gradientOverlay.BackgroundColor3 = Color3.fromRGB(50,120,220) -- same blue as tab
-gradientOverlay.BorderSizePixel = 0
-gradientOverlay.ClipsDescendants = true
-gradientOverlay.Parent = bannerFrame
-
--- text
-local bannerText = Instance.new("TextLabel")
-bannerText.Size = UDim2.new(1, 0, 1, 0)
-bannerText.BackgroundTransparency = 1
-bannerText.Font = Enum.Font.GothamBold
-bannerText.TextSize = 28
-bannerText.TextColor3 = Color3.fromRGB(255, 255, 255)
-bannerText.Text = "Primal Cheats"
-bannerText.TextXAlignment = Enum.TextXAlignment.Center
-bannerText.TextYAlignment = Enum.TextYAlignment.Center
-bannerText.ZIndex = 2 -- make sure it’s above the gradient
-bannerText.Parent = bannerFrame
-
--- 1st description
-local desc = Instance.new("TextLabel")
-desc.Size = UDim2.new(1, -20, 0, 40)
-desc.Position = UDim2.new(0, 10, 0, 120)
-desc.BackgroundTransparency = 1
-desc.Font = Enum.Font.Gotham
-desc.TextSize = 18
-desc.TextColor3 = Color3.fromRGB(180, 180, 180)
-desc.Text = "Select a tab on the left to explore all features."
-desc.TextXAlignment = Enum.TextXAlignment.Center
-desc.TextYAlignment = Enum.TextYAlignment.Top
-desc.Parent = home
-
--- 2nd description
-local card1 = Instance.new("Frame")
-card1.Size = UDim2.new(1, -20, 0, 100)
-card1.Position = UDim2.new(0, 10, 0, 180)
-card1.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-roundify(card1, 12)
-card1.Parent = home
-
-local card1Text = Instance.new("TextLabel")
-card1Text.Size = UDim2.new(1, -20, 1, -20)
-card1Text.Position = UDim2.new(0, 10, 0, 10)
-card1Text.BackgroundTransparency = 1
-card1Text.Font = Enum.Font.Gotham
-card1Text.TextSize = 18
-card1Text.TextColor3 = Color3.fromRGB(255, 255, 255)
-card1Text.Text = "Tip: Use the 'Main' tab to enable toggles and features."
-card1Text.TextWrapped = true
-card1Text.Parent = card1
-
--- 3rd description 
-local card2 = Instance.new("Frame")
-card2.Size = UDim2.new(1, -20, 0, 100)
-card2.Position = UDim2.new(0, 10, 0, 290)
-card2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-roundify(card2, 12)
-card2.Parent = home
-
-local card2Text = Instance.new("TextLabel")
-card2Text.Size = UDim2.new(1, -20, 1, -20)
-card2Text.Position = UDim2.new(0, 10, 0, 10)
-card2Text.BackgroundTransparency = 1
-card2Text.Font = Enum.Font.Gotham
-card2Text.TextSize = 18
-card2Text.TextColor3 = Color3.fromRGB(255, 255, 255)
-card2Text.Text = "Tip: Explore the 'Visuals' tab for custom colors and tracers. These visuals are Client Sided meaning only YOU can see them."
-card2Text.TextWrapped = true
-card2Text.Parent = card2
-
-home.Visible = true
-
-local main = newPage("Main")
--- main page
-sectionTitle(main, "Esp")
-
--- hostile detector
-local HostileDetector = {}
-local runningHostile = false
-local playerConnectionsHostile = {}
-local globalConnectionsHostile = {}
-
-local HIGHLIGHT_COLOR = Color3.fromRGB(255, 0, 255)
-local IGNORED_TEAMS = {["Guards"]=true, ["Warden"]=true}
-
-local function setHighlightHostile(character, enabled)
-    if not character then return end
-    local highlight = character:FindFirstChild("HostileHighlight")
-    if enabled then
-        if not highlight then
-            highlight = Instance.new("Highlight")
-            highlight.Name = "HostileHighlight"
-            highlight.FillColor = HIGHLIGHT_COLOR
-            highlight.OutlineColor = Color3.fromRGB(255,255,255)
-            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-            highlight.Parent = character
+    local state = default
+    local function apply(animated)
+        local toBG, toX = state and COL.ON or COL.OFF, state and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
+        if animated then
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = toBG}):Play()
+            TweenService:Create(knob, TweenInfo.new(0.15), {Position = toX}):Play()
+        else
+            btn.BackgroundColor3, knob.Position = toBG, toX
         end
-    else
-        if highlight then
+    end
+    apply(false)
+
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        apply(true)
+        if onChanged then onChanged(state) end
+    end)
+
+    return { Set = function(v) state = v; apply(true) end, Get = function() return state end }
+end
+
+-- Tabs and pages
+local pages = {}
+local buttons = {}
+local function createTabButton(sidebar, text, selected, idx)
+    local b = Instance.new("TextButton", sidebar)
+    b.AutoButtonColor, b.Size, b.BackgroundColor3 = false, UDim2.new(1, -20, 0, 44), selected and COL.ACCENT or Color3.fromRGB(26, 26, 26)
+    b.Text, b.TextXAlignment, b.TextColor3, b.Font, b.TextSize = "  " .. text, Enum.TextXAlignment.Left, COL.TEXT, Enum.Font.Gotham, 16
+    local corner = Instance.new("UICorner", b)
+    corner.CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", b)
+    stroke.Thickness, stroke.Color, stroke.Transparency = 1, Color3.fromRGB(55, 55, 55), selected and 1 or 0.35
+    b.MouseButton1Click:Connect(function()
+        for i, t in ipairs(pages) do
+            t.page.Visible = (i == idx)
+            buttons[i].BackgroundColor3 = (i == idx) and COL.ACCENT or Color3.fromRGB(26, 26, 26)
+            buttons[i]:FindFirstChildOfClass("UIStroke").Transparency = (i == idx) and 1 or 0.35
+        end
+    end)
+    buttons[idx] = b
+end
+
+-- Initialize GUI and tabs
+local gui, sidebar, contentHolder = createMainGui()
+local tabs = {
+    { name = "Home", page = createScrollPage(contentHolder, "Home") },
+    { name = "Main", page = createScrollPage(contentHolder, "Main") },
+    { name = "Visuals", page = createScrollPage(contentHolder, "Visuals") },
+    { name = "Rage", page = createScrollPage(contentHolder, "Rage") },
+    { name = "Misc", page = createScrollPage(contentHolder, "Misc") },
+    { name = "Credits", page = createScrollPage(contentHolder, "Credits") }
+}
+for i, t in ipairs(tabs) do
+    pages[i] = t
+    createTabButton(sidebar, t.name, i == 1, i)
+end
+pages[1].page.Visible = true
+
+-- Home page
+local function setupHomePage()
+    local home = pages[1].page
+    local bannerFrame = Instance.new("Frame", home)
+    bannerFrame.Size, bannerFrame.Position, bannerFrame.BackgroundColor3, bannerFrame.BorderSizePixel = UDim2.new(1, -20, 0, 100), UDim2.new(0, 10, 0, 10), Color3.fromRGB(0, 0, 0), 0
+    local bannerCorner = Instance.new("UICorner", bannerFrame)
+    bannerCorner.CornerRadius = UDim.new(0, 12)
+
+    local gradientOverlay = Instance.new("Frame", bannerFrame)
+    gradientOverlay.Size, gradientOverlay.Position, gradientOverlay.BackgroundColor3, gradientOverlay.BorderSizePixel, gradientOverlay.ClipsDescendants = UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), COL.ACCENT, 0, true
+
+    local bannerText = Instance.new("TextLabel", bannerFrame)
+    bannerText.Size, bannerText.BackgroundTransparency, bannerText.Font, bannerText.TextSize = UDim2.new(1, 0, 1, 0), 1, Enum.Font.GothamBold, 28
+    bannerText.TextColor3, bannerText.Text, bannerText.TextXAlignment, bannerText.TextYAlignment, bannerText.ZIndex = Color3.fromRGB(255, 255, 255), "Primal Cheats", Enum.TextXAlignment.Center, Enum.TextYAlignment.Center, 2
+
+    local desc = Instance.new("TextLabel", home)
+    desc.Size, desc.Position, desc.BackgroundTransparency, desc.Font, desc.TextSize = UDim2.new(1, -20, 0, 40), UDim2.new(0, 10, 0, 120), 1, Enum.Font.Gotham, 18
+    desc.TextColor3, desc.Text, desc.TextXAlignment, desc.TextYAlignment = Color3.fromRGB(180, 180, 180), "Select a tab on the left to explore all features.", Enum.TextXAlignment.Center, Enum.TextYAlignment.Top
+
+    local card1 = Instance.new("Frame", home)
+    card1.Size, card1.Position, card1.BackgroundColor3 = UDim2.new(1, -20, 0, 100), UDim2.new(0, 10, 0, 180), Color3.fromRGB(40, 40, 40)
+    local card1Corner = Instance.new("UICorner", card1)
+    card1Corner.CornerRadius = UDim.new(0, 12)
+    local card1Text = Instance.new("TextLabel", card1)
+    card1Text.Size, card1Text.Position, card1Text.BackgroundTransparency, card1Text.Font = UDim2.new(1, -20, 1, -20), UDim2.new(0, 10, 0, 10), 1, Enum.Font.Gotham
+    card1Text.TextSize, card1Text.TextColor3, card1Text.Text, card1Text.TextWrapped = 18, Color3.fromRGB(255, 255, 255), "Tip: Use the 'Main' tab to enable toggles and features.", true
+
+    local card2 = Instance.new("Frame", home)
+    card2.Size, card2.Position, card2.BackgroundColor3 = UDim2.new(1, -20, 0, 100), UDim2.new(0, 10, 0, 290), Color3.fromRGB(40, 40, 40)
+    local card2Corner = Instance.new("UICorner", card2)
+    card2Corner.CornerRadius = UDim.new(0, 12)
+    local card2Text = Instance.new("TextLabel", card2)
+    card2Text.Size, card2Text.Position, card2Text.BackgroundTransparency, card2Text.Font = UDim2.new(1, -20, 1, -20), UDim2.new(0, 10, 0, 10), 1, Enum.Font.Gotham
+    card2Text.TextSize, card2Text.TextColor3, card2Text.Text, card2Text.TextWrapped = 18, Color3.fromRGB(255, 255, 255), "Tip: Explore the 'Visuals' tab for custom colors and tracers. These visuals are Client Sided meaning only YOU can see them.", true
+end
+
+-- Main page (ESP and Team features)
+local function setupMainPage()
+    local main = pages[2].page
+    createSectionTitle(main, "ESP")
+
+    local HostileDetector = {
+        running = false,
+        playerConnections = {},
+        globalConnections = {},
+        HIGHLIGHT_COLOR = Color3.fromRGB(255, 0, 255),
+        IGNORED_TEAMS = {["Guards"] = true, ["Warden"] = true}
+    }
+
+    local function setHighlightHostile(character, enabled)
+        if not character then return end
+        local highlight = character:FindFirstChild("HostileHighlight")
+        if enabled then
+            if not highlight then
+                highlight = Instance.new("Highlight", character)
+                highlight.Name, highlight.FillColor, highlight.OutlineColor, highlight.DepthMode = "HostileHighlight", HostileDetector.HIGHLIGHT_COLOR, Color3.fromRGB(255, 255, 255), Enum.HighlightDepthMode.AlwaysOnTop
+            end
+        elseif highlight then
             highlight:Destroy()
         end
     end
-end
 
-local function isIgnored(player)
-    return player.Team and IGNORED_TEAMS[player.Team.Name]
-end
-
-local function updatePlayerHostile(player)
-    if player == Players.LocalPlayer then return end
-    local character = player.Character
-    if not character then return end
-    local status = player:FindFirstChild("Status")
-    if not status then return end
-    local hostile = status:FindFirstChild("Hostile")
-    if not hostile then return end
-    if not isIgnored(player) and hostile.Value == true then
-        setHighlightHostile(character, true)
-    else
-        setHighlightHostile(character, false)
+    local function isIgnored(player)
+        return player.Team and HostileDetector.IGNORED_TEAMS[player.Team.Name]
     end
-end
 
-local function monitorPlayerHostile(player)
-    if not runningHostile then return end
-    local conns = {}
-
-    table.insert(conns, player.CharacterAdded:Connect(function()
-        task.wait(1)
-        updatePlayerHostile(player)
-    end))
-    table.insert(conns, player.CharacterRemoving:Connect(function()
-        for _, c in ipairs(conns) do c:Disconnect() end
-    end))
-    table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
-        updatePlayerHostile(player)
-    end))
-    local status = player:FindFirstChild("Status") or player:WaitForChild("Status",5)
-    if status then
+    local function updatePlayerHostile(player)
+        if player == lp or not HostileDetector.running then return end
+        local character = player.Character
+        if not character then return end
+        local status = player:FindFirstChild("Status")
+        if not status then return end
         local hostile = status:FindFirstChild("Hostile")
-        if hostile then
-            table.insert(conns, hostile.Changed:Connect(function()
-                updatePlayerHostile(player)
-            end))
-        end
+        if not hostile then return end
+        setHighlightHostile(character, not isIgnored(player) and hostile.Value)
     end
-    playerConnectionsHostile[player] = conns
-end
 
-function HostileDetector.Start()
-    if runningHostile then return end
-    runningHostile = true
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= Players.LocalPlayer then
-            monitorPlayerHostile(player)
+    local function monitorPlayerHostile(player)
+        if player == lp then return end
+        local conns = {}
+        table.insert(conns, player.CharacterAdded:Connect(function() task.wait(1); updatePlayerHostile(player) end))
+        table.insert(conns, player.CharacterRemoving:Connect(function() for _, c in ipairs(conns) do c:Disconnect() end end))
+        table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function() updatePlayerHostile(player) end))
+        local status = player:FindFirstChild("Status") or player:WaitForChild("Status", 5)
+        if status then
+            local hostile = status:FindFirstChild("Hostile")
+            if hostile then table.insert(conns, hostile.Changed:Connect(function() updatePlayerHostile(player) end)) end
+        end
+        HostileDetector.playerConnections[player] = conns
+    end
+
+    function HostileDetector.Start()
+        if HostileDetector.running then return end
+        HostileDetector.running = true
+        for _, player in ipairs(Players:GetPlayers()) do if player ~= lp then monitorPlayerHostile(player) end end
+        table.insert(HostileDetector.globalConnections, Players.PlayerAdded:Connect(function(player) monitorPlayerHostile(player); task.wait(1); for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end end))
+        table.insert(HostileDetector.globalConnections, Players.PlayerRemoving:Connect(function() for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end end))
+        task.spawn(function() while HostileDetector.running do for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end task.wait(2) end end)
+    end
+
+    function HostileDetector.Stop()
+        HostileDetector.running = false
+        for _, conns in pairs(HostileDetector.playerConnections) do for _, c in ipairs(conns) do c:Disconnect() end end
+        HostileDetector.playerConnections = {}
+        for _, c in ipairs(HostileDetector.globalConnections) do c:Disconnect() end
+        HostileDetector.globalConnections = {}
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Character then
+                local highlight = player.Character:FindFirstChild("HostileHighlight")
+                if highlight then highlight:Destroy() end
+            end
         end
     end
-    table.insert(globalConnectionsHostile, Players.PlayerAdded:Connect(function(player)
-        monitorPlayerHostile(player)
-        task.wait(1)
-        for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
-    end))
-    table.insert(globalConnectionsHostile, Players.PlayerRemoving:Connect(function()
-        for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
-    end))
-    task.spawn(function()
-        while runningHostile do
-            for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
-            task.wait(2)
-        end
+
+    local autoBuyRow, autoBuyRight = createRow(main, "Hostile Detector", "Shows all hostile prisoners and criminals")
+    addToggle(autoBuyRight, false, function(state)
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, state and "Started the Hostile Detector !" or "Stopped the Hostile Detector !")
+        if state then HostileDetector.Start() else HostileDetector.Stop() end
     end)
-end
 
-function HostileDetector.Stop()
-    runningHostile = false
-    for player, conns in pairs(playerConnectionsHostile) do
-        for _, c in ipairs(conns) do c:Disconnect() end
+    local TeamESP = {
+        running = false,
+        playerConnections = {},
+        globalConnections = {},
+        teamColors = {
+            ["Inmates"] = Color3.fromRGB(255, 165, 0),
+            ["Guards"] = Color3.fromRGB(0, 0, 255),
+            ["Warden"] = Color3.fromRGB(0, 0, 139),
+            ["Criminals"] = Color3.fromRGB(255, 0, 0)
+        }
+    }
+
+    local function updateHighlightTeam(player)
+        if player == lp then return end
+        local character = player.Character
+        if not character then return end
+        local highlight = character:FindFirstChild("TeamHighlight")
+        if highlight then highlight:Destroy() end
+        local teamName = player.Team and player.Team.Name or ""
+        local color = TeamESP.teamColors[teamName]
+        if not color then return end
+        highlight = Instance.new("Highlight", character)
+        highlight.Name, highlight.FillColor, highlight.OutlineColor, highlight.Adornee = "TeamHighlight", color, color, character
     end
-    playerConnectionsHostile = {}
-    for _, c in ipairs(globalConnectionsHostile) do
-        c:Disconnect()
+
+    local function monitorPlayerTeam(player)
+        if player == lp then return end
+        local conns = {}
+        table.insert(conns, player.CharacterAdded:Connect(function() if TeamESP.running then updateHighlightTeam(player) end end))
+        table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function() if TeamESP.running then updateHighlightTeam(player) end end))
+        if player.Character then updateHighlightTeam(player) end
+        TeamESP.playerConnections[player] = conns
     end
-    globalConnectionsHostile = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            local highlight = player.Character:FindFirstChild("HostileHighlight")
-            if highlight then highlight:Destroy() end
+
+    function TeamESP.Start()
+        if TeamESP.running then return end
+        TeamESP.running = true
+        for _, player in ipairs(Players:GetPlayers()) do monitorPlayerTeam(player) end
+        table.insert(TeamESP.globalConnections, Players.PlayerAdded:Connect(monitorPlayerTeam))
+    end
+
+    function TeamESP.Stop()
+        TeamESP.running = false
+        for _, conns in pairs(TeamESP.playerConnections) do for _, c in ipairs(conns) do c:Disconnect() end end
+        TeamESP.playerConnections = {}
+        for _, c in ipairs(TeamESP.globalConnections) do c:Disconnect() end
+        TeamESP.globalConnections = {}
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Character then
+                local highlight = player.Character:FindFirstChild("TeamHighlight")
+                if highlight then highlight:Destroy() end
+            end
         end
     end
-end
 
+    local teamESPRow, teamESPRight = createRow(main, "Team ESP", "Shows players through walls and colors by team")
+    addToggle(teamESPRight, false, function(state)
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, state and "Started the Team ESP !" or "Stopped the Team ESP !")
+        if state then TeamESP.Start() else TeamESP.Stop() end
+    end)
 
--- hostile detector toggle
-local autoBuyRow = makeRow(main, "Hostile Detector", "Shows all hostile prisoners and criminals")
-addToggle(autoBuyRow, false, function(state)
-    if state then
-		local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-    firesignal(Event.OnClientEvent, 
-        "Started the Hostile Detector ! "
-    )
-        HostileDetector.Start()
-    else
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Stopped the Hostile Detector ! "
-)
-        HostileDetector.Stop()
-    end
-end)
-
-
--- team esp toggle
-local teamESPRow = makeRow(main, "Team ESP", "Shows players through walls and colors by team")
-addToggle(teamESPRow, false, function(state)
-    if state then
-        
-	local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-		firesignal(Event.OnClientEvent, 
-    		"Started the Team ESP ! "
-		)
-        TeamESP.Start()
-    else
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Stopped the Team ESP ! "
-)
-        TeamESP.Stop()
-    end
-end)
-
--- team stuff
-sectionTitle(main, "Team")
-
--- join crims
-local teamRow = makeRow(main, "Join Criminal", "Sit on the block to become a criminal")
-do
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,112,0,28)
-    button.Position = UDim2.new(1,-112,0.5,-14)
-    button.BackgroundColor3 = Color3.fromRGB(28,28,28)
-    button.Text = "Join Criminal"
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 16
-    button.TextColor3 = COL_TEXT
-    button.Parent = teamRow:FindFirstChild("Right")
-    roundify(button,8)
-
-    -- Run script when clicked
+    createSectionTitle(main, "Team")
+    local teamRow, teamRight = createRow(main, "Join Criminal", "Sit on the block to become a criminal")
+    local button = Instance.new("TextButton", teamRight)
+    button.Size, button.Position, button.BackgroundColor3, button.Text = UDim2.new(0, 112, 0, 28), UDim2.new(1, -112, 0.5, -14), Color3.fromRGB(28, 28, 28), "Join Criminal"
+    button.Font, button.TextSize, button.TextColor3 = Enum.Font.GothamBold, 16, COL.TEXT
+    local buttonCorner = Instance.new("UICorner", button)
+    buttonCorner.CornerRadius = UDim.new(0, 8)
     button.MouseButton1Click:Connect(function()
         local crimpad = workspace.Warrior.Body.Seats:GetChildren()[3]
         local oldpos = crimpad.Position
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-
-        local function getTargetHRP()
-            if LocalPlayer.Character then
-                return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            end
-            return nil
-        end
-
-        crimpad.Size = Vector3.new(5, 1, 5)
-        crimpad.Transparency = 0
-        crimpad.BrickColor = BrickColor.new("Bright red")
-        crimpad.Material = Enum.Material.Neon
-
-        local hrp = getTargetHRP()
+        crimpad.Size, crimpad.Transparency, crimpad.BrickColor, crimpad.Material = Vector3.new(5, 1, 5), 0, BrickColor.new("Bright red"), Enum.Material.Neon
+        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
-            local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Make sure to walk on the crim pad !"
-)
-            crimpad.Position = hrp.Position - Vector3.new(0, hrp.Size.Y/2 + crimpad.Size.Y/2, 0)
+            local event = game:GetService("ReplicatedStorage").Events.Tooltip
+            firesignal(event.OnClientEvent, "Make sure to walk on the crim pad !")
+            crimpad.Position = hrp.Position - Vector3.new(0, hrp.Size.Y / 2 + crimpad.Size.Y / 2, 0)
         end
-
         task.delay(5, function()
-            
-            crimpad.Position = oldpos
-            crimpad.Size = Vector3.new(2,1,2)
-            crimpad.Transparency = 1
-            crimpad.BrickColor = BrickColor.new("Black")
-            crimpad.Material = Enum.Material.SmoothPlastic
+            crimpad.Position, crimpad.Size, crimpad.Transparency = oldpos, Vector3.new(2, 1, 2), 1
+            crimpad.BrickColor, crimpad.Material = BrickColor.new("Black"), Enum.Material.SmoothPlastic
         end)
+    end)
 
+    createSectionTitle(main, "Body")
+    local noJumpRow, noJumpRight = createRow(main, "No Jump Cooldown", "Removes jump delay")
+    addToggle(noJumpRight, false, function(state)
+        local event = game:GetService("ReplicatedStorage").Events.UpdateStat
+        firesignal(event.OnClientEvent, "Stamina", state and 99999 or 100)
+        local msgEvent = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(msgEvent.OnClientEvent, state and "Enabled no stamina !" or "Reset stamina to normal")
+    end)
+
+    local usedAntiSlow = false
+    local antiSlowRow, antiSlowRight = createRow(main, "Skip Threadmill", "Get to max speed without using threadmill")
+    addToggle(antiSlowRight, false, function(state)
+        if usedAntiSlow then return end
+        if state then
+            local event = game:GetService("ReplicatedStorage").Events.UpdateStat
+            local msgEvent = game:GetService("ReplicatedStorage").Events.Tooltip
+            firesignal(msgEvent.OnClientEvent, "Enable the threadmill bypass !")
+            for _ = 1, 4 do firesignal(event.OnClientEvent, "Runspeed", 1) end
+            usedAntiSlow = true
+        end
+    end)
+
+    local antiBusyRow, antiBusyRight = createRow(main, "Anti-Busy", "Beta feature")
+    addToggle(antiBusyRight, false, function(state) print("Anti-Busy:", state) end)
+end
+
+-- Visuals page
+local function setupVisualsPage()
+    local visuals = pages[3].page
+    createSectionTitle(visuals, "Visuals (Client Sided)")
+
+    local tracerRow, tracerRight = createRow(visuals, "Custom Tracer Color", "Changes the color of your tracer")
+    addToggle(tracerRight, false, function(state) print("Custom Tracer Color enabled:", state) end)
+
+    local tracerColorBox = Instance.new("TextBox", visuals)
+    tracerColorBox.Size, tracerColorBox.BackgroundColor3, tracerColorBox.TextColor3 = UDim2.new(0, 120, 0, 28), Color3.fromRGB(28, 28, 28), Color3.fromRGB(255, 255, 255)
+    tracerColorBox.Font, tracerColorBox.TextSize, tracerColorBox.Text, tracerColorBox.ClearTextOnFocus = Enum.Font.Gotham, 16, "255,255,255", false
+    local tracerCorner = Instance.new("UICorner", tracerColorBox)
+    tracerCorner.CornerRadius = UDim.new(0, 6)
+    tracerColorBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local r, g, b = tracerColorBox.Text:match("(%d+),(%d+),(%d+)")
+            r, g, b = tonumber(r), tonumber(g), tonumber(b)
+            if r and g and b then
+                r, g, b = math.clamp(r, 0, 255), math.clamp(g, 0, 255), math.clamp(b, 0, 255)
+                local newColor = Color3.fromRGB(r, g, b)
+                _G.TracerColor = newColor
+                local settings = lp:WaitForChild("Status"):WaitForChild("Settings")
+                if settings:FindFirstChild("BulletColor") and settings.BulletColor:IsA("Color3Value") then
+                    settings.BulletColor.Value = newColor
+                end
+            else
+                tracerColorBox.Text = "255,255,255"
+            end
+        end
+    end)
+
+    local skinOptions = {
+        ["Blackoutt"] = "rbxassetid://12936441454",
+        ["CAMO"] = "rbxassetid://18438387808",
+        ["Electric Stripes"] = "rbxassetid://14630225641",
+        ["Fishy"] = "rbxassetid://18162163437",
+        ["Gift"] = "rbxassetid://15474139695",
+        ["Gift Wrap"] = "rbxassetid://18438246185",
+        ["Inferno"] = "rbxassetid://7866373261",
+        ["Street Art"] = "rbxassetid://14630862743",
+        ["Dark Matter"] = "rbxassetid://14630237541"
+    }
+    _G.SelectedGunSkin = "Blackoutt"
+
+    local function applyDecalToPart(part, decalId)
+        for _, child in ipairs(part:GetChildren()) do
+            if child:IsA("Decal") and child.Name:find("GunSkin_") then child:Destroy() end
+        end
+        for _, face in ipairs(Enum.NormalId:GetEnumItems()) do
+            local decal = Instance.new("Decal", part)
+            decal.Name, decal.Face, decal.Texture = "GunSkin_" .. tostring(face), face, decalId
+        end
+    end
+
+    local function applyDecalToTool(tool)
+        if not _G.GunSkinsEnabled then return end
+        local decalId = skinOptions[_G.SelectedGunSkin]
+        for _, part in ipairs(tool:GetDescendants()) do
+            if part:IsA("BasePart") and part.Size.Magnitude >= 1 then applyDecalToPart(part, decalId) end
+        end
+    end
+
+    local function applyGunSkin(skinName)
+        if not skinName then return end
+        _G.SelectedGunSkin = skinName
+        for _, tool in ipairs(lp.Backpack:GetChildren()) do if tool:IsA("Tool") then applyDecalToTool(tool) end end
+        if lp.Character then
+            for _, tool in ipairs(lp.Character:GetChildren()) do if tool:IsA("Tool") then applyDecalToTool(tool) end end
+        end
+    end
+
+    lp.Backpack.ChildAdded:Connect(function(tool) if tool:IsA("Tool") then applyDecalToTool(tool) end end)
+    lp.CharacterAdded:Connect(function(char)
+        char.ChildAdded:Connect(function(tool) if tool:IsA("Tool") then applyDecalToTool(tool) end end)
+    end)
+
+    local gunSkinsRow, gunSkinsRight = createRow(visuals, "Gun Skins", "Enable/disable gun skins")
+    addToggle(gunSkinsRight, false, function(state)
+        _G.GunSkinsEnabled = state
+        applyGunSkin(_G.SelectedGunSkin)
+    end)
+
+    local skinDropdownRow, skinDropdownRight = createRow(visuals, "Select Gun Skin")
+    local dropdownBase = Instance.new("TextButton", skinDropdownRight)
+    dropdownBase.Size, dropdownBase.Position, dropdownBase.BackgroundColor3, dropdownBase.Text = UDim2.new(0, 112, 0, 28), UDim2.new(1, -112, 0.5, -14), Color3.fromRGB(28, 28, 28), ""
+    local dropdownCorner = Instance.new("UICorner", dropdownBase)
+    dropdownCorner.CornerRadius = UDim.new(0, 8)
+
+    local currentSkinLabel = Instance.new("TextLabel", dropdownBase)
+    currentSkinLabel.BackgroundTransparency, currentSkinLabel.Size, currentSkinLabel.Position = 1, UDim2.new(1, -26, 1, 0), UDim2.new(0, 8, 0, 0)
+    currentSkinLabel.Font, currentSkinLabel.TextSize, currentSkinLabel.TextXAlignment, currentSkinLabel.TextColor3, currentSkinLabel.Text = Enum.Font.GothamBold, 16, Enum.TextXAlignment.Right, COL.TEXT, _G.SelectedGunSkin
+
+    local maxVisible, itemHeight = 5, 28
+    local optionsFrame = Instance.new("ScrollingFrame", dropdownBase)
+    optionsFrame.Size, optionsFrame.Position, optionsFrame.BackgroundColor3, optionsFrame.BorderSizePixel = UDim2.new(0, 112, 0, maxVisible * itemHeight), UDim2.new(0, 0, 1, 0), Color3.fromRGB(40, 40, 40), 0
+    optionsFrame.Visible, optionsFrame.ScrollBarThickness, optionsFrame.Active, optionsFrame.ZIndex = false, 6, true, 998
+    local layout = Instance.new("UIListLayout", optionsFrame)
+    layout.Padding, layout.SortOrder = UDim.new(0, 2), Enum.SortOrder.LayoutOrder
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() optionsFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y) end)
+
+    local dropdownOpen = false
+    for skinName, _ in pairs(skinOptions) do
+        local btn = Instance.new("TextButton", optionsFrame)
+        btn.Size, btn.BackgroundColor3, btn.Text, btn.TextColor3 = UDim2.new(1, 0, 0, itemHeight), Color3.fromRGB(28, 28, 28), skinName, COL.TEXT
+        btn.Font, btn.TextSize, btn.ZIndex = Enum.Font.Gotham, 16, 1000
+        btn.MouseButton1Click:Connect(function()
+            currentSkinLabel.Text, _G.SelectedGunSkin, optionsFrame.Visible, dropdownOpen = skinName, skinName, false, false
+            applyGunSkin(skinName)
+        end)
+    end
+
+    dropdownBase.MouseButton1Click:Connect(function() dropdownOpen = not dropdownOpen; optionsFrame.Visible = dropdownOpen end)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if dropdownOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            local mousePos = UserInputService:GetMouseLocation()
+            local guiPos, guiSize = dropdownBase.AbsolutePosition, dropdownBase.AbsoluteSize
+            if not (mousePos.X >= guiPos.X and mousePos.X <= guiPos.X + guiSize.X and mousePos.Y >= guiPos.Y and mousePos.Y <= guiPos.Y + optionsFrame.AbsoluteSize.Y) then
+                dropdownOpen, optionsFrame.Visible = false, false
+            end
+        end
     end)
 end
 
--- body stuff
-sectionTitle(main, "Body")
+-- Rage page (Hostile and Police Teleporters, Spinbot)
+local function setupRagePage()
+    local rage = pages[4].page
+    createSectionTitle(rage, "Rage")
 
-local noJumpRow = makeRow(main, "No Jump Cooldown", "Removes jump delay")
+    local HostileTeleporter = {
+        running = false,
+        trackedCharacters = {},
+        DISTANCE_AHEAD = -5,
+        UPDATE_INTERVAL = 1
+    }
 
-addToggle(noJumpRow, false, function(state)
-    local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
-    if state then
-        -- Infinite stamina (no jump cooldown)
-        local MessageEvent = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(MessageEvent.OnClientEvent, 
-    "Enabled no stamina !"
-)
-        firesignal(Event.OnClientEvent, "Stamina", 99999)
-    else
-        -- Reset stamina to normal (change 100 to your game’s default stamina)
-        firesignal(Event.OnClientEvent, "Stamina", 99999)
-    end
-end)
-
-local antiSlowRow = makeRow(main, "Skip Threadmill", "Get to max speed without using threadmill")
-local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
-
-local used = false  
-
-addToggle(antiSlowRow, false, function(state)
-    if used then
-        return 
+    local function getTargetHRP()
+        return lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     end
 
-    if state then
-        local MessageEvent = game:GetService("ReplicatedStorage").Events.Tooltip
-        firesignal(MessageEvent.OnClientEvent, 
-            "Enable the threadmill bypass !"
-        )
-        for i = 1, 4 do
-            firesignal(Event.OnClientEvent,
-                "Runspeed",
-                1
-            )
+    local function isTargetPlayer(character)
+        local player = Players:GetPlayerFromCharacter(character)
+        if not player or player == lp then return false end
+        if player.Team and player.Team.Name == "Criminals" then return true end
+        if player.Team and player.Team.Name == "Inmates" then
+            local status = player:FindFirstChild("Status")
+            return status and status:FindFirstChild("Hostile") and status.Hostile.Value
         end
-        used = true
+        return false
     end
-end)
 
+    local function teleportInFront(character, targetHRP)
+        local hrp, humanoid = character:FindFirstChild("HumanoidRootPart"), character:FindFirstChild("Humanoid")
+        if hrp and targetHRP and humanoid and not humanoid.Sit then
+            hrp.CFrame = CFrame.new(targetHRP.Position + targetHRP.CFrame.LookVector * HostileTeleporter.DISTANCE_AHEAD)
+            hrp.Anchored = true
+        end
+    end
 
-local antiBusyRow = makeRow(main, "Anti-Busy", "Beta feature")
-addToggle(antiBusyRow, false, function(state)
-    print("Anti-Busy:", state)
-end)
+    local function trackCharacter(character)
+        for _, c in ipairs(HostileTeleporter.trackedCharacters) do if c == character then return end end
+        if isTargetPlayer(character) then
+            table.insert(HostileTeleporter.trackedCharacters, character)
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = true end
+        end
+    end
 
--- keybind for toggle gui
-local UserInputService = game:GetService("UserInputService")
-local keybind = Enum.KeyCode.L 
+    local function untrackCharacter(character)
+        for i, c in ipairs(HostileTeleporter.trackedCharacters) do
+            if c == character then
+                local hrp = c:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.Anchored = false end
+                table.remove(HostileTeleporter.trackedCharacters, i)
+                break
+            end
+        end
+    end
 
+    local function monitorPlayer(player)
+        player:GetPropertyChangedSignal("Team"):Connect(function()
+            local character = player.Character
+            if character then if isTargetPlayer(character) then trackCharacter(character) else untrackCharacter(character) end end
+        end)
+        local status = player:FindFirstChild("Status")
+        if status then
+            local hostile = status:FindFirstChild("Hostile")
+            if hostile then hostile.Changed:Connect(function() local character = player.Character if character then if isTargetPlayer(character) then trackCharacter(character) else untrackCharacter(character) end end end) end
+        end
+    end
+
+    function HostileTeleporter.Start()
+        if HostileTeleporter.running then return end
+        HostileTeleporter.running = true
+        HostileTeleporter.trackedCharacters = {}
+        local playersFolder = workspace:WaitForChild("Players")
+        for _, character in ipairs(playersFolder:GetChildren()) do trackCharacter(character) end
+        playersFolder.ChildAdded:Connect(trackCharacter)
+        for _, player in ipairs(Players:GetPlayers()) do monitorPlayer(player) end
+        Players.PlayerAdded:Connect(monitorPlayer)
+        spawn(function()
+            while HostileTeleporter.running do
+                local targetHRP = getTargetHRP()
+                if targetHRP then for _, character in ipairs(HostileTeleporter.trackedCharacters) do teleportInFront(character, targetHRP) end end
+                task.wait(HostileTeleporter.UPDATE_INTERVAL)
+            end
+        end)
+    end
+
+    function HostileTeleporter.Stop()
+        HostileTeleporter.running = false
+        for _, character in ipairs(HostileTeleporter.trackedCharacters) do
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = false end
+        end
+        HostileTeleporter.trackedCharacters = {}
+    end
+
+    local hostileTPRow, hostileTPRight = createRow(rage, "Hostile Teleporter", "Teleport hostile nerd to you")
+    addToggle(hostileTPRight, false, function(state)
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, state and "Started the Hostile Teleporter !" or "Stopped the Hostile Teleporter !")
+        if state then HostileTeleporter.Start() else HostileTeleporter.Stop() end
+    end)
+
+    local PoliceWardenTeleporter = {
+        trackedCharacters = {},
+        DISTANCE_AHEAD = -5,
+        UPDATE_INTERVAL = 1
+    }
+
+    local function isPoliceTarget(character)
+        local player = Players:GetPlayerFromCharacter(character)
+        if not player or player == lp then return false end
+        return player.Team and (player.Team.Name == "Guards" or player.Team.Name == "Warden")
+    end
+
+    local function policeTeleportInFront(character, targetHRP)
+        local hrp, humanoid = character:FindFirstChild("HumanoidRootPart"), character:FindFirstChild("Humanoid")
+        if hrp and targetHRP and humanoid and not humanoid.Sit then
+            hrp.CFrame = CFrame.new(targetHRP.Position + targetHRP.CFrame.LookVector * PoliceWardenTeleporter.DISTANCE_AHEAD)
+            hrp.Anchored = true
+        end
+    end
+
+    local function policeTrackCharacter(character)
+        for _, c in ipairs(PoliceWardenTeleporter.trackedCharacters) do if c == character then return end end
+        if isPoliceTarget(character) then
+            table.insert(PoliceWardenTeleporter.trackedCharacters, character)
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = true end
+        end
+    end
+
+    local function policeUntrackCharacter(character)
+        for i, c in ipairs(PoliceWardenTeleporter.trackedCharacters) do
+            if c == character then
+                local hrp = c:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.Anchored = false end
+                table.remove(PoliceWardenTeleporter.trackedCharacters, i)
+                break
+            end
+        end
+    end
+
+    local function policeMonitorPlayer(player)
+        player:GetPropertyChangedSignal("Team"):Connect(function()
+            local character = player.Character
+            if character then if isPoliceTarget(character) then policeTrackCharacter(character) else policeUntrackCharacter(character) end end
+        end)
+    end
+
+    function PoliceWardenTeleporter.Start()
+        local playersFolder = workspace:WaitForChild("Players")
+        for _, character in ipairs(playersFolder:GetChildren()) do policeTrackCharacter(character) end
+        playersFolder.ChildAdded:Connect(policeTrackCharacter)
+        for _, player in ipairs(Players:GetPlayers()) do policeMonitorPlayer(player) end
+        Players.PlayerAdded:Connect(policeMonitorPlayer)
+        PoliceWardenTeleporter.loopConnection = RunService.Heartbeat:Connect(function()
+            local targetHRP = getTargetHRP()
+            if targetHRP then for _, character in ipairs(PoliceWardenTeleporter.trackedCharacters) do policeTeleportInFront(character, targetHRP) end end
+        end)
+    end
+
+    function PoliceWardenTeleporter.Stop()
+        if PoliceWardenTeleporter.loopConnection then PoliceWardenTeleporter.loopConnection:Disconnect() end
+        for _, character in ipairs(PoliceWardenTeleporter.trackedCharacters) do
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = false end
+        end
+        PoliceWardenTeleporter.trackedCharacters = {}
+    end
+
+    local policeWardenTPRow, policeWardenTPRight = createRow(rage, "Police Teleporter", "Teleport Police nerd to you")
+    addToggle(policeWardenTPRight, false, function(state)
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, state and "Started the Guard Teleporter !" or "Stopped the Guard Teleporter !")
+        if state then PoliceWardenTeleporter.Start() else PoliceWardenTeleporter.Stop() end
+    end)
+
+    local Spinbot = { running = false, speed = 50 }
+    function Spinbot.Start()
+        if Spinbot.running then return end
+        Spinbot.running = true
+        local character = lp.Character or lp.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        Spinbot.connection = RunService.RenderStepped:Connect(function()
+            if Spinbot.running then hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(Spinbot.speed), 0) end
+        end)
+    end
+
+    function Spinbot.Stop()
+        if not Spinbot.running then return end
+        Spinbot.running = false
+        if Spinbot.connection then Spinbot.connection:Disconnect() end
+    end
+
+    local spinbotRow, spinbotRight = createRow(rage, "Spinbot", "Spin your character around automatically")
+    addToggle(spinbotRight, false, function(state)
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, state and "Started the spinbot" or "Stopped the spinbot")
+        if state then Spinbot.Start() else Spinbot.Stop() end
+    end)
+end
+
+-- Misc page
+local function setupMiscPage()
+    local misc = pages[5].page
+    createSectionTitle(misc, "Misc")
+
+    local hitSoundAssets = {
+        Hitmarker = "rbxassetid://705502934",
+        Bubbles = "rbxassetid://2375539277",
+        Osu = "rbxassetid://7273736372",
+        Pan = "rbxassetid://121056823077666",
+        Sparkles = "rbxassetid://137392628136734",
+        Whistle = "rbxassetid://18737703374",
+        Raindrops = "rbxassetid://365362615",
+        Eagle = "rbxassetid://491270608"
+    }
+    _G.HitSoundChoice = "Hitmarker"
+
+    local function updateHitMarkerSound()
+        local playerGui = lp:FindFirstChild("PlayerGui")
+        if not playerGui then return end
+        local scopeGui = playerGui:FindFirstChild("Scope")
+        if not scopeGui then return end
+        local hitMarker = scopeGui:FindFirstChild("HitMarker")
+        if not hitMarker or not hitMarker:IsA("Sound") then return end
+        hitMarker.SoundId = hitSoundAssets[_G.HitSoundChoice] or hitSoundAssets["Hitmarker"]
+        if _G.HitSoundEnabled then hitMarker:Play() end
+    end
+
+    local hitSoundRow, hitSoundRight = createRow(misc, "Hit Sound", "Plays a sound when hitting a player")
+    addToggle(hitSoundRight, false, function(state)
+        _G.HitSoundEnabled = state
+        print("Hit Sound Enabled:", state)
+        if state then updateHitMarkerSound() end
+    end)
+
+    local soundsLabel = Instance.new("TextLabel", misc)
+    soundsLabel.BackgroundTransparency, soundsLabel.Font, soundsLabel.TextSize, soundsLabel.TextColor3 = 1, Enum.Font.Gotham, 14, COL.SUB
+    soundsLabel.Text, soundsLabel.TextXAlignment, soundsLabel.Size, soundsLabel.Position = "Sounds", Enum.TextXAlignment.Left, UDim2.new(1, -20, 0, 20), UDim2.new(0, 12, 0, 54)
+
+    local soundOptions = {"Hitmarker", "Bubbles", "Osu", "Pan", "Sparkles", "Whistle", "Raindrops", "Eagle"}
+    local soundsDropdownRow, soundsDropdownRight = createRow(misc, "Select Sound")
+    local dropdownBase = Instance.new("TextButton", soundsDropdownRight)
+    dropdownBase.Size, dropdownBase.Position, dropdownBase.BackgroundColor3, dropdownBase.Text = UDim2.new(0, 112, 0, 28), UDim2.new(1, -112, 0.5, -14), Color3.fromRGB(28, 28, 28), ""
+    local dropdownCorner = Instance.new("UICorner", dropdownBase)
+    dropdownCorner.CornerRadius = UDim.new(0, 8)
+
+    local currentSound = Instance.new("TextLabel", dropdownBase)
+    currentSound.BackgroundTransparency, currentSound.Size, currentSound.Position = 1, UDim2.new(1, -26, 1, 0), UDim2.new(0, 8, 0, 0)
+    currentSound.Font, currentSound.TextSize, currentSound.TextXAlignment, currentSound.TextColor3, currentSound.Text = Enum.Font.GothamBold, 16, Enum.TextXAlignment.Right, COL.TEXT, "Hitmarker"
+
+    local maxVisible, itemHeight = 5, 28
+    local optionsFrame = Instance.new("ScrollingFrame", dropdownBase)
+    optionsFrame.Size, optionsFrame.Position, optionsFrame.BackgroundColor3, optionsFrame.BorderSizePixel = UDim2.new(0, 112, 0, maxVisible * itemHeight), UDim2.new(0, 0, 1, 0), Color3.fromRGB(40, 40, 40), 0
+    optionsFrame.Visible, optionsFrame.ScrollBarThickness, optionsFrame.ScrollBarImageColor3, optionsFrame.Active, optionsFrame.ZIndex = false, 6, Color3.fromRGB(180, 180, 180), true, 998
+    local layout = Instance.new("UIListLayout", optionsFrame)
+    layout.Padding, layout.SortOrder = UDim.new(0, 2), Enum.SortOrder.LayoutOrder
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() optionsFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y) end)
+    task.defer(function() optionsFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y) end)
+
+    local dropdownOpen = false
+    for _, soundName in ipairs(soundOptions) do
+        local btn = Instance.new("TextButton", optionsFrame)
+        btn.Size, btn.BackgroundColor3, btn.Text, btn.TextColor3 = UDim2.new(1, 0, 0, itemHeight), Color3.fromRGB(28, 28, 28), soundName, COL.TEXT
+        btn.Font, btn.TextSize, btn.ZIndex = Enum.Font.Gotham, 16, 1000
+        btn.MouseButton1Click:Connect(function()
+            currentSound.Text, _G.HitSoundChoice, optionsFrame.Visible, dropdownOpen = soundName, soundName, false, false
+            updateHitMarkerSound()
+            print("Selected sound:", soundName)
+        end)
+    end
+
+    dropdownBase.MouseButton1Click:Connect(function() dropdownOpen = not dropdownOpen; optionsFrame.Visible = dropdownOpen end)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if dropdownOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            local mousePos = UserInputService:GetMouseLocation()
+            local guiPos, guiSize = dropdownBase.AbsolutePosition, dropdownBase.AbsoluteSize
+            if not (mousePos.X >= guiPos.X and mousePos.X <= guiPos.X + guiSize.X and mousePos.Y >= guiPos.Y and mousePos.Y <= guiPos.Y + guiSize.Y + optionsFrame.AbsoluteSize.Y) then
+                dropdownOpen, optionsFrame.Visible = false, false
+            end
+        end
+    end)
+
+    local StaffNotifier = {
+        Enabled = true,
+        StaffList = {
+            [4036616925] = "Vyaii", [4835226372] = "pzrpled", [1079506543] = "modbotter", [1827703218] = "Jat",
+            [1314873852] = "Ruby Kurosawa", [2776100361] = "LordxEgg", [5095781620] = "fwomed", [6019613135] = "contact",
+            [1676500493] = "hamooodylil", [810011681] = "caisr", [321731898] = "FieldsCRW", [1622836918] = "5ivio",
+            [2811348175] = "PrestonTug", [662263759] = "TheCatGodOfDeath", [2641543045] = "Dev_COL", [2418168241] = "Axely",
+            [136568311] = "Ban", [720403576] = "bannersblox", [6212777205] = "Jitze", [330929769] = "Alfa",
+            [1562173] = "hethr", [104529797] = "d1anna", [5309987] = "ntaosi", [417258098] = "xA_lfa", [2230856063] = "Rez"
+        },
+        ActivePopups = {}
+    }
+
+    local function createPopup(player, displayName)
+        if not StaffNotifier.Enabled then return end
+        local popup = Instance.new("ScreenGui", playerGui)
+        popup.ResetOnSpawn, popup.IgnoreGuiInset = false, true
+        local frame = Instance.new("Frame", popup)
+        frame.Size, frame.Position, frame.BackgroundColor3, frame.BorderSizePixel, frame.BackgroundTransparency = UDim2.new(0, 240, 0, 65), UDim2.new(1, -260, 1, -85 - (#StaffNotifier.ActivePopups * 75)), Color3.fromRGB(25, 25, 25), 0, 0.1
+        local stroke = Instance.new("UIStroke", frame)
+        stroke.Thickness, stroke.Color = 2, Color3.fromRGB(255, 0, 0)
+        local imageLabel = Instance.new("ImageLabel", frame)
+        imageLabel.Size, imageLabel.Position, imageLabel.BackgroundTransparency = UDim2.new(0, 50, 0, 50), UDim2.new(0, 8, 0.5, -25), 1
+        imageLabel.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+        local nameLabel = Instance.new("TextLabel", frame)
+        nameLabel.Size, nameLabel.Position, nameLabel.BackgroundTransparency, nameLabel.TextColor3 = UDim2.new(1, -70, 0.5, -4), UDim2.new(0, 70, 0, 6), 1, Color3.fromRGB(255, 255, 255)
+        nameLabel.TextScaled, nameLabel.Font, nameLabel.Text, nameLabel.TextXAlignment = true, Enum.Font.Code, "⚠️ " .. displayName, Enum.TextXAlignment.Left
+        local userLabel = Instance.new("TextLabel", frame)
+        userLabel.Size, userLabel.Position, userLabel.BackgroundTransparency, userLabel.TextColor3 = UDim2.new(1, -70, 0.4, -4), UDim2.new(0, 70, 0.5, 0), 1, Color3.fromRGB(180, 180, 180)
+        userLabel.TextScaled, userLabel.Font, userLabel.Text, userLabel.TextXAlignment = true, Enum.Font.Code, "@" .. player.Name, Enum.TextXAlignment.Left
+        local sound = Instance.new("Sound", frame)
+        sound.SoundId, sound.Volume = "rbxassetid://147722227", 1
+        sound:Play()
+        table.insert(StaffNotifier.ActivePopups, frame)
+        task.delay(5, function()
+            for i = 1, 20 do
+                frame.BackgroundTransparency += 0.05
+                nameLabel.TextTransparency += 0.05
+                userLabel.TextTransparency += 0.05
+                imageLabel.ImageTransparency += 0.05
+                stroke.Transparency += 0.05
+                task.wait(0.05)
+            end
+            frame:Destroy()
+            for i, f in ipairs(StaffNotifier.ActivePopups) do if f == frame then table.remove(StaffNotifier.ActivePopups, i) break end end
+            for i, f in ipairs(StaffNotifier.ActivePopups) do f:TweenPosition(UDim2.new(1, -260, 1, -85 - ((i - 1) * 75)), "Out", "Quad", 0.25, true) end
+        end)
+    end
+
+    local function checkStaff(player)
+        local displayName = StaffNotifier.StaffList[player.UserId]
+        if displayName then createPopup(player, displayName) end
+    end
+
+    for _, plr in pairs(Players:GetPlayers()) do if plr ~= lp then checkStaff(plr) end end
+    Players.PlayerAdded:Connect(checkStaff)
+
+    local staffRow, staffRight = createRow(misc, "Staff Notifier", "Notifies when a staff member joins the game")
+    addToggle(staffRight, true, function(state) StaffNotifier.Enabled = state; print("Staff Notifier Enabled:", state) end)
+
+    local miscRow, miscRight = createRow(misc, "Add Keys", "Click to add 10 keys")
+    local keyButton = Instance.new("TextButton", miscRight)
+    keyButton.Size, keyButton.Position, keyButton.BackgroundColor3, keyButton.Text = UDim2.new(0, 112, 0, 28), UDim2.new(1, -112, 0.5, -14), Color3.fromRGB(28, 28, 28), "Add 10 Keys"
+    keyButton.Font, keyButton.TextSize, keyButton.TextColor3 = Enum.Font.GothamBold, 16, COL.TEXT
+    local keyButtonCorner = Instance.new("UICorner", keyButton)
+    keyButtonCorner.CornerRadius = UDim.new(0, 8)
+    keyButton.MouseButton1Click:Connect(function()
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, "Added 10 keys !")
+        game:GetService("ReplicatedStorage").Rankup:FireServer(10)
+    end)
+
+    local skinsRow, skinsRight = createRow(misc, "Add Skins", "Click to add all skins to your account")
+    local skinsButton = Instance.new("TextButton", skinsRight)
+    skinsButton.Size, skinsButton.Position, skinsButton.BackgroundColor3, skinsButton.Text = UDim2.new(0, 112, 0, 28), UDim2.new(1, -112, 0.5, -14), Color3.fromRGB(28, 28, 28), "Add all skins"
+    skinsButton.Font, skinsButton.TextSize, skinsButton.TextColor3 = Enum.Font.GothamBold, 16, COL.TEXT
+    local skinsButtonCorner = Instance.new("UICorner", skinsButton)
+    skinsButtonCorner.CornerRadius = UDim.new(0, 8)
+    skinsButton.MouseButton1Click:Connect(function()
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, "Added all gun skin !")
+        local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
+        for _, skin in ipairs({"24k Gold", "24k Gold Pistol", "Anoidzed Red", "Galaxy", "Super Soaker", "The Patriot", "Woodland"}) do
+            award:InvokeServer(skin)
+        end
+    end)
+
+    local skins = {"24k Gold", "24k Gold Pistol", "Anoidzed Red", "Galaxy", "Super Soaker", "The Patriot", "Woodland"}
+    _G.AutoSkinFarmEnabled = false
+    local function startAutoFarm()
+        task.spawn(function()
+            while _G.AutoSkinFarmEnabled do
+                for _, skin in ipairs(skins) do
+                    task.spawn(function()
+                        pcall(function()
+                            game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin:InvokeServer(skin)
+                            game:GetService("ReplicatedStorage").SkinFolder.Events.Sell:FireServer(skin, true, "")
+                        end)
+                    end)
+                end
+                task.wait(0.01)
+            end
+        end)
+    end
+
+    local autoFarmRow, autoFarmRight = createRow(misc, "Rapid Auto Skin Farm", "Automatically awards and sells skins with rapid speed")
+    addToggle(autoFarmRight, false, function(state)
+        _G.AutoSkinFarmEnabled = state
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, state and "Started the money autofarm" or "Stopped the money autofarm")
+        if state then startAutoFarm() end
+    end)
+
+    local slowFarmEnabled = false
+    local function startSlowAutoFarm()
+        task.spawn(function()
+            while slowFarmEnabled do
+                for _, skin in ipairs(skins) do
+                    pcall(function()
+                        game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin:InvokeServer(skin)
+                        game:GetService("ReplicatedStorage").SkinFolder.Events.Sell:FireServer(skin, true, "")
+                    end)
+                end
+                task.wait(0.5)
+            end
+        end)
+    end
+
+    local slowFarmRow, slowFarmRight = createRow(misc, "Slower Auto Farm", "Automatically awards and sells skins slower")
+    addToggle(slowFarmRight, false, function(state)
+        slowFarmEnabled = state
+        local event = game:GetService("ReplicatedStorage").Events.Tooltip
+        firesignal(event.OnClientEvent, state and "Started the slower auto farm" or "Stopped the slower auto farm")
+        if state then startSlowAutoFarm() end
+    end)
+end
+
+-- Credits page
+local function setupCreditsPage()
+    local credits = pages[6].page
+    local function addCredit(userId, displayName, role, description, order)
+        local card = Instance.new("Frame", credits)
+        card.Size, card.Position, card.BackgroundColor3 = UDim2.new(0, 350, 0, 120), UDim2.new(0, 10, 0, 50 + (order - 1) * 140), Color3.fromRGB(35, 35, 35)
+        local cardCorner = Instance.new("UICorner", card)
+        cardCorner.CornerRadius = UDim.new(0, 10)
+
+        local mugshot = Instance.new("ImageLabel", card)
+        mugshot.Size, mugshot.Position, mugshot.BackgroundTransparency, mugshot.Image = UDim2.new(0, 80, 0, 80), UDim2.new(0, 10, 0, 20), 1, "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=png"
+        local avatarCorner = Instance.new("UICorner", mugshot)
+        avatarCorner.CornerRadius = UDim.new(0, 40)
+
+        local nameLabel = Instance.new("TextLabel", card)
+        nameLabel.Size, nameLabel.Position, nameLabel.BackgroundTransparency, nameLabel.Font = UDim2.new(0, 150, 0, 25), UDim2.new(0, 100, 0, 10), 1, Enum.Font.GothamBold
+        nameLabel.TextSize, nameLabel.TextColor3, nameLabel.TextXAlignment, nameLabel.Text = 20, Color3.fromRGB(255, 255, 255), Enum.TextXAlignment.Left, displayName
+
+        local roleLabel = Instance.new("TextLabel", card)
+        roleLabel.Size, roleLabel.BackgroundTransparency, roleLabel.Font, roleLabel.TextSize = UDim2.new(0, 180, 0, 20), 1, Enum.Font.Gotham, 16
+        roleLabel.TextColor3, roleLabel.TextXAlignment, roleLabel.Text = Color3.fromRGB(200, 200, 200), Enum.TextXAlignment.Left, role
+        roleLabel.Position = UDim2.new(0, 100 + nameLabel.TextBounds.X + 10, 0, 12)
+
+        local desc = Instance.new("TextLabel", card)
+        desc.Size, desc.Position, desc.BackgroundTransparency, desc.Font = UDim2.new(1, -120, 0, 50), UDim2.new(0, 100, 0, 40), 1, Enum.Font.Gotham
+        desc.TextSize, desc.TextColor3, desc.TextXAlignment, desc.TextYAlignment, desc.TextWrapped, desc.Text = 16, Color3.fromRGB(180, 180, 180), Enum.TextXAlignment.Left, Enum.TextYAlignment.Top, true, description
+    end
+
+    addCredit(9245717779, "streetvalid", "Mastermind & UI Scripter", "Proud founder of Primal Cheats and created the GUI. Been coding with Lua for 5+ years.", 1)
+    addCredit(2411758272, "Dollosha", "Lead Scripter", "Co-Founder of Primal Cheats and coded all scripts. Been coding with Lua for 7+ years.", 2)
+end
+
+-- Keybind for toggling GUI
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-    if input.KeyCode == keybind then
+    if input.KeyCode == Enum.KeyCode.L then
         gui.Enabled = not gui.Enabled
     end
 end)
 
--- OTHER PAGES
-local farming = newPage("Visuals")
-
--- scrolling frame for page bugged as hell
-local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, 0, 1, 0)
-scrollFrame.Position = UDim2.new(0, 0, 0, 0)
-scrollFrame.BackgroundTransparency = 1
-scrollFrame.ScrollBarThickness = 6
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrollFrame.Parent = farming
-
-local layout = Instance.new("UIListLayout")
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 6)
-layout.Parent = scrollFrame
-
-local bottomSpacer = Instance.new("Frame")
-bottomSpacer.Size = UDim2.new(1, 0, 0, 50)
-bottomSpacer.BackgroundTransparency = 1
-bottomSpacer.Parent = scrollFrame
-
-layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
-end)
-
--- visuals stuff
-sectionTitle(scrollFrame, "Visuals (Client Sided)")
-
--- custom tracer colour
-local tracerRow = makeRow(scrollFrame, "Custom Tracer Color", "Changes the color of your tracer")
-local tracerToggle = addToggle(tracerRow:FindFirstChild("Right"), false, function(state)
-    print("Custom Tracer Color enabled:", state)
-end)
-
-local tracerColorBox = Instance.new("TextBox")
-tracerColorBox.Size = UDim2.new(0, 120, 0, 28)
-tracerColorBox.BackgroundColor3 = Color3.fromRGB(28,28,28)
-tracerColorBox.TextColor3 = Color3.fromRGB(255,255,255)
-tracerColorBox.Font = Enum.Font.Gotham
-tracerColorBox.TextSize = 16
-tracerColorBox.Text = "255,255,255"
-tracerColorBox.ClearTextOnFocus = false
-tracerColorBox.Parent = scrollFrame
-roundify(tracerColorBox, 6)
-
-tracerColorBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local text = tracerColorBox.Text
-        local r, g, b = text:match("(%d+),(%d+),(%d+)")
-        r, g, b = tonumber(r), tonumber(g), tonumber(b)
-        if r and g and b then
-            r = math.clamp(r,0,255)
-            g = math.clamp(g,0,255)
-            b = math.clamp(b,0,255)
-            local newColor = Color3.fromRGB(r, g, b)
-            _G.TracerColor = newColor
-
-            local player = game:GetService("Players").LocalPlayer
-            local settings = player:WaitForChild("Status"):WaitForChild("Settings")
-            if settings:FindFirstChild("BulletColor") and settings.BulletColor:IsA("Color3Value") then
-                settings.BulletColor.Value = newColor
-            end
-        else
-            tracerColorBox.Text = "255,255,255"
-        end
-    end
-end)
-
--- gun skins
-local gunSkinsRow = makeRow(scrollFrame, "Gun Skins", "Enable/disable gun skins")
-local gunSkinsToggle = addToggle(gunSkinsRow:FindFirstChild("Right"), false, function(state)
-    _G.GunSkinsEnabled = state
-    applyGunSkin(_G.SelectedGunSkin)
-end)
-
-local skinOptions = {
-    ["Blackoutt"] = "rbxassetid://12936441454",
-    ["CAMO"] = "rbxassetid://18438387808",
-    ["Electric Stripes"] = "rbxassetid://14630225641",
-    ["Fishy"] = "rbxassetid://18162163437",
-    ["Gift"] = "rbxassetid://15474139695",
-    ["Gift Wrap"] = "rbxassetid://18438246185",
-    ["Inferno"] = "rbxassetid://7866373261",
-    ["Street Art"] = "rbxassetid://14630862743",
-    ["Dark Matter"] = "rbxassetid://14630237541",
-}
-
-_G.SelectedGunSkin = "Blackoutt"
-
--- skins dropdown
-local skinDropdownRow = makeRow(scrollFrame, "Select Gun Skin")
-local dropdownBase = Instance.new("TextButton")
-dropdownBase.Size = UDim2.new(0, 112, 0, 28)
-dropdownBase.Position = UDim2.new(1, -112, 0.5, -14)
-dropdownBase.BackgroundColor3 = Color3.fromRGB(28,28,28)
-dropdownBase.Text = ""
-dropdownBase.Parent = skinDropdownRow:FindFirstChild("Right")
-roundify(dropdownBase, 8)
-
-local currentSkinLabel = Instance.new("TextLabel")
-currentSkinLabel.BackgroundTransparency = 1
-currentSkinLabel.Size = UDim2.new(1, -26, 1, 0)
-currentSkinLabel.Position = UDim2.new(0, 8, 0, 0)
-currentSkinLabel.Font = Enum.Font.GothamBold
-currentSkinLabel.TextSize = 16
-currentSkinLabel.TextXAlignment = Enum.TextXAlignment.Right
-currentSkinLabel.TextColor3 = COL_TEXT
-currentSkinLabel.Text = _G.SelectedGunSkin
-currentSkinLabel.Parent = dropdownBase
-
-local maxVisible = 5
-local itemHeight = 28
-
-local optionsFrame = Instance.new("ScrollingFrame")
-optionsFrame.Size = UDim2.new(0, 112, 0, maxVisible * itemHeight)
-optionsFrame.Position = UDim2.new(0, 0, 1, 0)
-optionsFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
-optionsFrame.BorderSizePixel = 0
-optionsFrame.Visible = false
-optionsFrame.ScrollBarThickness = 6
-optionsFrame.Active = true
-optionsFrame.Parent = dropdownBase
-optionsFrame.ZIndex = 998
-optionsFrame.CanvasSize = UDim2.new(0,0,0,0)
-
-optionsFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseWheel then
-        input:Capture()
-    end
-end)
-optionsFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseWheel then
-        input:Capture()
-    end
-end)
-
-local layout2 = Instance.new("UIListLayout")
-layout2.Padding = UDim.new(0,2)
-layout2.SortOrder = Enum.SortOrder.LayoutOrder
-layout2.Parent = optionsFrame
-
-layout2:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    optionsFrame.CanvasSize = UDim2.new(0,0,0,layout2.AbsoluteContentSize.Y)
-end)
-
--- decal functions and what not
-local minPartSize = 1
-local function applyDecalToPart(part, decalId)
-    for _, child in ipairs(part:GetChildren()) do
-        if child:IsA("Decal") and child.Name:find("GunSkin_") then
-            child:Destroy()
-        end
-    end
-    for _, face in ipairs(Enum.NormalId:GetEnumItems()) do
-        local decal = Instance.new("Decal")
-        decal.Name = "GunSkin_"..tostring(face)
-        decal.Face = face
-        decal.Texture = decalId
-        decal.Parent = part
-    end
-end
-
-local function applyDecalToTool(tool)
-    if not _G.GunSkinsEnabled then return end
-    local decalId = skinOptions[_G.SelectedGunSkin]
-    for _, part in ipairs(tool:GetDescendants()) do
-        if part:IsA("BasePart") and part.Size.Magnitude >= minPartSize then
-            applyDecalToPart(part, decalId)
-        end
-    end
-end
-
-function applyGunSkin(skinName)
-    if not skinName then return end
-    _G.SelectedGunSkin = skinName
-    for _, tool in ipairs(LocalPlayer.Backpack:GetChildren()) do
-        if tool:IsA("Tool") then applyDecalToTool(tool) end
-    end
-    if LocalPlayer.Character then
-        for _, tool in ipairs(LocalPlayer.Character:GetChildren()) do
-            if tool:IsA("Tool") then applyDecalToTool(tool) end
-        end
-    end
-end
-
-LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
-    if tool:IsA("Tool") then applyDecalToTool(tool) end
-end)
-LocalPlayer.CharacterAdded:Connect(function(char)
-    char.ChildAdded:Connect(function(tool)
-        if tool:IsA("Tool") then applyDecalToTool(tool) end
-    end)
-end)
-
--- dropdown buttons for skins 
-for skinName, _ in pairs(skinOptions) do
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1,0,0,itemHeight)
-    btn.BackgroundColor3 = Color3.fromRGB(28,28,28)
-    btn.Text = skinName
-    btn.TextColor3 = COL_TEXT
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 16
-    btn.ZIndex = 1000
-    btn.Parent = optionsFrame
-
-    btn.MouseButton1Click:Connect(function()
-        currentSkinLabel.Text = skinName
-        _G.SelectedGunSkin = skinName
-        optionsFrame.Visible = false
-        dropdownOpen = false
-        applyGunSkin(skinName)
-    end)
-end
-
--- dropdown toggle
-local dropdownOpen = false
-dropdownBase.MouseButton1Click:Connect(function()
-    dropdownOpen = not dropdownOpen
-    optionsFrame.Visible = dropdownOpen
-end)
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if dropdownOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        local mousePos = UserInputService:GetMouseLocation()
-        local guiPos = dropdownBase.AbsolutePosition
-        local guiSize = dropdownBase.AbsoluteSize
-        if not (mousePos.X >= guiPos.X and mousePos.X <= guiPos.X + guiSize.X and
-                mousePos.Y >= guiPos.Y and mousePos.Y <= guiPos.Y + optionsFrame.AbsoluteSize.Y) then
-            dropdownOpen = false
-            optionsFrame.Visible = false
-        end
-    end
-end)
-
-
-
-local killer = newPage("Rage")
-sectionTitle(killer, "Rage")
-local hostileTPRow = makeRow(killer, "Hostile Teleporter", "Teleport hostile nerd to you")
-addToggle(hostileTPRow, false, function(state)
-    if state then
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Started the Hostile Teleporter ! "
-)
-        HostileTeleporter.Start()
-    else
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Stopped the Hostile Teleporter ! "
-)
-        HostileTeleporter.Stop()
-    end
-end)
-
-
--- police teleporter
-local policeWardenTPRow = makeRow(killer, "Police Teleporter", "Teleport Police nerd to you")
-addToggle(policeWardenTPRow, false, function(state)
-    if state then
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Started the Guard Teleporter ! "
-)
-        PoliceWardenTeleporter.Start()
-    else
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Stopped the Guard Teleporter ! "
-)
-        PoliceWardenTeleporter.Stop()
-    end
-end)
-
--- spinbot 
-local Spinbot = {}
-
-local running = false
-local connection
-local speed = 50 -- default spin speed
-
-function Spinbot.Start()
-    if running then return end
-    running = true
-
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local hrp = character:WaitForChild("HumanoidRootPart")
-
-    connection = game:GetService("RunService").RenderStepped:Connect(function()
-        if running then
-            hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speed), 0)
-        end
-    end)
-end
-
-function Spinbot.Stop()
-    if not running then return end
-    running = false
-    if connection then
-        connection:Disconnect()
-        connection = nil
-    end
-end
-
-
--- spinbot
-local spinbotRow = makeRow(killer, "Spinbot", "Spin your character around automatically")
-addToggle(spinbotRow, false, function(state)
-    if state then
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Started the spinbot"
-)
-        Spinbot.Start()
-    else
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Stopped the spinbot"
-)
-        Spinbot.Stop()
-    end
-end)
-
-
-local misc = newPage("Misc")
-sectionTitle(misc, "Misc")
-
--- hit sound
-local hitSoundRow = makeRow(misc, "Hit Sound", "Plays a sound when hitting a player")
-
--- Toggle Hit Sound
-local hitSoundToggle = addToggle(hitSoundRow:FindFirstChild("Right"), false, function(state)
-    _G.HitSoundEnabled = state
-    print("Hit Sound Enabled:", state)
-
-    if state then
-        
-        updateHitMarkerSound()
-    end
-end)
-
--- label sounds
-local soundsLabel = Instance.new("TextLabel")
-soundsLabel.BackgroundTransparency = 1
-soundsLabel.Font = Enum.Font.Gotham
-soundsLabel.TextSize = 14
-soundsLabel.TextColor3 = COL_SUB
-soundsLabel.Text = "Sounds"
-soundsLabel.TextXAlignment = Enum.TextXAlignment.Left
-soundsLabel.Size = UDim2.new(1, -20, 0, 20)
-soundsLabel.Position = UDim2.new(0, 12, 0, 54)
-soundsLabel.Parent = misc
-
-local soundsDropdownRow = makeRow(misc, "Select Sound")
-local dropdownBase = Instance.new("TextButton")
-dropdownBase.Size = UDim2.new(0, 112, 0, 28)
-dropdownBase.Position = UDim2.new(1, -112, 0.5, -14)
-dropdownBase.BackgroundColor3 = Color3.fromRGB(28,28,28)
-dropdownBase.Text = ""
-dropdownBase.Parent = soundsDropdownRow:FindFirstChild("Right")
-roundify(dropdownBase, 8)
-
-local currentSound = Instance.new("TextLabel")
-currentSound.BackgroundTransparency = 1
-currentSound.Size = UDim2.new(1, -26, 1, 0)
-currentSound.Position = UDim2.new(0, 8, 0, 0)
-currentSound.Font = Enum.Font.GothamBold
-currentSound.TextSize = 16
-currentSound.TextXAlignment = Enum.TextXAlignment.Right
-currentSound.TextColor3 = COL_TEXT
-currentSound.Text = "Hitmarker"
-currentSound.Parent = dropdownBase
-
-local hitSoundAssets = {
-    Hitmarker = "rbxassetid://705502934",
-    Bubbles   = "rbxassetid://2375539277",
-    Osu = "rbxassetid://7273736372",
-    Pan       = "rbxassetid://121056823077666",
-    Sparkles  = "rbxassetid://137392628136734",
-    Whistle   = "rbxassetid://18737703374",
-    Raindrops = "rbxassetid://365362615",
-    Eagle     = "rbxassetid://491270608",
-}
-
-function updateHitMarkerSound()
-    local playerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
-    if not playerGui then return end
-    local scopeGui = playerGui:FindFirstChild("Scope")
-    if not scopeGui then return end
-    local hitMarker = scopeGui:FindFirstChild("HitMarker")
-    if not hitMarker or not hitMarker:IsA("Sound") then return end
-
-    local soundId = hitSoundAssets[_G.HitSoundChoice] or hitSoundAssets["Hitmarker"]
-    hitMarker.SoundId = soundId
-
-    if _G.HitSoundEnabled then
-        hitMarker:Play()
-    end
-end
-
--- start of staff checker toggle and script
-StaffNotifierEnabled = true -- default ON
-
-local StaffList = {
-    [4036616925] = "Vyaii",
-    [4835226372] = "pzrpled",
-    [1079506543] = "modbotter",
-    [1827703218] = "Jat",
-    [1314873852] = "Ruby Kurosawa",
-    [2776100361] = "LordxEgg",
-    [5095781620] = "fwomed",
-    [6019613135] = "contact",
-    [1676500493] = "hamooodylil",
-    [810011681]  = "caisr",
-    [321731898]  = "FieldsCRW",
-    [1622836918] = "5ivio",
-    [2811348175] = "PrestonTug",
-    [662263759]  = "TheCatGodOfDeath",
-    [2641543045] = "Dev_COL",
-    [2418168241] = "Axely",
-    [136568311]  = "Ban",
-    [720403576]  = "bannersblox",
-    [6212777205] = "Jitze",
-    [330929769]  = "Alfa",
-    [1562173]    = "hethr",
-    [104529797]  = "d1anna",
-    [5309987]    = "ntaosi",
-    [4036616925] = "EndOfTheLine_YTVC3",
-    [417258098]  = "xA_lfa",
-    [2230856063] = "Rez"
-}
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local ActivePopups = {}
-
-local function createPopup(player, displayName)
-    if not StaffNotifierEnabled then return end
-
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.IgnoreGuiInset = true
-    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0, 240, 0, 65)
-    Frame.Position = UDim2.new(1, -260, 1, -85 - (#ActivePopups * 75))
-    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Frame.BorderSizePixel = 0
-    Frame.BackgroundTransparency = 0.1
-    Frame.Parent = ScreenGui
-
-    local UIStroke = Instance.new("UIStroke")
-    UIStroke.Thickness = 2
-    UIStroke.Color = Color3.fromRGB(255, 0, 0)
-    UIStroke.Parent = Frame
-
-    local ImageLabel = Instance.new("ImageLabel")
-    ImageLabel.Size = UDim2.new(0, 50, 0, 50)
-    ImageLabel.Position = UDim2.new(0, 8, 0.5, -25)
-    ImageLabel.BackgroundTransparency = 1
-    ImageLabel.Parent = Frame
-
-    local thumbType = Enum.ThumbnailType.HeadShot
-    local thumbSize = Enum.ThumbnailSize.Size100x100
-    local content, _ = Players:GetUserThumbnailAsync(player.UserId, thumbType, thumbSize)
-    ImageLabel.Image = content
-
-    local NameLabel = Instance.new("TextLabel")
-    NameLabel.Size = UDim2.new(1, -70, 0.5, -4)
-    NameLabel.Position = UDim2.new(0, 70, 0, 6)
-    NameLabel.BackgroundTransparency = 1
-    NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    NameLabel.TextScaled = true
-    NameLabel.Font = Enum.Font.Code
-    NameLabel.Text = "⚠️ " .. displayName
-    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    NameLabel.Parent = Frame
-
-    local UserLabel = Instance.new("TextLabel")
-    UserLabel.Size = UDim2.new(1, -70, 0.4, -4)
-    UserLabel.Position = UDim2.new(0, 70, 0.5, 0)
-    UserLabel.BackgroundTransparency = 1
-    UserLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-    UserLabel.TextScaled = true
-    UserLabel.Font = Enum.Font.Code
-    UserLabel.Text = "@" .. player.Name
-    UserLabel.TextXAlignment = Enum.TextXAlignment.Left
-    UserLabel.Parent = Frame
-
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://147722227"
-    sound.Volume = 1
-    sound.Parent = Frame
-    sound:Play()
-
-    table.insert(ActivePopups, Frame)
-
-    task.delay(5, function()
-        for i = 1, 20 do
-            Frame.BackgroundTransparency += 0.05
-            NameLabel.TextTransparency += 0.05
-            UserLabel.TextTransparency += 0.05
-            ImageLabel.ImageTransparency += 0.05
-            UIStroke.Transparency += 0.05
-            task.wait(0.05)
-        end
-        Frame:Destroy()
-
-        for i, f in ipairs(ActivePopups) do
-            if f == Frame then table.remove(ActivePopups, i) break end
-        end
-
-        for i, f in ipairs(ActivePopups) do
-            f:TweenPosition(UDim2.new(1, -260, 1, -85 - ((i-1) * 75)), "Out", "Quad", 0.25, true)
-        end
-    end)
-end
-
--- staff check
-local function checkStaff(player)
-    local displayName = StaffList[player.UserId]
-    if displayName then
-        createPopup(player, displayName)
-    end
-end
-
--- Check existing players
-for _, plr in pairs(Players:GetPlayers()) do
-    if plr ~= LocalPlayer then
-        checkStaff(plr)
-    end
-end
-
--- check new players
-Players.PlayerAdded:Connect(checkStaff)
-
--- staff check
-local staffRow = makeRow(misc, "Staff Notifier", "Notifies when a staff member joins the game")
-local staffToggle = addToggle(staffRow:FindFirstChild("Right"), true, function(state)
-    StaffNotifierEnabled = state
-    print("Staff Notifier Enabled:", state)
-end)
-
--- end of staff checker toggle and script
-
--- dropdown
-local soundOptions = {"Hitmarker","Bubbles","Osu","Pan","Sparkles","Whistle","Raindrops","Eagle"}
-_G.HitSoundChoice = "Hitmarker"
-local dropdownOpen = false
-
-local maxVisible = 5 
-local itemHeight = 28
-local dropdownHeight = math.min(#soundOptions, maxVisible) * itemHeight
-
-local optionsFrame = Instance.new("ScrollingFrame")
-optionsFrame.Size = UDim2.new(0, 112, 0, dropdownHeight)
-optionsFrame.Position = UDim2.new(0, 0, 1, 0)
-optionsFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
-optionsFrame.BorderSizePixel = 0
-optionsFrame.Visible = false
-optionsFrame.ScrollBarThickness = 6
-optionsFrame.ScrollBarImageColor3 = Color3.fromRGB(180,180,180)
-optionsFrame.Active = true
-optionsFrame.Parent = dropdownBase
-optionsFrame.ZIndex = 998
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,2)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Parent = optionsFrame
-
-local function updateCanvas()
-    optionsFrame.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
-end
-layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
-task.defer(updateCanvas)
-
-for i, soundName in ipairs(soundOptions) do
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1,0,0,itemHeight)
-    btn.BackgroundColor3 = Color3.fromRGB(28,28,28)
-    btn.Text = soundName
-    btn.TextColor3 = COL_TEXT
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 16
-    btn.ZIndex = 1000
-    btn.Parent = optionsFrame
-
-    btn.MouseButton1Click:Connect(function()
-        currentSound.Text = soundName
-        _G.HitSoundChoice = soundName
-        optionsFrame.Visible = false
-        dropdownOpen = false
-        updateHitMarkerSound()
-        print("Selected sound:", soundName)
-    end)
-end
-
-dropdownBase.MouseButton1Click:Connect(function()
-    dropdownOpen = not dropdownOpen
-    optionsFrame.Visible = dropdownOpen
-end)
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if dropdownOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        local mousePos = UserInputService:GetMouseLocation()
-        local guiPos = dropdownBase.AbsolutePosition
-        local guiSize = dropdownBase.AbsoluteSize
-        if not (mousePos.X >= guiPos.X and mousePos.X <= guiPos.X + guiSize.X and
-                mousePos.Y >= guiPos.Y and mousePos.Y <= guiPos.Y + guiSize.Y + optionsFrame.AbsoluteSize.Y) then
-            dropdownOpen = false
-            optionsFrame.Visible = false
-        end
-    end
-end)
-
--- keys adder
-local miscRow = makeRow(misc, "Add Keys", "Click to add 10 keys")
-do
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,112,0,28)
-    button.Position = UDim2.new(1,-112,0.5,-14)
-    button.BackgroundColor3 = Color3.fromRGB(28,28,28)
-    button.Text = "Add 10 Keys"
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 16
-    button.TextColor3 = COL_TEXT
-    button.Parent = miscRow:FindFirstChild("Right")
-    roundify(button,8)
-
-    button.MouseButton1Click:Connect(function()
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Added 10 keys !"
-)
-        local Event = game:GetService("ReplicatedStorage").Rankup
-        Event:FireServer(10)
-    end)
-end
-
--- skins adder
-local miscRow = makeRow(misc, "Add Skins", "Click to add all skins to your account")
-do
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,112,0,28)
-    button.Position = UDim2.new(1,-112,0.5,-14)
-    button.BackgroundColor3 = Color3.fromRGB(28,28,28)
-    button.Text = "Add all skins"
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 16
-    button.TextColor3 = COL_TEXT
-    button.Parent = miscRow:FindFirstChild("Right")
-    roundify(button,8)
-
-    button.MouseButton1Click:Connect(function()
-        local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-firesignal(Event.OnClientEvent, 
-    "Added all gun skin !"
-)
-        local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
-        local skins = {
-            "24k Gold",
-            "24k Gold Pistol",
-            "Anoidzed Red",
-            "Galaxy",
-            "Super Soaker",
-            "The Patriot",
-            "Woodland"
-        }
-        for _, skin in ipairs(skins) do
-            award:InvokeServer(skin)
-        end
-    end)
-end
-
--- auto farm
-local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
-local sell = game:GetService("ReplicatedStorage").SkinFolder.Events.Sell
-local skins = { "24k Gold","24k Gold Pistol","Anoidzed Red","Galaxy","Super Soaker","The Patriot","Woodland" }
-
-_G.AutoSkinFarmEnabled = false
-
-local function startAutoFarm()
-    task.spawn(function()
-        while _G.AutoSkinFarmEnabled do
-            for _, skin in ipairs(skins) do
-                task.spawn(function()
-                    pcall(function()
-                        award:InvokeServer(skin)
-                        sell:FireServer(skin, true, "")
-                    end)
-                end)
-            end
-            task.wait(0.01) -- tiny delay to prevent crashes
-        end
-    end)
-end
-
-local autoFarmRow = makeRow(misc, "Rapid Auto Skin Farm", "Automatically awards and sells skins with rapid speed")
-addToggle(autoFarmRow, false, function(state)
-    _G.AutoSkinFarmEnabled = state
-    local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-    if state then
-        firesignal(Event.OnClientEvent, "Started the money autofarm")
-        startAutoFarm()
-    else
-        firesignal(Event.OnClientEvent, "Stopped the money autofarm")
-    end
-end)
-
--- slower auto farm
-local slowFarmEnabled = false
-
-local function startSlowAutoFarm()
-    task.spawn(function()
-        while slowFarmEnabled do
-            for _, skin in ipairs(skins) do
-                pcall(function()
-                    award:InvokeServer(skin)
-                    sell:FireServer(skin, true, "")
-                end)
-            end
-            task.wait(0.5) -- slower, safer loop (2x per second)
-        end
-    end)
-end
-
--- row for slow auto farm
-local slowFarmRow = makeRow(misc, "Slower Auto Farm", "Automatically awards and sells skins slower")
-addToggle(slowFarmRow, false, function(state)
-    slowFarmEnabled = state
-    local Event = game:GetService("ReplicatedStorage").Events.Tooltip
-    if state then
-        firesignal(Event.OnClientEvent, "Started the slower auto farm")
-        startSlowAutoFarm()
-    else
-        firesignal(Event.OnClientEvent, "Stopped the slower auto farm")
-    end
-end)
-
--- credits
-local credits = newPage("Credits")
-
-local function addCredit(parent, userId, displayName, role, description, order)
-    local spacingY = 140 -- vertical space between entries
-    local baseY = 50
-    local posY = baseY + (order - 1) * spacingY
-
-    local card = Instance.new("Frame")
-    card.Size = UDim2.new(0, 350, 0, 120)
-    card.Position = UDim2.new(0, 10, 0, posY)
-    card.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    card.Parent = parent
-
-    local cardCorner = Instance.new("UICorner")
-    cardCorner.CornerRadius = UDim.new(0, 10)
-    cardCorner.Parent = card
-
-    local mugshot = Instance.new("ImageLabel")
-    mugshot.Size = UDim2.new(0, 80, 0, 80)
-    mugshot.Position = UDim2.new(0, 10, 0, 20)
-    mugshot.BackgroundTransparency = 1
-    mugshot.Image = "https://www.roblox.com/headshot-thumbnail/image?userId="..userId.."&width=150&height=150&format=png"
-    mugshot.Parent = card
-
-    local avatarCorner = Instance.new("UICorner")
-    avatarCorner.CornerRadius = UDim.new(0, 40)
-    avatarCorner.Parent = mugshot
-
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(0, 150, 0, 25)
-    nameLabel.Position = UDim2.new(0, 100, 0, 10)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 20
-    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    nameLabel.Text = displayName
-    nameLabel.Parent = card
-
-    local roleLabel = Instance.new("TextLabel")
-    roleLabel.Size = UDim2.new(0, 180, 0, 20)
-    roleLabel.Position = UDim2.new(0, 100 + nameLabel.TextBounds.X + 10, 0, 12) -- right of name
-    roleLabel.BackgroundTransparency = 1
-    roleLabel.Font = Enum.Font.Gotham
-    roleLabel.TextSize = 16
-    roleLabel.TextColor3 = Color3.fromRGB(200, 200, 200) -- lighter than name
-    roleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    roleLabel.Text = role
-    roleLabel.Parent = card
-
-    local desc = Instance.new("TextLabel")
-    desc.Size = UDim2.new(1, -120, 0, 50)
-    desc.Position = UDim2.new(0, 100, 0, 40)
-    desc.BackgroundTransparency = 1
-    desc.Font = Enum.Font.Gotham
-    desc.TextSize = 16
-    desc.TextColor3 = Color3.fromRGB(180, 180, 180)
-    desc.TextXAlignment = Enum.TextXAlignment.Left
-    desc.TextYAlignment = Enum.TextYAlignment.Top
-    desc.TextWrapped = true
-    desc.Text = description
-    desc.Parent = card
-end
-
-addCredit(credits, 9245717779, "streetvalid", "Mastermind & UI Scripter", "Proud founder of Primal Cheats and created the GUI. Been coding with Lua for 5+ years.", 1)
-addCredit(credits, 2411758272, "Dollosha", "Lead Scripter", "Co-Founder of Primal Cheats and coded all scripts. Been coding with Lua for 7+ years.", 2)
-
--- sidebar tabs
-local tabs = {
-    { name = "Home",    page = home },
-    { name = "Main",    page = main },
-    { name = "Visuals", page = farming },
-    { name = "Rage",    page = killer },
-    { name = "Misc",    page = misc },
-    { name = "Credits", page = credits },
-}
-
-local buttons = {}
-local function makeTabButton(text, selected)
-	local b = Instance.new("TextButton")
-	b.AutoButtonColor = false
-	b.Size = UDim2.new(1, -20, 0, 44)
-	b.BackgroundColor3 = selected and COL_ACCENT or Color3.fromRGB(26,26,26)
-	b.Text = "  "..text
-	b.TextXAlignment = Enum.TextXAlignment.Left
-	b.TextColor3 = COL_TEXT
-	b.Font = Enum.Font.Gotham
-	b.TextSize = 16
-	b.Parent = sidebar
-	roundify(b,8)
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Thickness = 1
-	stroke.Color = Color3.fromRGB(55,55,55)
-	stroke.Transparency = selected and 1 or 0.35
-	stroke.Parent = b
-
-	return b
-end
-
-local function selectTab(idx)
-	for i, t in ipairs(tabs) do
-		t.page.Visible = (i == idx)
-		local b = buttons[i]
-		b.BackgroundColor3 = (i == idx) and COL_ACCENT or Color3.fromRGB(26,26,26)
-		b:FindFirstChildOfClass("UIStroke").Transparency = (i == idx) and 1 or 0.35
-	end
-end
-
-for i, t in ipairs(tabs) do
-	local b = makeTabButton(t.name, i == 2)
-	buttons[i] = b
-	b.MouseButton1Click:Connect(function()
-		selectTab(i)
-	end)
-end
-
--- Start on Main
-selectTab(1)
+-- Initialize everything
+createGameCheckGui()
+sendWebhook()
+notifyExecution()
+createMobileButton()
+setupHomePage()
+setupMainPage()
+setupVisualsPage()
+setupRagePage()
+setupMiscPage()
+setupCreditsPage()
