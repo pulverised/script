@@ -53,22 +53,6 @@ local function createGameCheckGui()
     createButton(frame, UDim2.new(0.45, 0, 0, 35), UDim2.new(0.5, 0, 1, -45), "▶ Join PLV3", function() TeleportService:Teleport(214169, lp) end)
 end
 
--- Executor webhook
-local function sendWebhook()
-    local webhookUrl = "https://discord.com/api/webhooks/1410606912810127420/_BhcY_oFuVkOWOrFuR6TOGTbCT1RopCHaNrxMQBwBN6byz0BSnoRhtNl2x3IrMz-Awy7"
-    local payload = {
-        embeds = {{
-            title = "Primal Script Executed",
-            description = "Username: " .. lp.Name .. "\nUserId: " .. lp.UserId .. "\nExecuted At: " .. os.date("%d-%m-%y %H:%M:%S"),
-            thumbnail = { url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. lp.UserId .. "&width=150&height=150&format=png" },
-            color = 0x00ff00
-        }}
-    }
-    local jsonData = HttpService:JSONEncode(payload)
-    local request = (syn and syn.request or http_request) or function() warn("Executor does not support HTTP requests") end
-    request({ Url = webhookUrl, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = jsonData })
-end
-
 -- Notify execution
 local function notifyExecution()
     local messages = {
