@@ -1076,7 +1076,6 @@ end)
 
 -- Initialize everything
 createGameCheckGui()
-sendWebhook()
 notifyExecution()
 createMobileButton()
 setupHomePage()
