@@ -260,3 +260,24 @@ local HostileToggle = Tab:CreateToggle({
 })
 
 local Section = Tab:CreateSection("Body")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MessageEvent = ReplicatedStorage.Events.Tooltip
+local Event = ReplicatedStorage.Events -- assuming your stamina event is also under Events
+
+-- No Jump Cooldown / No Stamina Drain Toggle
+local StaminaToggle = Tab:CreateToggle({
+    Name = "No Jump Cooldown",
+    CurrentValue = false,
+    Flag = "NoJumpCooldown_Toggle",
+    Callback = function(Value)
+        if Value then
+            -- Enable no stamina
+            firesignal(MessageEvent.OnClientEvent, "Enabled no stamina !")
+            firesignal(Event.OnClientEvent, "Stamina", 99999)
+        else
+            -- Reset stamina (set back to default, example 100)
+            firesignal(MessageEvent.OnClientEvent, "Disabled no stamina !")
+            firesignal(Event.OnClientEvent, "Stamina", 100)
+        end
+    end,
+})
