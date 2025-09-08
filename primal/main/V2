@@ -258,3 +258,5 @@ local HostileToggle = Tab:CreateToggle({
         end
     end,
 })
+
+local Section = Tab:CreateSection("Body")
