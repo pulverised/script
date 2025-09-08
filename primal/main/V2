@@ -306,3 +306,129 @@ local TreadmillToggle = Tab:CreateToggle({
         end
     end,
 })
+
+-- Visuals Tab (create only once)
+local VisualsTab = Window:CreateTab("Visuals", "eye")
+local VisualsSection = VisualsTab:CreateSection("Visuals")
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Killfeed variables
+local gui
+local feedFrame
+local eventConnection
+local KillfeedEnabled = false
+
+-- Create Killfeed UI
+local function CreateKillfeedUI()
+    gui = Instance.new("ScreenGui")
+    gui.Name = "KillfeedUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = player:WaitForChild("PlayerGui")
+
+    feedFrame = Instance.new("Frame")
+    feedFrame.Size = UDim2.new(0, 300, 1, 0)
+    feedFrame.Position = UDim2.new(1, -310, 0, 0)
+    feedFrame.BackgroundTransparency = 1
+    feedFrame.Parent = gui
+
+    local layout = Instance.new("UIListLayout")
+    layout.Parent = feedFrame
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.VerticalAlignment = Enum.VerticalAlignment.Top
+    layout.Padding = UDim.new(0, 6)
+end
+
+-- Add Kill entries
+local function AddKill(killerName, killerColor, weapon, victimName, victimColor, headshot, showHealth)
+    if not feedFrame then return end
+    local entry = Instance.new("TextLabel")
+    entry.Size = UDim2.new(1, 0, 0, 20)
+    entry.BackgroundTransparency = 1
+    entry.TextScaled = false
+    entry.RichText = true
+    entry.Font = Enum.Font.SourceSansBold
+    entry.TextXAlignment = Enum.TextXAlignment.Left
+    entry.TextStrokeTransparency = 0.8
+    entry.TextSize = 18
+
+    local text = string.format(
+        "<font color='#%02x%02x%02x'>%s</font> <font color='#ff00ff'>[%s]</font> <font color='#%02x%02x%02x'>%s</font>",
+        math.floor(killerColor.R * 255),
+        math.floor(killerColor.G * 255),
+        math.floor(killerColor.B * 255),
+        killerName,
+        weapon,
+        math.floor(victimColor.R * 255),
+        math.floor(victimColor.G * 255),
+        math.floor(victimColor.B * 255),
+        victimName
+    )
+
+    if headshot then text = text.." 💀" end
+    if showHealth then text = text.." ❤️" end
+
+    entry.Text = text
+    entry.Parent = feedFrame
+
+    task.delay(5, function()
+        if entry then
+            for i = 1, 20 do
+                entry.TextTransparency = i / 20
+                task.wait(0.05)
+            end
+            entry:Destroy()
+        end
+    end)
+end
+
+-- Enable / Disable Killfeed
+local function EnableKillfeed()
+    if not gui then CreateKillfeedUI() end
+    if not eventConnection then
+        local success, Event = pcall(function()
+            return ReplicatedStorage:WaitForChild("Events"):WaitForChild("Killfeed")
+        end)
+        if success and Event then
+            eventConnection = Event.OnClientEvent:Connect(AddKill)
+        end
+    end
+end
+
+local function DisableKillfeed()
+    if eventConnection then
+        eventConnection:Disconnect()
+        eventConnection = nil
+    end
+    if gui then
+        gui:Destroy()
+        gui = nil
+        feedFrame = nil
+    end
+end
+
+-- Killfeed Toggle
+local KillfeedToggle = VisualsSection:CreateToggle({
+    Name = "Killfeed",
+    CurrentValue = false,
+    Flag = "Killfeed_Toggle",
+    Callback = function(Value)
+        KillfeedEnabled = Value
+        if Value then
+            EnableKillfeed()
+        else
+            DisableKillfeed()
+        end
+    end,
+})
+
+-- Persist after respawn
+player.CharacterAdded:Connect(function()
+    if KillfeedEnabled then
+        task.wait(1)
+        EnableKillfeed()
+    end
+end)
