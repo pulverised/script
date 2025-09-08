@@ -1,4 +1,4 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players = game:GetService("Players") -- ✅ Add this
 
 local Window = Rayfield:CreateWindow({
@@ -259,6 +259,7 @@ local HostileToggle = Tab:CreateToggle({
     end,
 })
 
+-- == Body Section ==
 local Section = Tab:CreateSection("Body")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MessageEvent = ReplicatedStorage.Events.Tooltip
@@ -278,6 +279,30 @@ local StaminaToggle = Tab:CreateToggle({
             -- Reset stamina (set back to default, example 100)
             firesignal(MessageEvent.OnClientEvent, "Disabled no stamina !")
             firesignal(Event.OnClientEvent, "Stamina", 100)
+        end
+    end,
+})
+
+-- Treadmill
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Event = ReplicatedStorage.Events.UpdateStat
+local MessageEvent = ReplicatedStorage.Events.Tooltip
+
+local used = false  
+
+local TreadmillToggle = Tab:CreateToggle({
+    Name = "Skip Treadmill",
+    CurrentValue = false,
+    Flag = "SkipTreadmill_Toggle",
+    Callback = function(Value)
+        if used then return end  -- only allow once, like your code
+
+        if Value then
+            firesignal(MessageEvent.OnClientEvent, "Enable the treadmill bypass !")
+            for i = 1, 4 do
+                firesignal(Event.OnClientEvent, "Runspeed", 1)
+            end
+            used = true
         end
     end,
 })
