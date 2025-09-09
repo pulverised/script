@@ -138,31 +138,172 @@ local TabHandles = {
 }
 
 --// MAIN TAB
-local TeamSection = TabHandles.MainTab:Section({ Title = "Team", Icon = "users" })
-TeamSection:Button({ Title = "Join Criminal", Icon = "user-x", Callback = function() end })
 
-local BodySection = TabHandles.MainTab:Section({ Title = "Body", Icon = "activity" })
-BodySection:Button({ Title = "No Jump Cooldown", Icon = "zap", Callback = function() end })
-BodySection:Button({ Title = "Skip Treadmill", Icon = "fast-forward", Callback = function() end })
+-- Join Criminal Button
+TeamSection:Button({
+    Title = "Join Criminal",
+    Icon = "user-x",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/join_criminal.txt"))()
+        end)
+    end
+})
+
+-- No Jump Cooldown Button
+BodySection:Button({
+    Title = "No Jump Cooldown",
+    Icon = "zap",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/no_jump_cooldown.txt"))()
+        end)
+    end
+})
+
+-- Skip Treadmill Button
+BodySection:Button({
+    Title = "Skip Treadmill",
+    Icon = "fast-forward",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/skip_treadmill.txt"))()
+        end)
+    end
+})
 
 --// VISUALS TAB
-TabHandles.VisualsTab:Toggle({ Title = "Custom Killfeed", Value = false, Callback = function(state) end })
+
+-- Custom Killfeed Toggle
+TabHandles.VisualsTab:Toggle({
+    Title = "Custom Killfeed",
+    Value = false,
+    Callback = function(state)
+        pcall(function()
+            if state then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/custom_killfeed.txt"))()
+            else
+                print("Custom Killfeed disabled") -- optional undo script
+            end
+        end)
+    end
+})
 
 --// RAGE TAB
-TabHandles.RageTab:Toggle({ Title = "Hostile Teleporter", Value = false, Callback = function(state) end })
-TabHandles.RageTab:Toggle({ Title = "Police Teleporter", Value = false, Callback = function(state) end })
-TabHandles.RageTab:Toggle({ Title = "Spinbot", Value = false, Callback = function(state) end })
+
+-- Hostile Teleporter Toggle
+TabHandles.RageTab:Toggle({
+    Title = "Hostile Teleporter",
+    Value = false,
+    Callback = function(state)
+        pcall(function()
+            if state then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/hostile_teleporter.txt"))()
+            else
+                print("Hostile Teleporter disabled")
+            end
+        end)
+    end
+})
+
+-- Police Teleporter Toggle
+TabHandles.RageTab:Toggle({
+    Title = "Police Teleporter",
+    Value = false,
+    Callback = function(state)
+        pcall(function()
+            if state then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/police_teleporter.txt"))()
+            else
+                print("Police Teleporter disabled")
+            end
+        end)
+    end
+})
+
+-- Spinbot Toggle
+TabHandles.RageTab:Toggle({
+    Title = "Spinbot",
+    Value = false,
+    Callback = function(state)
+        pcall(function()
+            if state then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/spinbot.txt"))()
+            else
+                print("Spinbot disabled")
+            end
+        end)
+    end
+})
 
 --// MISC TAB
-TabHandles.MiscTab:Toggle({ Title = "Staff Notifier", Value = false, Callback = function(state) end })
-TabHandles.MiscTab:Button({ Title = "Add Keys", Icon = "key", Callback = function() end })
-TabHandles.MiscTab:Button({ Title = "Add Skins", Icon = "image", Callback = function() end })
-TabHandles.MiscTab:Toggle({ Title = "Rapid Auto Farm", Value = false, Callback = function(state) end })
-TabHandles.MiscTab:Toggle({ Title = "Slow Auto Farm", Value = false, Callback = function(state) end })
 
---// CREDITS TAB
-TabHandles.CreditsTab:Paragraph({ Title = "Developers", Desc = "Your Name / Contributors", Image = "user-circle", ImageSize = 40, Color = "White" })
-TabHandles.CreditsTab:Paragraph({ Title = "Special Thanks", Desc = "Primal UI & Supporters", Image = "gift", ImageSize = 40, Color = "Grey" })
+-- Staff Notifier Toggle
+TabHandles.MiscTab:Toggle({
+    Title = "Staff Notifier",
+    Value = false,
+    Callback = function(state)
+        pcall(function()
+            if state then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/staff_notifier.txt"))()
+            else
+                print("Staff Notifier disabled")
+            end
+        end)
+    end
+})
+
+-- Add Keys Button
+TabHandles.MiscTab:Button({
+    Title = "Add Keys",
+    Icon = "key",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/add_keys.txt"))()
+        end)
+    end
+})
+
+-- Add Skins Button
+TabHandles.MiscTab:Button({
+    Title = "Add Skins",
+    Icon = "image",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/add_skins.txt"))()
+        end)
+    end
+})
+
+-- Rapid Auto Farm Toggle
+TabHandles.MiscTab:Toggle({
+    Title = "Rapid Auto Farm",
+    Value = false,
+    Callback = function(state)
+        pcall(function()
+            if state then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/rapid_auto_farm.txt"))()
+            else
+                print("Rapid Auto Farm disabled")
+            end
+        end)
+    end
+})
+
+-- Slow Auto Farm Toggle
+TabHandles.MiscTab:Toggle({
+    Title = "Slow Auto Farm",
+    Value = false,
+    Callback = function(state)
+        pcall(function()
+            if state then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUser/Repo/main/slow_auto_farm.txt"))()
+            else
+                print("Slow Auto Farm disabled")
+            end
+        end)
+    end
+})
 
 --// APPEARANCE TAB
 local AppearanceSection = TabHandles.AppearanceTab:Section({ Title = "Appearance Settings", Icon = "settings" })
