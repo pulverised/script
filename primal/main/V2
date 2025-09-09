@@ -293,34 +293,113 @@ TabHandles.VisualsTab:Toggle({
 })
 
 --// RAGE TAB
---// Hostile Teleporter Script
+local RageTab = TabHandles.RageTab
+
+--// HOSTILE TELEPORTER
 local HostileTeleporter = {}
-local running = false
-local trackedCharacters = {}
+local hostileRunning = false
+local hostileTrackedCharacters = {}
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local playersFolder = workspace:WaitForChild("Players")
 local DISTANCE_AHEAD = -5
 local UPDATE_INTERVAL = 1
 
--- Helper functions (getTargetHRP, isTargetPlayer, trackCharacter, untrackCharacter, teleportInFront, monitorPlayer)
--- (paste all your functions here)
+-- Helper functions
+local function getHostileTargetHRP()
+    if LocalPlayer.Character then
+        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    end
+    return nil
+end
+
+local function isHostileTarget(character)
+    local player = Players:GetPlayerFromCharacter(character)
+    if not player or player == LocalPlayer then return false end
+    if player.Team and player.Team.Name == "Criminals" then return true end
+    local status = player:FindFirstChild("Status")
+    if status and status:FindFirstChild("Hostile") then
+        return status.Hostile.Value == true
+    end
+    return false
+end
+
+local function teleportHostileInFront(character, targetHRP)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChild("Humanoid")
+    if hrp and targetHRP and humanoid and not humanoid.Sit then
+        local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
+        hrp.CFrame = CFrame.new(forwardPos)
+        hrp.Anchored = true
+    end
+end
+
+local function trackHostile(character)
+    for _, c in ipairs(hostileTrackedCharacters) do
+        if c == character then return end
+    end
+    if isHostileTarget(character) then
+        table.insert(hostileTrackedCharacters, character)
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Anchored = true end
+    end
+end
+
+local function untrackHostile(character)
+    for i, c in ipairs(hostileTrackedCharacters) do
+        if c == character then
+            local hrp = c:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = false end
+            table.remove(hostileTrackedCharacters, i)
+            break
+        end
+    end
+end
+
+local function monitorHostilePlayer(player)
+    player:GetPropertyChangedSignal("Team"):Connect(function()
+        local character = player.Character
+        if character then
+            if isHostileTarget(character) then
+                trackHostile(character)
+            else
+                untrackHostile(character)
+            end
+        end
+    end)
+    local status = player:FindFirstChild("Status")
+    if status and status:FindFirstChild("Hostile") then
+        status.Hostile.Changed:Connect(function()
+            local character = player.Character
+            if character then
+                if isHostileTarget(character) then
+                    trackHostile(character)
+                else
+                    untrackHostile(character)
+                end
+            end
+        end)
+    end
+end
 
 function HostileTeleporter.Start()
-    if running then return end
-    running = true
-    trackedCharacters = {}
-    for _, character in ipairs(playersFolder:GetChildren()) do trackCharacter(character) end
-    playersFolder.ChildAdded:Connect(trackCharacter)
-    for _, player in ipairs(Players:GetPlayers()) do monitorPlayer(player) end
-    Players.PlayerAdded:Connect(monitorPlayer)
+    if hostileRunning then return end
+    hostileRunning = true
+    hostileTrackedCharacters = {}
+
+    for _, character in ipairs(playersFolder:GetChildren()) do trackHostile(character) end
+    playersFolder.ChildAdded:Connect(trackHostile)
+
+    for _, player in ipairs(Players:GetPlayers()) do monitorHostilePlayer(player) end
+    Players.PlayerAdded:Connect(monitorHostilePlayer)
 
     spawn(function()
-        while running do
-            local targetHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        while hostileRunning do
+            local targetHRP = getHostileTargetHRP()
             if targetHRP then
-                for _, character in ipairs(trackedCharacters) do
-                    teleportInFront(character, targetHRP)
+                for _, character in ipairs(hostileTrackedCharacters) do
+                    teleportHostileInFront(character, targetHRP)
                 end
             end
             task.wait(UPDATE_INTERVAL)
@@ -329,16 +408,16 @@ function HostileTeleporter.Start()
 end
 
 function HostileTeleporter.Stop()
-    running = false
-    for _, character in ipairs(trackedCharacters) do
+    hostileRunning = false
+    for _, character in ipairs(hostileTrackedCharacters) do
         local hrp = character:FindFirstChild("HumanoidRootPart")
         if hrp then hrp.Anchored = false end
     end
-    trackedCharacters = {}
+    hostileTrackedCharacters = {}
 end
 
---// GUI Creation
-local hostileToggle = TabHandles.RageTab:Toggle({
+--// Toggle for Hostile Teleporter
+RageTab:Toggle({
     Title = "Hostile Teleporter",
     Value = false,
     Callback = function(state)
@@ -350,7 +429,113 @@ local hostileToggle = TabHandles.RageTab:Toggle({
     end
 })
 
-TabHandles.RageTab:Toggle({ Title = "Police Teleporter", Value = false, Callback = function(state) end })
+--// POLICE/WARDEN TELEPORTER
+local PoliceWardenTeleporter = {}
+local policeTrackedCharacters = {}
+local RunService = game:GetService("RunService")
+local policeLoop
+
+local function getPoliceTargetHRP()
+    if LocalPlayer.Character then
+        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    end
+    return nil
+end
+
+local function isPoliceTarget(character)
+    local player = Players:GetPlayerFromCharacter(character)
+    if not player or player == LocalPlayer then return false end
+    if player.Team and (player.Team.Name == "Guards" or player.Team.Name == "Warden") then return true end
+    return false
+end
+
+local function teleportPoliceInFront(character, targetHRP)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChild("Humanoid")
+    if hrp and targetHRP and humanoid and not humanoid.Sit then
+        local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
+        hrp.CFrame = CFrame.new(forwardPos)
+        hrp.Anchored = true
+    end
+end
+
+local function trackPolice(character)
+    for _, c in ipairs(policeTrackedCharacters) do
+        if c == character then return end
+    end
+    if isPoliceTarget(character) then
+        table.insert(policeTrackedCharacters, character)
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Anchored = true end
+    end
+end
+
+local function untrackPolice(character)
+    for i, c in ipairs(policeTrackedCharacters) do
+        if c == character then
+            local hrp = c:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = false end
+            table.remove(policeTrackedCharacters, i)
+            break
+        end
+    end
+end
+
+local function monitorPolicePlayer(player)
+    player:GetPropertyChangedSignal("Team"):Connect(function()
+        local character = player.Character
+        if character then
+            if isPoliceTarget(character) then
+                trackPolice(character)
+            else
+                untrackPolice(character)
+            end
+        end
+    end)
+end
+
+function PoliceWardenTeleporter.Start()
+    for _, character in ipairs(playersFolder:GetChildren()) do trackPolice(character) end
+    playersFolder.ChildAdded:Connect(trackPolice)
+
+    for _, player in ipairs(Players:GetPlayers()) do monitorPolicePlayer(player) end
+    Players.PlayerAdded:Connect(monitorPolicePlayer)
+
+    policeLoop = RunService.Heartbeat:Connect(function()
+        local targetHRP = getPoliceTargetHRP()
+        if targetHRP then
+            for _, character in ipairs(policeTrackedCharacters) do
+                teleportPoliceInFront(character, targetHRP)
+            end
+        end
+    end)
+end
+
+function PoliceWardenTeleporter.Stop()
+    if policeLoop then
+        policeLoop:Disconnect()
+        policeLoop = nil
+    end
+    for _, character in ipairs(policeTrackedCharacters) do
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Anchored = false end
+    end
+    policeTrackedCharacters = {}
+end
+
+--// Toggle for Police Teleporter
+RageTab:Toggle({
+    Title = "Police Teleporter",
+    Value = false,
+    Callback = function(state)
+        if state then
+            PoliceWardenTeleporter.Start()
+        else
+            PoliceWardenTeleporter.Stop()
+        end
+    end
+})
+
 TabHandles.RageTab:Toggle({ Title = "Spinbot", Value = false, Callback = function(state) end })
 
 --// MISC TAB
