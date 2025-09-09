@@ -536,7 +536,49 @@ RageTab:Toggle({
     end
 })
 
-TabHandles.RageTab:Toggle({ Title = "Spinbot", Value = false, Callback = function(state) end })
+--// Spinbot Script
+local Spinbot = {}
+
+local running = false
+local connection
+local speed = 50 -- default spin speed
+
+function Spinbot.Start()
+    if running then return end
+    running = true
+
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if running then
+            hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speed), 0)
+        end
+    end)
+end
+
+function Spinbot.Stop()
+    if not running then return end
+    running = false
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
+--// Rage Tab Toggle
+TabHandles.RageTab:Toggle({
+    Title = "Spinbot",
+    Value = false,
+    Callback = function(state)
+        if state then
+            Spinbot.Start()
+        else
+            Spinbot.Stop()
+        end
+    end
+})
 
 --// MISC TAB
 TabHandles.MiscTab:Toggle({ Title = "Staff Notifier", Value = false, Callback = function(state) end })
