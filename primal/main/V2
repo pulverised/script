@@ -58,7 +58,7 @@ Primal:Popup({
 local player = game.Players.LocalPlayer
 
 local Window = Primal:CreateWindow({
-    Title = "loc:PRIMAL_MAIN",
+    Title = "loc:Primal",
     Icon = "geist:window",
     Author = "loc:WELCOME",
     Folder = "Primal_main",
@@ -82,7 +82,7 @@ local Window = Primal:CreateWindow({
     SideBarWidth = 200,
 })
 
-Window:Tag({ Title = "v1.6.4", Color = Color3.fromHex("#30ff6a") })
+Window:Tag({ Title = "v1", Color = Color3.fromHex("#30ff6a") })
 Window:Tag({ Title = "Beta", Color = Color3.fromHex("#315dff") })
 
 local TimeTag = Window:Tag({
