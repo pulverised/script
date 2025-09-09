@@ -693,7 +693,40 @@ TabHandles.MiscTab:Button({
         end
     end
 })
-TabHandles.MiscTab:Toggle({ Title = "Rapid Auto Farm", Value = false, Callback = function(state) end })
+-- Rapid Auto Farm
+local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
+local sell = game:GetService("ReplicatedStorage").SkinFolder.Events.Sell
+local skins = { "24k Gold","24k Gold Pistol","Anoidzed Red","Galaxy","Super Soaker","The Patriot","Woodland" }
+
+_G.AutoSkinFarmEnabled = false
+
+local function startAutoFarm()
+    task.spawn(function()
+        while _G.AutoSkinFarmEnabled do
+            for _, skin in ipairs(skins) do
+                task.spawn(function()
+                    pcall(function()
+                        award:InvokeServer(skin)
+                        sell:FireServer(skin, true, "")
+                    end)
+                end)
+            end
+            task.wait(0.01) -- tiny delay to prevent crashes
+        end
+    end)
+end
+
+-- Toggle for Misc Tab
+TabHandles.MiscTab:Toggle({
+    Title = "Rapid Auto Farm",
+    Value = false,
+    Callback = function(state)
+        _G.AutoSkinFarmEnabled = state
+        if state then
+            startAutoFarm()
+        end
+    end
+})
 TabHandles.MiscTab:Toggle({ Title = "Slow Auto Farm", Value = false, Callback = function(state) end })
 
 --// CREDITS TAB
