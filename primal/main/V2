@@ -671,7 +671,28 @@ TabHandles.MiscTab:Button({
         Event:FireServer(10)
     end
 })
-TabHandles.MiscTab:Button({ Title = "Add Skins", Icon = "image", Callback = function() end })
+
+TabHandles.MiscTab:Button({
+    Title = "Add Skins",
+    Icon = "lock-open",
+    Callback = function()
+        local award = game:GetService("ReplicatedStorage").SkinFolder.Events.AwardSkin
+
+        local skins = {
+            "24k Gold",
+            "24k Gold Pistol",
+            "Anoidzed Red",
+            "Galaxy",
+            "Super Soaker",
+            "The Patriot",
+            "Woodland"
+        }
+
+        for _, skin in ipairs(skins) do
+            award:InvokeServer(skin)
+        end
+    end
+})
 TabHandles.MiscTab:Toggle({ Title = "Rapid Auto Farm", Value = false, Callback = function(state) end })
 TabHandles.MiscTab:Toggle({ Title = "Slow Auto Farm", Value = false, Callback = function(state) end })
 
