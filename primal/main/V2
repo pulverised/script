@@ -42,7 +42,7 @@ end
 
 --// Popup demo
 Primal:Popup({
-    Title = gradient("Primal Demo", Color3.fromHex("#6A11CB"), Color3.fromHex("#2575FC")),
+    Title = gradient("Primal has loaded!", Color3.fromHex("#6A11CB"), Color3.fromHex("#2575FC")),
     Icon = "sparkles",
     Content = "loc:LIB_DESC",
     Buttons = {
