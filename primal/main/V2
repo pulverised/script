@@ -581,7 +581,88 @@ TabHandles.RageTab:Toggle({
 })
 
 --// MISC TAB
-TabHandles.MiscTab:Toggle({ Title = "Staff Notifier", Value = false, Callback = function(state) end })
+-- Staff Notifier
+local StaffNotifier = {}
+local running = false
+local notifiedPlayers = {}
+
+-- Staff list
+local staffList = {
+    [4036616925] = "EndOfTheLine_YTVC3",
+    [4835226372] = "pzrpled",
+    [1079506543] = "modbotter",
+    [1827703218] = "Jat",
+    [1314873852] = "Ruby Kurosawa",
+    [2776100361] = "LordxEgg",
+    [5095781620] = "fwomed",
+    [6019613135] = "contact",
+    [1676500493] = "hamooodylil",
+    [810011681]  = "caisr",
+    [321731898]  = "FieldsCRW",
+    [1622836918] = "5ivio",
+    [2811348175] = "PrestonTug",
+    [662263759]  = "TheCatGodOfDeath",
+    [2641543045] = "Dev_COL",
+    [2418168241] = "Axely",
+    [136568311]  = "Ban",
+    [720403576]  = "bannersblox",
+    [6212777205] = "Jitze",
+    [330929769]  = "Alfa",
+    [1562173]    = "hethr",
+    [104529797]  = "d1anna",
+    [5309987]    = "ntaosi",
+    [417258098]  = "xA_lfa",
+    [2230856063] = "Rez",
+}
+
+local Players = game:GetService("Players")
+
+function StaffNotifier.Start()
+    if running then return end
+    running = true
+    notifiedPlayers = {}
+
+    -- Check current players
+    for _, player in ipairs(Players:GetPlayers()) do
+        if staffList[player.UserId] and not notifiedPlayers[player.UserId] then
+            notifiedPlayers[player.UserId] = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Staff Online!",
+                Text = staffList[player.UserId].." has joined the game",
+                Duration = 5
+            })
+        end
+    end
+
+    -- Listen for new players
+    Players.PlayerAdded:Connect(function(player)
+        if running and staffList[player.UserId] and not notifiedPlayers[player.UserId] then
+            notifiedPlayers[player.UserId] = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Staff Online!",
+                Text = staffList[player.UserId].." has joined the game",
+                Duration = 5
+            })
+        end
+    end)
+end
+
+function StaffNotifier.Stop()
+    running = false
+    notifiedPlayers = {}
+end
+TabHandles.MiscTab:Toggle({
+    Title = "Staff Notifier",
+    Value = false,
+    Callback = function(state)
+        if state then
+            StaffNotifier.Start()
+        else
+            StaffNotifier.Stop()
+        end
+    end
+})
+
 TabHandles.MiscTab:Button({ Title = "Add Keys", Icon = "key", Callback = function() end })
 TabHandles.MiscTab:Button({ Title = "Add Skins", Icon = "image", Callback = function() end })
 TabHandles.MiscTab:Toggle({ Title = "Rapid Auto Farm", Value = false, Callback = function(state) end })
