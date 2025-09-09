@@ -727,11 +727,49 @@ TabHandles.MiscTab:Toggle({
         end
     end
 })
-TabHandles.MiscTab:Toggle({ Title = "Slow Auto Farm", Value = false, Callback = function(state) end })
+-- Slow Auto Farm
+local slowFarmEnabled = false
+
+local function startSlowAutoFarm()
+    task.spawn(function()
+        while slowFarmEnabled do
+            for _, skin in ipairs(skins) do
+                pcall(function()
+                    award:InvokeServer(skin)
+                    sell:FireServer(skin, true, "")
+                end)
+            end
+            task.wait(0.5) -- slower, safer loop (2x per second)
+        end
+    end)
+end
+
+-- Toggle for Misc Tab
+TabHandles.MiscTab:Toggle({
+    Title = "Slow Auto Farm",
+    Value = false,
+    Callback = function(state)
+        slowFarmEnabled = state
+        if state then
+            startSlowAutoFarm()
+        end
+    end
+})
 
 --// CREDITS TAB
-TabHandles.CreditsTab:Paragraph({ Title = "Developers", Desc = "Your Name / Contributors", Image = "user-circle", ImageSize = 40, Color = "White" })
-TabHandles.CreditsTab:Paragraph({ Title = "Special Thanks", Desc = "Primal UI & Supporters", Image = "gift", ImageSize = 40, Color = "Grey" })
+TabHandles.CreditsTab:Paragraph({
+    Title = "Developers 🔨",
+    Desc = "streetvalid & dollosha / We appreiciate you guys alot for using our script!",
+    ImageSize = 40,
+    Color = "White"
+})
+
+TabHandles.CreditsTab:Paragraph({
+    Title = "Special Thanks ❤️",
+    Desc = "Primal users & Supporters",
+    ImageSize = 40,
+    Color = "Grey"
+})
 
 --// APPEARANCE TAB
 local AppearanceSection = TabHandles.AppearanceTab:Section({ Title = "Appearance Settings", Icon = "settings" })
