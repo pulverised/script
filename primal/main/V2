@@ -177,6 +177,7 @@ TeamSection:Button({
     end
 })
 
+--// MAIN TAB BODY SECTION
 local BodySection = TabHandles.MainTab:Section({ Title = "Body", Icon = "activity" })
 BodySection:Button({ Title = "No Jump Cooldown", Icon = "zap", Callback = function() end })
 BodySection:Button({ Title = "Skip Treadmill", Icon = "fast-forward", Callback = function() end })
