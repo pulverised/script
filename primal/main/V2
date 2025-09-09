@@ -138,7 +138,6 @@ local TabHandles = {
 }
 
 --// MAIN TAB
---// MAIN TAB
 local TeamSection = TabHandles.MainTab:Section({ Title = "Team", Icon = "users" })
 TeamSection:Button({
     Title = "Join Criminal",
