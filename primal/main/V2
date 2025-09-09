@@ -1,602 +1,235 @@
- local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Players = game:GetService("Players") -- ✅ Add this
+local Primal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
-local Window = Rayfield:CreateWindow({
-   Name = "Primal Cheats",
-   Icon = 0,
-   LoadingTitle = "Primal Cheats",
-   LoadingSubtitle = "by MoldedBlood",
-   ShowText = "Primal",
-   Theme = "Serenity",
-   ToggleUIKeybind = "L",
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false,
-   ConfigurationSaving = {Enabled = true, FolderName = nil, FileName = "Big Hub"},
-   Discord = {Enabled = false, Invite = "noinvitelink", RememberJoins = true},
-   KeySystem = true,
-   KeySettings = {
-      Title = "Primal Cheats",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided",
-      FileName = "Key",
-      SaveKey = true,
-      GrabKeyFromSite = false,
-      Key = {"test"}
-   }
+--// Localization
+Primal:Localization({
+    Enabled = true,
+    Prefix = "loc:",
+    DefaultLanguage = "en",
+    Translations = {
+        ["en"] = {
+            ["PRIMAL_EXAMPLE"] = "Primal Example",
+            ["WELCOME"] = "Welcome to Primal!",
+            ["LIB_DESC"] = "Beautiful UI library for Roblox",
+            ["SETTINGS"] = "Settings",
+            ["APPEARANCE"] = "Appearance",
+            ["FEATURES"] = "Features",
+            ["UTILITIES"] = "Utilities",
+            ["UI_ELEMENTS"] = "UI Elements",
+            ["CONFIGURATION"] = "Configuration",
+            ["SAVE_CONFIG"] = "Save Configuration",
+            ["LOAD_CONFIG"] = "Load Configuration",
+            ["THEME_SELECT"] = "Select Theme",
+            ["TRANSPARENCY"] = "Window Transparency"
+        }
+    }
 })
 
--- Main Tab
-local Tab = Window:CreateTab("Main", 4483362458)
-local Section = Tab:CreateSection("ESP")
+Primal.TransparencyValue = 0.2
+Primal:SetTheme("Dark")
 
-local TeamESP = {}
-local runningTeam = false
-local playerConnectionsTeam = {}
-local globalConnectionsTeam = {}
+--// Gradient helper
+local function gradient(text, startColor, endColor)
+    local result = ""
+    for i = 1, #text do
+        local t = (i - 1) / (#text - 1)
+        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
+        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
+        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
+        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', r, g, b, text:sub(i, i))
+    end
+    return result
+end
 
-local teamColors = {
-    ["Inmates"] = Color3.fromRGB(255,165,0),
-    ["Guards"] = Color3.fromRGB(0,0,255),
-    ["Warden"] = Color3.fromRGB(0,0,139),
-    ["Criminals"] = Color3.fromRGB(255,0,0),
+--// Popup demo
+Primal:Popup({
+    Title = gradient("Primal Demo", Color3.fromHex("#6A11CB"), Color3.fromHex("#2575FC")),
+    Icon = "sparkles",
+    Content = "loc:LIB_DESC",
+    Buttons = {
+        {
+            Title = "Get Started",
+            Icon = "arrow-right",
+            Variant = "Primary",
+            Callback = function() end
+        }
+    }
+})
+
+local player = game.Players.LocalPlayer
+
+local Window = Primal:CreateWindow({
+    Title = "loc:PRIMAL_MAIN",
+    Icon = "geist:window",
+    Author = "loc:WELCOME",
+    Folder = "Primal_main",
+    Size = UDim2.fromOffset(580, 490),
+    Theme = "Dark",
+    User = {
+        Enabled = true,
+        Anonymous = false,          -- set to false to show actual user
+        Name = player.Name,         -- local player name
+        AvatarId = player.UserId,   -- local player Roblox ID for profile picture
+        Callback = function()
+            Primal:Notify({
+                Title = "User Profile",
+                Content = "Hello, "..player.Name.."!",
+                Duration = 3
+            })
+        end
+    },
+    Acrylic = true,
+    HideSearchBar = false,
+    SideBarWidth = 200,
+})
+
+Window:Tag({ Title = "v1.6.4", Color = Color3.fromHex("#30ff6a") })
+Window:Tag({ Title = "Beta", Color = Color3.fromHex("#315dff") })
+
+local TimeTag = Window:Tag({
+    Title = "--:--",
+    Radius = 0,
+    Color = Primal:Gradient({
+        ["0"]   = { Color = Color3.fromHex("#FF0F7B"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#F89B29"), Transparency = 0 },
+    }, { Rotation = 45 }),
+})
+
+--// Clock update
+task.spawn(function()
+    local hue = 0
+    while true do
+        local now = os.date("*t")
+        local hours = string.format("%02d", now.hour)
+        local minutes = string.format("%02d", now.min)
+        hue = (hue + 0.01) % 1
+        TimeTag:SetTitle(hours .. ":" .. minutes)
+        task.wait(0.06)
+    end
+end)
+
+--// Theme switcher button
+Window:CreateTopbarButton("theme-switcher", "moon", function()
+    Primal:SetTheme(Primal:GetCurrentTheme() == "Dark" and "Light" or "Dark")
+    Primal:Notify({
+        Title = "Theme Changed",
+        Content = "Current theme: "..Primal:GetCurrentTheme(),
+        Duration = 2
+    })
+end, 990)
+
+--// Tabs
+local Tabs = {
+    Main = Window:Section({ Title = "Main", Opened = true }),
+    Visuals = Window:Section({ Title = "Visuals" }),
+    Rage = Window:Section({ Title = "Rage" }),
+    Misc = Window:Section({ Title = "Misc" }),
+    Credits = Window:Section({ Title = "Credits" }),
+    Settings = Window:Section({ Title = "Settings" }),
 }
 
-local function updateHighlightTeam(player)
-    if not player or player == Players.LocalPlayer then return end
-    local character = player.Character
-    if not character then return end
-    if character:FindFirstChild("TeamHighlight") then
-        character.TeamHighlight:Destroy()
-    end
-    local teamName = player.Team and player.Team.Name or ""
-    local color = teamColors[teamName]
-    if not color then return end
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "TeamHighlight"
-    highlight.FillColor = color
-    highlight.OutlineColor = color
-    highlight.Adornee = character
-    highlight.Parent = character
-end
+--// Tab Handles
+local TabHandles = {
+    MainTab = Tabs.Main:Tab({ Title = "Main Features", Icon = "swords" }),
+    VisualsTab = Tabs.Visuals:Tab({ Title = "Visuals", Icon = "eye" }),
+    RageTab = Tabs.Rage:Tab({ Title = "Rage Features", Icon = "flame" }),
+    MiscTab = Tabs.Misc:Tab({ Title = "Miscellaneous", Icon = "package" }),
+    CreditsTab = Tabs.Credits:Tab({ Title = "Credits", Icon = "star" }),
+    AppearanceTab = Tabs.Settings:Tab({ Title = "Appearance", Icon = "brush" }),
+}
 
-local function monitorPlayerTeam(player)
-    if not player or player == Players.LocalPlayer then return end
-    local conns = {}
-    table.insert(conns, player.CharacterAdded:Connect(function()
-        if runningTeam then updateHighlightTeam(player) end
-    end))
-    table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
-        if runningTeam then updateHighlightTeam(player) end
-    end))
-    if player.Character and runningTeam then updateHighlightTeam(player) end
-    playerConnectionsTeam[player] = conns
-end
+--// MAIN TAB
+local TeamSection = TabHandles.MainTab:Section({ Title = "Team", Icon = "users" })
+TeamSection:Button({ Title = "Join Criminal", Icon = "user-x", Callback = function() end })
 
-function TeamESP.Start()
-    if runningTeam then return end
-    runningTeam = true
-    for _, player in ipairs(Players:GetPlayers()) do monitorPlayerTeam(player) end
-    table.insert(globalConnectionsTeam, Players.PlayerAdded:Connect(function(player)
-        monitorPlayerTeam(player)
-        if runningTeam then updateHighlightTeam(player) end
-    end))
-end
+local BodySection = TabHandles.MainTab:Section({ Title = "Body", Icon = "activity" })
+BodySection:Button({ Title = "No Jump Cooldown", Icon = "zap", Callback = function() end })
+BodySection:Button({ Title = "Skip Treadmill", Icon = "fast-forward", Callback = function() end })
 
-function TeamESP.Stop()
-    runningTeam = false
-    for player, conns in pairs(playerConnectionsTeam) do
-        for _, c in ipairs(conns) do
-            if c and c.Disconnect then
-                c:Disconnect()
-            end
-        end
-    end
-    playerConnectionsTeam = {}
-    for _, c in ipairs(globalConnectionsTeam) do
-        if c and c.Disconnect then
-            c:Disconnect()
-        end
-    end
-    globalConnectionsTeam = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            local highlight = player.Character:FindFirstChild("TeamHighlight")
-            if highlight then highlight:Destroy() end
-        end
-    end
-end
+--// VISUALS TAB
+TabHandles.VisualsTab:Toggle({ Title = "Custom Killfeed", Value = false, Callback = function(state) end })
 
--- Rayfield Toggle Esp
-local Toggle = Tab:CreateToggle({
-    Name = "Team ESP",
-    CurrentValue = false,
-    Flag = "TeamESP_Toggle",
-    Callback = function(Value)
-        local success, err = pcall(function()
-            if Value then
-                TeamESP.Start()
-            else
-                TeamESP.Stop()
-            end
-        end)
-        if not success then
-            warn("Team ESP toggle error: "..err)
-        end
-    end,
+--// RAGE TAB
+TabHandles.RageTab:Toggle({ Title = "Hostile Teleporter", Value = false, Callback = function(state) end })
+TabHandles.RageTab:Toggle({ Title = "Police Teleporter", Value = false, Callback = function(state) end })
+TabHandles.RageTab:Toggle({ Title = "Spinbot", Value = false, Callback = function(state) end })
+
+--// MISC TAB
+TabHandles.MiscTab:Toggle({ Title = "Staff Notifier", Value = false, Callback = function(state) end })
+TabHandles.MiscTab:Button({ Title = "Add Keys", Icon = "key", Callback = function() end })
+TabHandles.MiscTab:Button({ Title = "Add Skins", Icon = "image", Callback = function() end })
+TabHandles.MiscTab:Toggle({ Title = "Rapid Auto Farm", Value = false, Callback = function(state) end })
+TabHandles.MiscTab:Toggle({ Title = "Slow Auto Farm", Value = false, Callback = function(state) end })
+
+--// CREDITS TAB
+TabHandles.CreditsTab:Paragraph({ Title = "Developers", Desc = "Your Name / Contributors", Image = "user-circle", ImageSize = 40, Color = "White" })
+TabHandles.CreditsTab:Paragraph({ Title = "Special Thanks", Desc = "Primal UI & Supporters", Image = "gift", ImageSize = 40, Color = "Grey" })
+
+--// APPEARANCE TAB
+local AppearanceSection = TabHandles.AppearanceTab:Section({ Title = "Appearance Settings", Icon = "settings" })
+
+AppearanceSection:Paragraph({
+    Title = "Customize Interface",
+    Desc = "Personalize your experience",
+    Image = "palette",
+    ImageSize = 20,
+    Color = "White"
 })
 
--- HostileDetector Script
-local HostileDetector = {}
-local runningHostile = false
-local playerConnectionsHostile = {}
-local globalConnectionsHostile = {}
-
-local HIGHLIGHT_COLOR = Color3.fromRGB(255, 0, 255)
-local IGNORED_TEAMS = {["Guards"]=true, ["Warden"]=true}
-
-local function setHighlightHostile(character, enabled)
-    if not character then return end
-    local highlight = character:FindFirstChild("HostileHighlight")
-    if enabled then
-        if not highlight then
-            highlight = Instance.new("Highlight")
-            highlight.Name = "HostileHighlight"
-            highlight.FillColor = HIGHLIGHT_COLOR
-            highlight.OutlineColor = Color3.fromRGB(255,255,255)
-            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-            highlight.Parent = character
-        end
-    else
-        if highlight then
-            highlight:Destroy()
-        end
-    end
+local themes = {}
+for themeName, _ in pairs(Primal:GetThemes()) do
+    table.insert(themes, themeName)
 end
+table.sort(themes)
 
-local function isIgnored(player)
-    return player.Team and IGNORED_TEAMS[player.Team.Name]
-end
+local canchangetheme = true
+local canchangedropdown = true
 
-local function updatePlayerHostile(player)
-    if player == Players.LocalPlayer then return end
-    local character = player.Character
-    if not character then return end
-    local status = player:FindFirstChild("Status")
-    if not status then return end
-    local hostile = status:FindFirstChild("Hostile")
-    if not hostile then return end
-    if not isIgnored(player) and hostile.Value == true then
-        setHighlightHostile(character, true)
-    else
-        setHighlightHostile(character, false)
+local themeDropdown = AppearanceSection:Dropdown({
+    Title = "loc:THEME_SELECT",
+    Values = themes,
+    Value = "Dark",
+    Callback = function(theme)
+        canchangedropdown = false
+        Primal:SetTheme(theme)
+        Primal:Notify({ Title = "Theme Applied", Content = theme, Icon = "palette", Duration = 2 })
+        canchangedropdown = true
     end
-end
-
-local function monitorPlayerHostile(player)
-    if not runningHostile then return end
-    local conns = {}
-
-    table.insert(conns, player.CharacterAdded:Connect(function()
-        task.wait(1)
-        updatePlayerHostile(player)
-    end))
-    table.insert(conns, player.CharacterRemoving:Connect(function()
-        for _, c in ipairs(conns) do c:Disconnect() end
-    end))
-    table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
-        updatePlayerHostile(player)
-    end))
-    local status = player:FindFirstChild("Status") or player:WaitForChild("Status",5)
-    if status then
-        local hostile = status:FindFirstChild("Hostile")
-        if hostile then
-            table.insert(conns, hostile.Changed:Connect(function()
-                updatePlayerHostile(player)
-            end))
-        end
-    end
-    playerConnectionsHostile[player] = conns
-end
-
-function HostileDetector.Start()
-    if runningHostile then return end
-    runningHostile = true
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= Players.LocalPlayer then
-            monitorPlayerHostile(player)
-        end
-    end
-    table.insert(globalConnectionsHostile, Players.PlayerAdded:Connect(function(player)
-        monitorPlayerHostile(player)
-        task.wait(1)
-        for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
-    end))
-    table.insert(globalConnectionsHostile, Players.PlayerRemoving:Connect(function()
-        for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
-    end))
-    task.spawn(function()
-        while runningHostile do
-            for _, p in ipairs(Players:GetPlayers()) do updatePlayerHostile(p) end
-            task.wait(2)
-        end
-    end)
-end
-
-function HostileDetector.Stop()
-    runningHostile = false
-    for player, conns in pairs(playerConnectionsHostile) do
-        for _, c in ipairs(conns) do c:Disconnect() end
-    end
-    playerConnectionsHostile = {}
-    for _, c in ipairs(globalConnectionsHostile) do
-        c:Disconnect()
-    end
-    globalConnectionsHostile = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            local highlight = player.Character:FindFirstChild("HostileHighlight")
-            if highlight then highlight:Destroy() end
-        end
-    end
-end
-
--- Rayfield toggle for Hostile Detector
-local HostileToggle = Tab:CreateToggle({
-    Name = "Hostile Detector",
-    CurrentValue = false,
-    Flag = "HostileDetector_Toggle",
-    Callback = function(Value)
-        local success, err = pcall(function()
-            if Value then
-                HostileDetector.Start()
-            else
-                HostileDetector.Stop()
-            end
-        end)
-        if not success then
-            warn("Hostile Detector toggle error: "..err)
-        end
-    end,
 })
 
--- == Body Section ==
-local Section = Tab:CreateSection("Body")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local MessageEvent = ReplicatedStorage.Events.Tooltip
-local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
-
--- No Jump Cooldown / No Stamina Drain Toggle
-local StaminaToggle = Tab:CreateToggle({
-    Name = "No Jump Cooldown",
-    CurrentValue = false,
-    Flag = "NoJumpCooldown_Toggle",
-    Callback = function(Value)
-        if Value then
-            -- Enable no stamina
-            firesignal(MessageEvent.OnClientEvent, "Enabled no stamina !")
-            firesignal(Event.OnClientEvent, "Stamina", 99999)
-        else
-            -- Reset stamina (set back to default, example 100)
-            firesignal(MessageEvent.OnClientEvent, "Disabled no stamina !")
-            firesignal(Event.OnClientEvent, "Stamina", 100)
-        end
-    end,
+local transparencySlider = AppearanceSection:Slider({
+    Title = "loc:TRANSPARENCY",
+    Value = { Min = 0, Max = 1, Default = 0.2 },
+    Step = 0.1,
+    Callback = function(value)
+        Primal.TransparencyValue = tonumber(value)
+        Window:ToggleTransparency(tonumber(value) > 0)
+    end
 })
 
--- Treadmill
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Event = ReplicatedStorage.Events.UpdateStat
-local MessageEvent = ReplicatedStorage.Events.Tooltip
-
-local used = false  
-
-local TreadmillToggle = Tab:CreateToggle({
-    Name = "Skip Treadmill",
-    CurrentValue = false,
-    Flag = "SkipTreadmill_Toggle",
-    Callback = function(Value)
-        if used then return end  -- only allow once, like your code
-
-        if Value then
-            firesignal(MessageEvent.OnClientEvent, "Enable the treadmill bypass !")
-            for i = 1, 4 do
-                firesignal(Event.OnClientEvent, "Runspeed", 1)
-            end
-            used = true
-        end
-    end,
+local ThemeToggle = AppearanceSection:Toggle({
+    Title = "Enable Dark Mode",
+    Desc = "Use dark color scheme",
+    Value = true,
+    Callback = function(state)
+        if canchangetheme then Primal:SetTheme(state and "Dark" or "Light") end
+        if canchangedropdown then themeDropdown:Select(state and "Dark" or "Light") end
+    end
 })
 
--- Visuals Tab (create only once)
-local VisualsTab = Window:CreateTab("Visuals", "eye")
-local VisualsSection = VisualsTab:CreateSection("Visuals")
-
--- Services
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- Killfeed variables
-local gui
-local feedFrame
-local eventConnection
-local KillfeedEnabled = false
-
--- Create Killfeed UI
-local function CreateKillfeedUI()
-    gui = Instance.new("ScreenGui")
-    gui.Name = "KillfeedUI"
-    gui.ResetOnSpawn = false
-    gui.Parent = player:WaitForChild("PlayerGui")
-
-    feedFrame = Instance.new("Frame")
-    feedFrame.Size = UDim2.new(0, 300, 1, 0)
-    feedFrame.Position = UDim2.new(1, -310, 0, 0)
-    feedFrame.BackgroundTransparency = 1
-    feedFrame.Parent = gui
-
-    local layout = Instance.new("UIListLayout")
-    layout.Parent = feedFrame
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.VerticalAlignment = Enum.VerticalAlignment.Top
-    layout.Padding = UDim.new(0, 6)
-end
-
--- Add Kill entries
-local function AddKill(killerName, killerColor, weapon, victimName, victimColor, headshot, showHealth)
-    if not feedFrame then return end
-    local entry = Instance.new("TextLabel")
-    entry.Size = UDim2.new(1, 0, 0, 20)
-    entry.BackgroundTransparency = 1
-    entry.TextScaled = false
-    entry.RichText = true
-    entry.Font = Enum.Font.SourceSansBold
-    entry.TextXAlignment = Enum.TextXAlignment.Left
-    entry.TextStrokeTransparency = 0.8
-    entry.TextSize = 18
-
-    local text = string.format(
-        "<font color='#%02x%02x%02x'>%s</font> <font color='#ff00ff'>[%s]</font> <font color='#%02x%02x%02x'>%s</font>",
-        math.floor(killerColor.R * 255),
-        math.floor(killerColor.G * 255),
-        math.floor(killerColor.B * 255),
-        killerName,
-        weapon,
-        math.floor(victimColor.R * 255),
-        math.floor(victimColor.G * 255),
-        math.floor(victimColor.B * 255),
-        victimName
-    )
-
-    if headshot then text = text.." 💀" end
-    if showHealth then text = text.." ❤️" end
-
-    entry.Text = text
-    entry.Parent = feedFrame
-
-    task.delay(5, function()
-        if entry then
-            for i = 1, 20 do
-                entry.TextTransparency = i / 20
-                task.wait(0.05)
-            end
-            entry:Destroy()
-        end
-    end)
-end
-
--- Enable / Disable Killfeed
-local function EnableKillfeed()
-    if not gui then CreateKillfeedUI() end
-    if not eventConnection then
-        local success, Event = pcall(function()
-            return ReplicatedStorage:WaitForChild("Events"):WaitForChild("Killfeed")
-        end)
-        if success and Event then
-            eventConnection = Event.OnClientEvent:Connect(AddKill)
-        end
-    end
-end
-
-local function DisableKillfeed()
-    if eventConnection then
-        eventConnection:Disconnect()
-        eventConnection = nil
-    end
-    if gui then
-        gui:Destroy()
-        gui = nil
-        feedFrame = nil
-    end
-end
-
--- Killfeed Toggle
-local KillfeedToggle = VisualsSection:CreateToggle({
-    Name = "Killfeed",
-    CurrentValue = false,
-    Flag = "Killfeed_Toggle",
-    Callback = function(Value)
-        KillfeedEnabled = Value
-        if Value then
-            EnableKillfeed()
-        else
-            DisableKillfeed()
-        end
-    end,
-})
-
--- Persist after respawn
-player.CharacterAdded:Connect(function()
-    if KillfeedEnabled then
-        task.wait(1)
-        EnableKillfeed()
-    end
+Primal:OnThemeChange(function(theme)
+    canchangetheme = false
+    ThemeToggle:Set(theme == "Dark")
+    canchangetheme = true
 end)
 
--- Rage Tab
-local RageTab = Window:CreateTab("Rage", angry) -- Tab title, icon
-local RageSection = RageTab:CreateSection("Rage Features") -- Section inside the tab
-
--- Hostile Teleporter Script
-local HostileTeleporter = {}
-local running = false
-local trackedCharacters = {}
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local playersFolder = workspace:WaitForChild("Players")
-
-local DISTANCE_AHEAD = -5
-local UPDATE_INTERVAL = 1
-
-local function getTargetHRP()
-    if LocalPlayer.Character then
-        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+AppearanceSection:Button({
+    Title = "Create New Theme",
+    Icon = "plus",
+    Callback = function()
+        Window:Dialog({
+            Title = "Create Theme",
+            Content = "This feature is coming soon!",
+            Buttons = { { Title = "OK", Variant = "Primary" } }
+        })
     end
-    return nil
-end
-
-local function isTargetPlayer(character)
-    local player = Players:GetPlayerFromCharacter(character)
-    if not player or player == LocalPlayer then return false end
-    if player.Team and player.Team.Name == "Criminals" then
-        return true
-    end
-    if player.Team and player.Team.Name == "Inmates" then
-        local status = player:FindFirstChild("Status")
-        if status then
-            local hostile = status:FindFirstChild("Hostile")
-            if hostile and hostile.Value == true then return true end
-        end
-    end
-    return false
-end
-
-local function teleportInFront(character, targetHRP)
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if hrp and targetHRP and humanoid and not humanoid.Sit then
-        local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
-        hrp.CFrame = CFrame.new(forwardPos)
-        hrp.Anchored = true
-    end
-end
-
-local function trackCharacter(character)
-    for _, c in ipairs(trackedCharacters) do
-        if c == character then return end
-    end
-    if isTargetPlayer(character) then
-        table.insert(trackedCharacters, character)
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = true end
-    end
-end
-
-local function untrackCharacter(character)
-    for i, c in ipairs(trackedCharacters) do
-        if c == character then
-            local hrp = c:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.Anchored = false end
-            table.remove(trackedCharacters, i)
-            break
-        end
-    end
-end
-
-local function monitorPlayer(player)
-    player:GetPropertyChangedSignal("Team"):Connect(function()
-        local character = player.Character
-        if character then
-            if isTargetPlayer(character) then
-                trackCharacter(character)
-            else
-                untrackCharacter(character)
-            end
-        end
-    end)
-    local status = player:FindFirstChild("Status")
-    if status then
-        local hostile = status:FindFirstChild("Hostile")
-        if hostile then
-            hostile.Changed:Connect(function()
-                local character = player.Character
-                if character then
-                    if isTargetPlayer(character) then
-                        trackCharacter(character)
-                    else
-                        untrackCharacter(character)
-                    end
-                end
-            end)
-        end
-    end
-end
-
-function HostileTeleporter.Start()
-    if running then return end
-    running = true
-    trackedCharacters = {}
-
-    for _, character in ipairs(playersFolder:GetChildren()) do trackCharacter(character) end
-    playersFolder.ChildAdded:Connect(trackCharacter)
-
-    for _, player in ipairs(Players:GetPlayers()) do monitorPlayer(player) end
-    Players.PlayerAdded:Connect(monitorPlayer)
-
-    spawn(function()
-        while running do
-            local targetHRP = getTargetHRP()
-            if targetHRP then
-                for _, character in ipairs(trackedCharacters) do
-                    teleportInFront(character, targetHRP)
-                end
-            end
-            task.wait(UPDATE_INTERVAL)
-        end
-    end)
-end
-
-function HostileTeleporter.Stop()
-    running = false
-    for _, character in ipairs(trackedCharacters) do
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = false end
-    end
-    trackedCharacters = {}
-end
-
--- Hostile Teleporter Toggle
-local HostileTeleporterEnabled = false
-
-local HostileTeleporterToggle = RageSection:CreateToggle({
-    Name = "Hostile Teleporter",
-    CurrentValue = false,
-    Flag = "HostileTeleporter_Toggle",
-    Callback = function(Value)
-        HostileTeleporterEnabled = Value
-        if Value then
-            local success, err = pcall(function()
-                HostileTeleporter.Start()
-            end)
-            if not success then
-                warn("Hostile Teleporter toggle error: "..err)
-            end
-        else
-            local success, err = pcall(function()
-                HostileTeleporter.Stop()
-            end)
-            if not success then
-                warn("Hostile Teleporter toggle error: "..err)
-            end
-        end
-    end,
 })
-
--- Persist after respawn
-Players.LocalPlayer.CharacterAdded:Connect(function()
-    if HostileTeleporterEnabled then
-        task.wait(1)
-        HostileTeleporter.Start()
-    end
-end)
