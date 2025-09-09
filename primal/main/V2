@@ -7,9 +7,9 @@ Primal:Localization({
     DefaultLanguage = "en",
     Translations = {
         ["en"] = {
-            ["PRIMAL_EXAMPLE"] = "Primal Example",
+            ["PRIMAL_EXAMPLE"] = "Primal",
             ["WELCOME"] = "Welcome to Primal!",
-            ["LIB_DESC"] = "Beautiful UI library for Roblox",
+            ["LIB_DESC"] = "Best script for prisoner life!",
             ["SETTINGS"] = "Settings",
             ["APPEARANCE"] = "Appearance",
             ["FEATURES"] = "Features",
