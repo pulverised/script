@@ -1003,16 +1003,6 @@ TabHandles.MiscTab:Toggle({
     end
 })
 
---// Money Giver (Misc tab)
-TabHandles.MiscTab:Button({
-    Title = "Money Giver",
-    Desc = "Gives yourself money using CashBuy exploit",
-    Icon = "dollar-sign",
-    Callback = function()
-        local Event = game:GetService("ReplicatedStorage").SkinFolder.Events.CashBuy
-        Event:FireServer(-1000000, 1)
-    end
-})
 
 --// CREDITS TAB
 TabHandles.CreditsTab:Paragraph({
