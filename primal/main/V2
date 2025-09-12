@@ -292,6 +292,111 @@ TabHandles.VisualsTab:Toggle({
     end
 })
 
+-- Team ESP with Toggle
+local Players = game:GetService("Players")
+
+local TeamESP = {}
+local runningTeam = false
+local playerConnectionsTeam = {}
+local globalConnectionsTeam = {}
+
+local teamColors = {
+    ["Inmates"] = Color3.fromRGB(255,165,0),
+    ["Guards"] = Color3.fromRGB(0,0,255),
+    ["Warden"] = Color3.fromRGB(0,0,139),
+    ["Criminals"] = Color3.fromRGB(255,0,0),
+}
+
+local function updateHighlightTeam(player)
+    if player == Players.LocalPlayer then return end
+    local character = player.Character
+    if not character then return end
+
+    -- remove old highlight
+    if character:FindFirstChild("TeamHighlight") then
+        character.TeamHighlight:Destroy()
+    end
+
+    local teamName = player.Team and player.Team.Name or ""
+    local color = teamColors[teamName]
+    if not color then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "TeamHighlight"
+    highlight.FillColor = color
+    highlight.OutlineColor = color
+    highlight.Adornee = character
+    highlight.Parent = character
+end
+
+local function monitorPlayerTeam(player)
+    if player == Players.LocalPlayer then return end
+    local conns = {}
+
+    table.insert(conns, player.CharacterAdded:Connect(function()
+        if runningTeam then updateHighlightTeam(player) end
+    end))
+
+    table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
+        if runningTeam then updateHighlightTeam(player) end
+    end))
+
+    if player.Character then
+        updateHighlightTeam(player)
+    end
+
+    playerConnectionsTeam[player] = conns
+end
+
+function TeamESP.Start()
+    if runningTeam then return end
+    runningTeam = true
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        monitorPlayerTeam(player)
+    end
+
+    table.insert(globalConnectionsTeam, Players.PlayerAdded:Connect(monitorPlayerTeam))
+end
+
+function TeamESP.Stop()
+    runningTeam = false
+
+    for player, conns in pairs(playerConnectionsTeam) do
+        for _, c in ipairs(conns) do
+            c:Disconnect()
+        end
+    end
+    playerConnectionsTeam = {}
+
+    for _, c in ipairs(globalConnectionsTeam) do
+        c:Disconnect()
+    end
+    globalConnectionsTeam = {}
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            local highlight = player.Character:FindFirstChild("TeamHighlight")
+            if highlight then
+                highlight:Destroy()
+            end
+        end
+    end
+end
+
+-- UI Toggle (Visuals Tab)
+TabHandles.VisualsTab:Toggle({
+    Title = "Team ESP",
+    Default = false,
+    Callback = function(state)
+        if state then
+            TeamESP.Start()
+        else
+            TeamESP.Stop()
+        end
+    end
+})
+
 --// RAGE TAB
 local RageTab = TabHandles.RageTab
 
