@@ -1007,26 +1007,20 @@ TabHandles.MiscTab:Toggle({
 })
 
 local moneyCooldown = false
-local moneyBtn = TabHandles.MiscTab:Button({
+
+TabHandles.MiscTab:Button({
     Title = "Money Giver",
     Icon = "dollar-sign",
     Callback = function()
         if moneyCooldown then return end
         moneyCooldown = true
 
-        -- fire the money event
-        local Event = game:GetService("ReplicatedStorage").SkinFolder.Events.CashBuy
-        Event:FireServer(-1000000, 1)
+        -- fire money event
+        game:GetService("ReplicatedStorage").SkinFolder.Events.CashBuy:FireServer(-30000, 1)
 
-        -- disable button look
-        moneyBtn:SetAttribute("Disabled", true)
-        moneyBtn:SetAttribute("Title", "Cooldown...")
-
-        -- re-enable after 5s
+        -- reset cooldown after 5s
         task.delay(5, function()
             moneyCooldown = false
-            moneyBtn:SetAttribute("Disabled", false)
-            moneyBtn:SetAttribute("Title", "Money Giver")
         end)
     end
 })
