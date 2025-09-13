@@ -1025,6 +1025,27 @@ TabHandles.MiscTab:Button({
     end
 })
 
+local fuseLoop = false
+
+TabHandles.MiscTab:Toggle({
+    Title = "FuseBox Looper",
+    Icon = "zap",
+    Value = false,
+    Callback = function(state)
+        fuseLoop = state
+        if fuseLoop then
+            task.spawn(function()
+                while fuseLoop do
+                    pcall(function()
+                        game:GetService("ReplicatedStorage").Events.FuseBoxHit:FireServer(workspace.FuseBox)
+                    end)
+                    task.wait(0.1) -- adjust delay if needed
+                end
+            end)
+        end
+    end
+})
+
 --// CREDITS TAB
 TabHandles.CreditsTab:Paragraph({
     Title = "Developers 🔨",
