@@ -1,11 +1,5 @@
 local Primal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
-PrimalUI:Notification({
-    Title = "Primal Discord",
-    Desc = "Join our community: discord.gg/Kk4qKFrunj",
-    Duration = 10
-})
-
 local Event = game:GetService("ReplicatedStorage").Events.Message
 firesignal(Event.OnClientEvent, 
     "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#4575D5\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>",
