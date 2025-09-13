@@ -1,5 +1,11 @@
 local Primal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
+PrimalUI:Notification({
+    Title = "Primal Discord",
+    Desc = "Join our community: discord.gg/Kk4qKFrunj",
+    Duration = 10
+})
+
 local Event = game:GetService("ReplicatedStorage").Events.Message
 firesignal(Event.OnClientEvent, 
     "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#4575D5\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>",
@@ -1059,6 +1065,15 @@ TabHandles.CreditsTab:Paragraph({
     Desc = "Primal users & Supporters",
     ImageSize = 40,
     Color = "Grey"
+})
+
+TabHandles.CreditsTab:Button({
+    Title = "Join our Discord",
+    Desc = "Click to copy invite link",
+    Icon = "discord", -- change if your UI doesn't support this icon
+    Callback = function()
+        setclipboard("https://discord.gg/Kk4qKFrunj") -- replace with your invite
+    end
 })
 
 --// APPEARANCE TAB
