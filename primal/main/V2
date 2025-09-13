@@ -1039,7 +1039,7 @@ TabHandles.MiscTab:Toggle({
                     pcall(function()
                         game:GetService("ReplicatedStorage").Events.FuseBoxHit:FireServer(workspace.FuseBox)
                     end)
-                    task.wait(0.1) -- adjust delay if needed
+                    task.wait(0.01) -- adjust delay if needed
                 end
             end)
         end
@@ -1049,7 +1049,7 @@ TabHandles.MiscTab:Toggle({
 --// CREDITS TAB
 TabHandles.CreditsTab:Paragraph({
     Title = "Developers 🔨",
-    Desc = "streetvalid & dollosha / We appreiciate you guys alot for using our script!",
+    Desc = "streetvalid & dollosha / We appreciate you guys alot for using our script!",
     ImageSize = 40,
     Color = "White"
 })
