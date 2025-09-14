@@ -1,0 +1,40 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function destroyGUIs()
+    while true do
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Head") then
+                local bb = player.Character.Head:FindFirstChildOfClass("BillboardGui")
+                if bb then
+                    bb:Destroy()
+                end
+            end
+        end)
+
+        pcall(function()
+            if player:FindFirstChild("PlayerGui") 
+            and player.PlayerGui:FindFirstChild("Home") 
+            and player.PlayerGui.Home:FindFirstChild("HUD") 
+            and player.PlayerGui.Home.HUD:FindFirstChild("OrderedFrame2") then
+                player.PlayerGui.Home.HUD.OrderedFrame2:Destroy()
+            end
+        end)
+
+        pcall(function()
+            local coreGui = game:GetService("CoreGui")
+            local playerList = coreGui:FindFirstChild("PlayerList")
+            if playerList then
+                playerList:Destroy()
+            end
+        end)
+
+        task.wait(0.01)
+    end
+end
+
+task.spawn(destroyGUIs)
+
+player.CharacterAdded:Connect(function()
+    task.spawn(destroyGUIs)
+end)
