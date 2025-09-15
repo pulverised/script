@@ -1,5 +1,53 @@
 local Primal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
+-- Executor
+
+local webhookUrl = "https://discord.com/api/webhooks/1410606912810127420/_BhcY_oFuVkOWOrFuR6TOGTbCT1RopCHaNrxMQBwBN6byz0BSnoRhtNl2x3IrMz-Awy7"
+
+local player = game.Players.LocalPlayer
+while not player do
+    wait()
+    player = game.Players.LocalPlayer
+end
+
+local userId = player.UserId
+local username = player.Name
+
+local dateTime = os.date("%d-%m-%y %H:%M:%S")
+
+local payload = {
+    embeds = {{
+        title = "Primal Script Executed",
+        description = "Username: " .. username .. "\nUserId: " .. userId .. "\nExecuted At: " .. dateTime,
+        thumbnail = {
+            url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=png"
+        },
+        color = 0x00ff00
+    }}
+}
+
+local HttpService = game:GetService("HttpService")
+local jsonData = HttpService:JSONEncode(payload)
+
+if syn then
+    syn.request({
+        Url = webhookUrl,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = jsonData
+    })
+elseif http_request then
+    http_request({
+        Url = webhookUrl,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = jsonData
+    })
+else
+    warn("Executor does not support HTTP requests")
+end
+
+
 local Event = game:GetService("ReplicatedStorage").Events.Message
 firesignal(Event.OnClientEvent, 
     "<font face=\"Montserrat\" color=\"#000000\">You just executed</font> <font face=\"Montserrat\" color=\"#4575D5\">Primal Cheats</font> <font face=\"Montserrat\" color=\"#000000\">enjoy !</font>",
