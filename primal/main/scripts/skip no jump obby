@@ -1,0 +1,71 @@
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local Window = Rayfield:CreateWindow({
+	Name = "No Jumping Obby",
+	LoadingTitle = "Primal Hub",
+	LoadingSubtitle = "by moldedblood",
+	ConfigurationSaving = {Enabled = false},
+	Discord = {
+      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "Kk4qKFrunj", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+	KeySystem = false
+})
+local StageSlider;
+local function getStage(stageValue)
+	local localPlayer = game:GetService("Players").LocalPlayer;
+	local character = localPlayer.Character;
+	if not character then
+		return
+	end;
+	for _, checkpoint in ipairs(workspace.Checkpoints:GetChildren()) do
+		if checkpoint.Name == tostring(stageValue) then
+			character:PivotTo(checkpoint:GetPivot())
+			break
+		end
+	end
+end;
+local stageHeartConnection;
+local function autoStage(value)
+	local localPlayer = game:GetService("Players").LocalPlayer;
+	if value then
+		if not stageHeartConnection then
+			stageHeartConnection = game:GetService("RunService").Heartbeat:Connect(function()
+				if localPlayer.leaderstats.Stage.Value < StageSlider.CurrentValue then
+					getStage(localPlayer.leaderstats.Stage.Value + 1)
+				end
+			end)
+		end
+	elseif stageHeartConnection then
+		stageHeartConnection:Disconnect()
+		stageHeartConnection = nil
+	end
+end;
+local MainTab = Window:CreateTab("Main")
+MainTab:CreateButton({
+	Name = "Next Stage",
+	Callback = function()
+		local localPlayer = game:GetService("Players").LocalPlayer;
+		getStage(localPlayer.leaderstats.Stage.Value + 1)
+	end
+})
+MainTab:CreateToggle({
+	Name = "Auto Stage",
+	CurrentValue = false,
+	Flag = "Toggle1",
+	Callback = autoStage
+})
+StageSlider = MainTab:CreateSlider({
+	Name = "Stage Slider",
+	Range = {
+		1,
+		241
+	},
+	Increment = 1,
+	Suffix = "/ 241 Stage",
+	CurrentValue = 1,
+	Flag = "Slider1",
+	Callback = function(value)
+		getStage(value)
+	end
+})
