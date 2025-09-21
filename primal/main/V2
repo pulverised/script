@@ -590,6 +590,7 @@ TabHandles.VisualsTab:Toggle({
     end
 })
 
+
 --// RAGE TAB
 local RageTab = TabHandles.RageTab
 
@@ -997,6 +998,43 @@ TabHandles.RageTab:Toggle({
         if running then
             task.spawn(spam)
         end
+    end
+})
+
+-- Easy Bank Toggle (Rage Tab)
+local bank = workspace.Map.Town["BANK!?"]
+
+-- Target both [4] child and Lasers folder
+local targets = {
+    bank:GetChildren()[4],
+    bank:WaitForChild("Lasers")
+}
+
+local lasersEnabled = true
+
+local function toggleLasers(state)
+    lasersEnabled = state
+    for _, container in ipairs(targets) do
+        for _, obj in ipairs(container:GetDescendants()) do
+            if obj:IsA("BasePart") then
+                if lasersEnabled then
+                    obj.CanTouch = true
+                    obj.Color = Color3.fromRGB(170, 0, 0) -- original red
+                else
+                    obj.CanTouch = false
+                    obj.Color = Color3.fromRGB(0, 177, 0) -- bright green
+                end
+            end
+        end
+    end
+end
+
+-- Add to Rage tab as a toggle
+TabHandles.RageTab:Toggle({
+    Title = "Easy Bank",
+    Default = false,
+    Callback = function(state)
+        toggleLasers(state)
     end
 })
 
