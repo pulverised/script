@@ -1125,6 +1125,88 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     end
 end)
 
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local part = nil
+local weld = nil
+local active = false
+local offset = Vector3.new(0, 0, 0)
+
+local function enablePower()
+    if part then return end
+
+    part = Instance.new("Part")
+    part.Massless = true
+    part.Size = Vector3.new(15, 15, 15)
+    part.Transparency = 0.85
+    part.Anchored = false
+    part.CanCollide = false
+    part.Material = Enum.Material.Neon
+    part.Color = Color3.fromRGB(0, 0, 0)
+    part.CFrame = hrp.CFrame * CFrame.new(offset)
+    part.Parent = workspace
+
+    weld = Instance.new("WeldConstraint")
+    weld.Part0 = hrp
+    weld.Part1 = part
+    weld.Parent = part
+
+    part.Touched:Connect(function(hit)
+        if hit:IsA("BasePart") and not hit:IsDescendantOf(character) then
+            if hit.CanCollide then
+                hit.CanCollide = false
+                task.delay(5, function()
+                    if hit and hit.Parent then
+                        hit.CanCollide = true
+                    end
+                end)
+            end
+        end
+    end)
+end
+
+local function disablePower()
+    if part then
+        part:Destroy()
+        part = nil
+        weld = nil
+    end
+end
+
+-- Rage Tab Toggle
+TabHandles.RageTab:Toggle({
+    Title = "UFO Power",
+    Description = "Only works for Guards",
+    Default = false,
+    Callback = function(state)
+        local team = player.Team and player.Team.Name
+        if team ~= "Guards" then
+            disablePower()
+            return
+        end
+
+        active = state
+        if active then
+            enablePower()
+        else
+            disablePower()
+        end
+    end
+})
+
+-- Keep working on respawn
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    hrp = character:WaitForChild("HumanoidRootPart")
+    if active then
+        enablePower()
+    end
+end)
+
 --// MISC TAB
 -- Staff Notifier
 local StaffNotifier = {}
