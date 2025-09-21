@@ -878,6 +878,128 @@ TabHandles.RageTab:Toggle({
     end
 })
 
+--// REMOVE DOORS (RAGE)
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local paths = {
+    { parent = Workspace, name = "Doors" },       -- Workspace.Doors
+    { parent = Workspace:WaitForChild("Map"), name = "doors" } -- Workspace.Map.doors
+}
+
+local function toggleFolder(folder)
+    if not folder then return end
+
+    if folder.Parent == Workspace or folder.Parent == Workspace:WaitForChild("Map") then
+        folder.Parent = ReplicatedStorage
+    elseif folder.Parent == ReplicatedStorage then
+        if folder.Name == "Doors" then
+            folder.Parent = Workspace
+        elseif folder.Name == "doors" then
+            folder.Parent = Workspace:WaitForChild("Map")
+        end
+    end
+end
+
+local function toggleAll()
+    for _, info in ipairs(paths) do
+        local folder = info.parent:FindFirstChild(info.name) or ReplicatedStorage:FindFirstChild(info.name)
+        if folder then
+            toggleFolder(folder)
+        end
+    end
+end
+
+-- UI Toggle
+TabHandles.RageTab:Toggle({
+    Title = "Remove Doors",
+    Default = false,
+    Callback = function(state)
+        if state then
+            toggleAll()
+        else
+            toggleAll()
+        end
+    end
+})
+
+--// FAST SPAMMER (RAGE)
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local RequestToolEvent = RS.Events.RequestTool
+local DropToolEvent = RS.Events.DropTool
+
+local requests = {{"Inmate",1},{"Inmate",2},{"Inmate",3}}
+local dropNames = {"Crude Knife","Glock-17","UZI"}
+
+local running = false
+local Backpack
+local Char
+
+-- PrisonDealer GUI toggle
+local gui = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PrisonDealer")
+
+local function toggleGUI()
+    if gui then
+        gui.Enabled = not gui.Enabled
+    end
+end
+
+-- Update Character + Backpack references on respawn
+local function updateRefs(character)
+    Char = character
+    Backpack = LocalPlayer:WaitForChild("Backpack")
+end
+
+LocalPlayer.CharacterAdded:Connect(updateRefs)
+if LocalPlayer.Character then
+    updateRefs(LocalPlayer.Character)
+end
+
+-- Spam loop
+local function spam()
+    while running do
+        if not Char or not Backpack then
+            task.wait(0.1)
+            continue
+        end
+
+        -- RequestTool spam
+        for _, args in ipairs(requests) do
+            pcall(function() RequestToolEvent:FireServer(table.unpack(args)) end)
+            task.wait(0.001)
+        end
+
+        -- DropTool spam
+        for _, name in ipairs(dropNames) do
+            local tool = Backpack:FindFirstChild(name)
+            if tool and Char then
+                if tool.Parent ~= Char then
+                    pcall(function() tool.Parent = Char end)
+                    task.wait(0.001)
+                end
+                pcall(function() DropToolEvent:FireServer(tool) end)
+                task.wait(0.001)
+            end
+        end
+    end
+end
+
+-- Rage Tab Toggle
+TabHandles.RageTab:Toggle({
+    Title = "Fast Spammer",
+    Default = false,
+    Callback = function(state)
+        running = state
+        toggleGUI()
+        if running then
+            task.spawn(spam)
+        end
+    end
+})
+
 --// MISC TAB
 -- Staff Notifier
 local StaffNotifier = {}
