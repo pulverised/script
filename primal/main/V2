@@ -1219,7 +1219,7 @@ TabHandles.MiscTab:Toggle({
 --// CREDITS TAB
 TabHandles.CreditsTab:Paragraph({
     Title = "Developers 🔨",
-    Desc = "streetvalid & dollosha / We appreciate you guys alot for using our script!",
+    Desc = "moldedblood & dollosha / We appreciate you guys alot for using our script!",
     ImageSize = 40,
     Color = "White"
 })
