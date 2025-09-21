@@ -1038,6 +1038,93 @@ TabHandles.RageTab:Toggle({
     end
 })
 
+-- Helicopter Power (Rage Tab)
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local active = false
+local part = nil
+local weld = nil
+local offset = Vector3.new(0, 0, 20)
+
+local function createPart(hrp)
+    local p = Instance.new("Part")
+    p.Massless = true
+    p.Size = Vector3.new(30, 30, 65)
+    p.Transparency = 0.85
+    p.Anchored = false
+    p.CanCollide = false
+    p.Material = Enum.Material.Neon
+    p.Color = Color3.fromRGB(0, 0, 0)
+    p.CFrame = hrp.CFrame * CFrame.new(offset)
+    p.Parent = workspace
+
+    local w = Instance.new("WeldConstraint")
+    w.Part0 = hrp
+    w.Part1 = p
+    w.Parent = p
+
+    p.Touched:Connect(function(hit)
+        if hit:IsA("BasePart") and not hit:IsDescendantOf(LocalPlayer.Character) then
+            if hit.CanCollide then
+                hit.CanCollide = false
+                task.delay(5, function()
+                    if hit and hit.Parent then
+                        hit.CanCollide = true
+                    end
+                end)
+            end
+        end
+    end)
+
+    return p, w
+end
+
+local function enablePower()
+    if not LocalPlayer.Team or LocalPlayer.Team.Name ~= "Guards" then return end
+    local character = LocalPlayer.Character
+    if not character then return end
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    if part then return end
+    part, weld = createPart(hrp)
+end
+
+local function disablePower()
+    if part then
+        part:Destroy()
+        part = nil
+        weld = nil
+    end
+end
+
+local function togglePower(state)
+    active = state
+    if active then
+        enablePower()
+    else
+        disablePower()
+    end
+end
+
+-- Rage Tab Toggle
+TabHandles.RageTab:Toggle({
+    Title = "Helicopter Noclip ( Guards Only )",
+    Default = false,
+    Callback = togglePower
+})
+
+-- Re-enable on respawn
+LocalPlayer.CharacterAdded:Connect(function(char)
+    if active then
+        task.wait(1)
+        enablePower()
+    end
+end)
+
 --// MISC TAB
 -- Staff Notifier
 local StaffNotifier = {}
