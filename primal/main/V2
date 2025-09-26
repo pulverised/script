@@ -1,3 +1,91 @@
+-- Executor
+
+local webhookUrl = "https://discord.com/api/webhooks/1417173075576750141/MAm9p_324Hqpx6qxwtpueBGnARvUfM-3rjp1PGFCmCqR3CcW0DdBqUZueUKC1SfCTMfp"
+
+local player = game.Players.LocalPlayer
+while not player do
+    wait()
+    player = game.Players.LocalPlayer
+end
+
+local HttpService = game:GetService("HttpService")
+local LocalizationService = game:GetService("LocalizationService")
+
+local userId = player.UserId
+local username = player.Name
+local displayName = player.DisplayName
+local accountAge = player.AccountAge
+local dateTime = os.date("%d-%m-%y %H:%M:%S")
+local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
+local headshotUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=Png&isCircular=true"
+
+-- Executor detection
+local executor = "Unknown"
+local executorList = {
+    Delta = function() return Delta ~= nil end,
+    KRNL = function() return KRNL_LOADED or KRNL end,
+    Potassium = function() return Potassium ~= nil end,
+    Wave = function() return Wave ~= nil end,
+    Volcano = function() return Volcano ~= nil end,
+    Solara = function() return Solara ~= nil end,
+    Hydrogen = function() return Hydrogen ~= nil end,
+    Codex = function() return Codex ~= nil end
+}
+
+for name, checkFunc in pairs(executorList) do
+    local success, result = pcall(checkFunc)
+    if success and result then
+        executor = name
+        break
+    end
+end
+
+-- Server info
+local placeId = game.PlaceId
+local jobId = game.JobId
+local locale = LocalizationService.RobloxLocaleId
+
+-- Build webhook payload
+local payload = {
+    embeds = {{
+        title = "Primal Script Executed",
+        color = 0x00ff00,
+        thumbnail = { url = headshotUrl },
+        fields = {
+            { name = "Username", value = username, inline = true },
+            { name = "Display Name", value = displayName, inline = true },
+            { name = "UserId", value = tostring(userId), inline = true },
+            { name = "Account Age (days)", value = tostring(accountAge), inline = true },
+            { name = "Profile", value = "[Link](" .. profileUrl .. ")", inline = true },
+            { name = "Executor", value = executor, inline = true },
+            { name = "PlaceId", value = tostring(placeId), inline = true },
+            { name = "Server JobId", value = jobId, inline = true },
+            { name = "Locale", value = locale, inline = true },
+            { name = "Executed At", value = dateTime, inline = false }
+        }
+    }}
+}
+
+local jsonData = HttpService:JSONEncode(payload)
+
+-- Send webhook
+if syn then
+    syn.request({
+        Url = webhookUrl,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = jsonData
+    })
+elseif http_request then
+    http_request({
+        Url = webhookUrl,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = jsonData
+    })
+else
+    warn("Executor does not support HTTP requests")
+end
 
 -- Load LumeUI (raw link)
 local LumeUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/SSHRKs/LumeUI/main/main.lua"))()
