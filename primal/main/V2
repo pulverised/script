@@ -803,29 +803,6 @@ RageTab:CreateToggle({
     end
 })
 
--- No Doors
-local function setDoors(enabled)
-    safe(function()
-        local paths = {
-            { parent = workspace, name = "Doors" },
-            { parent = workspace:FindFirstChild("Map"), name = "doors" }
-        }
-        for _, info in ipairs(paths) do
-            local folder = info.parent and info.parent:FindFirstChild(info.name) or game:GetService("ReplicatedStorage"):FindFirstChild(info.name)
-            if folder then
-                folder.Parent = enabled and game:GetService("ReplicatedStorage") or (folder.Name == "Doors" and workspace or workspace.Map)
-            end
-        end
-    end, "Failed to toggle doors")
-end
-
-RageTab:CreateToggle({
-    Name = "No Doors",
-    CurrentValue = false,
-    Flag = "NoDoorsToggle",
-    Callback = setDoors
-})
-
 -- Wallhack
 local collisionDisabled = false
 local originalStates = {}
@@ -907,63 +884,6 @@ RageTab:CreateToggle({
     end
 })
 
--- Easy Bank
-local lasersEnabled = true
-local bankTargets = {}
-
-local function safeGetBankTargets()
-    local found = {}
-    safe(function()
-        local map = workspace:FindFirstChild("Map")
-        if map and map:FindFirstChild("Town") then
-            local town = map.Town
-            local bank = town:FindFirstChild("BANK!?")
-            if bank then
-                local children = bank:GetChildren()
-                if #children >= 4 then
-                    table.insert(found, children[4])
-                end
-                local lasers = bank:FindFirstChild("Lasers")
-                if lasers then
-                    table.insert(found, lasers)
-                end
-            end
-        end
-    end, "Failed to get bank targets")
-    return found
-end
-
-local function toggleLasers(state)
-    safe(function()
-        lasersEnabled = state
-        bankTargets = safeGetBankTargets()
-        for _, container in ipairs(bankTargets) do
-            if container then
-                for _, obj in ipairs(container:GetDescendants()) do
-                    if obj:IsA("BasePart") then
-                        if lasersEnabled then
-                            obj.CanTouch = false
-                            obj.Color = Color3.fromRGB(0, 177, 0)
-                        else
-                            obj.CanTouch = true
-                            obj.Color = Color3.fromRGB(170, 0, 0)
-                        end
-                    end
-                end
-            end
-        end
-    end, "Failed to toggle lasers")
-end
-
-RageTab:CreateToggle({
-    Name = "Easy Bank",
-    CurrentValue = false,
-    Flag = "EasyBankToggle",
-    Callback = function(Value)
-        toggleLasers(Value)
-    end
-})
-
 -- Auto Reset on Tase
 local autoResetEnabled = false
 local eventConnection
@@ -1035,6 +955,30 @@ MiscTab:CreateButton({
     end
 })
 
+-- No Doors
+local function setDoors(enabled)
+    safe(function()
+        local paths = {
+            { parent = workspace, name = "Doors" },
+            { parent = workspace:FindFirstChild("Map"), name = "doors" }
+        }
+        for _, info in ipairs(paths) do
+            local folder = info.parent and info.parent:FindFirstChild(info.name) or game:GetService("ReplicatedStorage"):FindFirstChild(info.name)
+            if folder then
+                folder.Parent = enabled and game:GetService("ReplicatedStorage") or (folder.Name == "Doors" and workspace or workspace.Map)
+            end
+        end
+    end, "Failed to toggle doors")
+end
+
+MiscTab:CreateToggle({
+    Name = "No Doors",
+    CurrentValue = false,
+    Flag = "NoDoorsToggle",
+    Callback = setDoors
+})
+
+
 -- Fusebox Looper
 local fuseLoop = false
 
@@ -1058,12 +1002,18 @@ MiscTab:CreateToggle({
 })
 
 -- Spam Dropper
+local spamDropperEnabled = false
+
 MiscTab:CreateToggle({
     Name = "Spam Dropper",
     CurrentValue = false,
     Flag = "SpamDropperToggle",
     Callback = function(Value)
         safe(function()
+            spamDropperEnabled = Value
+            
+            if not Value then return end
+            
             local Players = game:GetService("Players")
             local RS = game:GetService("ReplicatedStorage")
             local LocalPlayer = Players.LocalPlayer
@@ -1079,23 +1029,25 @@ MiscTab:CreateToggle({
             local requests = {{"Inmate",1},{"Inmate",2},{"Inmate",3}}
             local dropNames = {"Crude Knife","Glock-17","UZI"}
 
-            local Backpack = LocalPlayer:FindFirstChild("Backpack")
-            local Char = LocalPlayer.Character
-
             local function spamDropper()
-                while Value do
+                while spamDropperEnabled do
                     safe(function()
+                        local Backpack = LocalPlayer:FindFirstChild("Backpack")
+                        local Char = LocalPlayer.Character
+                        
                         if not Char or not Backpack then
                             task.wait(0.1)
                             return
                         end
                         
                         for _, args in ipairs(requests) do
+                            if not spamDropperEnabled then break end
                             safe(function() RequestToolEvent:FireServer(table.unpack(args)) end, "Failed to request tool")
                             task.wait(0.001)
                         end
                         
                         for _, name in ipairs(dropNames) do
+                            if not spamDropperEnabled then break end
                             local tool = Backpack:FindFirstChild(name)
                             if tool and Char then
                                 if tool.Parent ~= Char then
@@ -1107,16 +1059,269 @@ MiscTab:CreateToggle({
                             end
                         end
                     end, "Failed in spam dropper loop")
+                    
+                    if not spamDropperEnabled then break end
+                    task.wait(0.001)
                 end
             end
 
-            if Value then
-                task.spawn(spamDropper)
-            end
+            task.spawn(spamDropper)
         end, "Failed to execute Spam Dropper")
     end
 })
 
+-- Easy Bank
+local lasersEnabled = true
+local bankTargets = {}
+
+local function safeGetBankTargets()
+    local found = {}
+    safe(function()
+        local map = workspace:FindFirstChild("Map")
+        if map and map:FindFirstChild("Town") then
+            local town = map.Town
+            local bank = town:FindFirstChild("BANK!?")
+            if bank then
+                local children = bank:GetChildren()
+                if #children >= 4 then
+                    table.insert(found, children[4])
+                end
+                local lasers = bank:FindFirstChild("Lasers")
+                if lasers then
+                    table.insert(found, lasers)
+                end
+            end
+        end
+    end, "Failed to get bank targets")
+    return found
+end
+
+local function toggleLasers(state)
+    safe(function()
+        lasersEnabled = state
+        bankTargets = safeGetBankTargets()
+        for _, container in ipairs(bankTargets) do
+            if container then
+                for _, obj in ipairs(container:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        if lasersEnabled then
+                            obj.CanTouch = false
+                            obj.Color = Color3.fromRGB(0, 177, 0)
+                        else
+                            obj.CanTouch = true
+                            obj.Color = Color3.fromRGB(170, 0, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end, "Failed to toggle lasers")
+end
+
+MiscTab:CreateToggle({
+    Name = "Easy Bank",
+    CurrentValue = false,
+    Flag = "EasyBankToggle",
+    Callback = function(Value)
+        toggleLasers(Value)
+    end
+})
+
+
+-- Shield Remover
+local ShieldRemover = {}
+local shieldsToggled = false
+local shieldData = {}
+local everyShieldFolder
+local playersFolder
+local childAddedConnection
+
+local function initializeShieldSystem()
+    local success = false
+    safe(function()
+        playersFolder = workspace:FindFirstChild("Players")
+        if not playersFolder then
+            warn("Shield Remover: workspace.Players not found")
+            return false
+        end
+        
+        everyShieldFolder = game:GetService("ReplicatedStorage"):FindFirstChild("EveryShield")
+        if not everyShieldFolder then
+            everyShieldFolder = Instance.new("Folder")
+            everyShieldFolder.Name = "EveryShield"
+            everyShieldFolder.Parent = game:GetService("ReplicatedStorage")
+        end
+        success = true
+    end, "Failed to initialize shield system")
+    return success
+end
+
+local function collectShieldsFromWorkspace()
+    safe(function()
+        shieldData = {} -- Reset and store current shield instances
+        for _, model in ipairs(playersFolder:GetChildren()) do
+            if model and model:IsA("Model") then
+                local torso = model:FindFirstChild("Torso")
+                if torso then
+                    local shieldFolder = torso:FindFirstChild("ShieldFolder")
+                    if shieldFolder then
+                        shieldData[model.Name] = {
+                            shieldFolder = shieldFolder,
+                            ownerName = model.Name
+                        }
+                        print("Shield Remover: Collected shield for", model.Name)
+                    end
+                end
+            end
+        end
+    end, "Failed to collect shields from workspace")
+end
+
+local function moveShieldsToStorage()
+    safe(function()
+        for _, data in pairs(shieldData) do
+            local sh = data.shieldFolder
+            if sh and sh.Parent ~= everyShieldFolder then
+                local ok, err = pcall(function() sh.Parent = everyShieldFolder end)
+                if not ok then
+                    warn("Shield Remover: Failed to move shield to EveryShield:", err)
+                else
+                    print("Shield Remover: Moved shield to EveryShield for", data.ownerName)
+                end
+            end
+        end
+        shieldsToggled = true
+    end, "Failed to move shields to storage")
+end
+
+local function moveShieldsBackToPlayers()
+    safe(function()
+        for ownerName, data in pairs(shieldData) do
+            local sh = data.shieldFolder
+            if not sh then
+                warn("Shield Remover: Missing shield instance for", ownerName)
+            else
+                -- Try to find the owner's current model in workspace.Players
+                local targetModel = playersFolder:FindFirstChild(ownerName)
+                if targetModel and targetModel:IsA("Model") then
+                    local torso = targetModel:FindFirstChild("Torso")
+                    if torso then
+                        if sh.Parent ~= torso then
+                            local ok, err = pcall(function() sh.Parent = torso end)
+                            if not ok then
+                                warn("Shield Remover: Failed to return shield to", ownerName, ":", err)
+                            else
+                                print("Shield Remover: Returned shield to", ownerName)
+                            end
+                        end
+                    else
+                        warn("Shield Remover: Owner model found but no Torso for", ownerName)
+                    end
+                else
+                    -- Owner model not found - keep shield in EveryShield and warn
+                    warn("Shield Remover: Could not find owner model for", ownerName, "- leaving shield in EveryShield")
+                end
+            end
+        end
+        shieldsToggled = false
+    end, "Failed to move shields back to players")
+end
+
+local function toggleShields()
+    safe(function()
+        if not playersFolder or not everyShieldFolder then
+            if not initializeShieldSystem() then 
+                warn("Shield Remover: Failed to initialize system")
+                return 
+            end
+        end
+        
+        if not shieldsToggled then
+            -- Turn ON: collect from torsos then move to EveryShield
+            print("Shield Remover: Turning ON - collecting shields...")
+            collectShieldsFromWorkspace()
+            moveShieldsToStorage()
+        else
+            -- Turn OFF: move the previously-collected shields back to their owners
+            print("Shield Remover: Turning OFF - returning shields...")
+            moveShieldsBackToPlayers()
+        end
+    end, "Failed to toggle shields")
+end
+
+local function setupChildAddedMonitoring()
+    safe(function()
+        if childAddedConnection then
+            childAddedConnection:Disconnect()
+        end
+        
+        if playersFolder then
+            childAddedConnection = playersFolder.ChildAdded:Connect(function(child)
+                if not shieldsToggled then return end
+                
+                -- Small delay to allow model to populate
+                task.wait(0.5)
+                safe(function()
+                    if child and child:IsA("Model") then
+                        local torso = child:FindFirstChild("Torso")
+                        local shieldFolder = torso and torso:FindFirstChild("ShieldFolder")
+                        if shieldFolder then
+                            -- Record and move
+                            shieldData[child.Name] = {
+                                shieldFolder = shieldFolder,
+                                ownerName = child.Name
+                            }
+                            local ok, err = pcall(function() shieldFolder.Parent = everyShieldFolder end)
+                            if ok then
+                                print("Shield Remover: Auto-moved new player's shield for", child.Name)
+                            else
+                                warn("Shield Remover: Failed to auto-move shield for", child.Name, ":", err)
+                            end
+                        end
+                    end
+                end, "Failed to handle new player shield")
+            end)
+        end
+    end, "Failed to setup child added monitoring")
+end
+
+function ShieldRemover.Start()
+    safe(function()
+        print("Shield Remover: Starting...")
+        if initializeShieldSystem() then
+            setupChildAddedMonitoring()
+            toggleShields()
+        else
+            warn("Shield Remover: Failed to start - initialization failed")
+        end
+    end, "Failed to start shield remover")
+end
+
+function ShieldRemover.Stop()
+    safe(function()
+        print("Shield Remover: Stopping...")
+        if shieldsToggled then
+            toggleShields()
+        end
+        if childAddedConnection then
+            childAddedConnection:Disconnect()
+            childAddedConnection = nil
+        end
+    end, "Failed to stop shield remover")
+end
+
+MiscTab:CreateToggle({
+    Name = "Shield Remover",
+    CurrentValue = false,
+    Flag = "ShieldRemoverToggle",
+    Callback = function(Value)
+        if Value then
+            ShieldRemover.Start()
+        else
+            ShieldRemover.Stop()
+        end
+    end
+})
 ------------------------------
 -- CREDITS TAB
 ------------------------------
