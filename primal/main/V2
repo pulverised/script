@@ -1,1337 +1,940 @@
--- Executor
+-- Load Rayfield with error handling
+local Rayfield
+local success, error = pcall(function()
+    Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+end)
 
-local webhookUrl = "https://discord.com/api/webhooks/1417173075576750141/MAm9p_324Hqpx6qxwtpueBGnARvUfM-3rjp1PGFCmCqR3CcW0DdBqUZueUKC1SfCTMfp"
-
-local player = game.Players.LocalPlayer
-while not player do
-    wait()
-    player = game.Players.LocalPlayer
-end
-
-local HttpService = game:GetService("HttpService")
-local LocalizationService = game:GetService("LocalizationService")
-
-local userId = player.UserId
-local username = player.Name
-local displayName = player.DisplayName
-local accountAge = player.AccountAge
-local dateTime = os.date("%d-%m-%y %H:%M:%S")
-local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
-local headshotUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=Png&isCircular=true"
-
--- Executor detection
-local executor = "Unknown"
-local executorList = {
-    Delta = function() return Delta ~= nil or (getgenv and getgenv().Delta ~= nil) end,
-    KRNL = function() return KRNL_LOADED or KRNL or (getgenv and getgenv().KRNL ~= nil) end,
-    Potassium = function() return Potassium ~= nil or (getgenv and getgenv().Potassium ~= nil) end,
-    Wave = function() return Wave ~= nil or (getgenv and getgenv().Wave ~= nil) end,
-    Volcano = function() return Volcano ~= nil or (getgenv and getgenv().Volcano ~= nil) end,
-    Solara = function() return Solara ~= nil or (getgenv and getgenv().Solara ~= nil) end,
-    Hydrogen = function() return Hydrogen ~= nil or (getgenv and getgenv().Hydrogen ~= nil) end,
-    Codex = function() return Codex ~= nil or (getgenv and getgenv().Codex ~= nil) end,
-    Synapse = function() return syn ~= nil or (getgenv and getgenv().syn ~= nil) end,
-    Fluxus = function() return fluxus ~= nil or (getgenv and getgenv().fluxus ~= nil) end,
-    Electron = function() return Electron ~= nil or (getgenv and getgenv().Electron ~= nil) end,
-    Comet = function() return Comet ~= nil or (getgenv and getgenv().Comet ~= nil) end,
-    ScriptWare = function() return scriptware ~= nil or getscriptware ~= nil or (getgenv and getgenv().scriptware ~= nil) end,
-    ArceusX = function() return getgenv and getgenv().ArceusX ~= nil end,
-    Evon = function() return getgenv and getgenv().Evon ~= nil end,
-    Valyse = function() return getgenv and getgenv().Valyse ~= nil end,
-    Trigon = function() return getgenv and getgenv().Trigon ~= nil end
-}
-
--- Debug executor checks
-local function debugExecutorChecks()
-    for name, checkFunc in pairs(executorList) do
-        local success, result = pcall(checkFunc)
-        print(name .. ": " .. (success and tostring(result) or "Error: " .. tostring(result)))
-    end
-end
-
--- Universal executor detection
-local function detectUnknownExecutor()
-    local commonExecutorAPIs = {
-        "getgenv", "syn", "http", "http_request", "request", "getrawmetatable",
-        "setrawmetatable", "getnamecallmethod", "setnamecallmethod", "hookfunction",
-        "newcclosure", "islclosure", "isluau", "getrenv", "fireclickdetector",
-        "firesignal", "mouse1click", "mouse2click", "gethui", "secure_call",
-        "getthreadidentity", "setthreadidentity"
-    }
-
-    -- Check for common APIs
-    for _, api in ipairs(commonExecutorAPIs) do
-        local success, result = pcall(function()
-            return _G[api] ~= nil or (getgenv and getgenv()[api] ~= nil)
-        end)
-        if success and result then
-            if api == "getgenv" and getgenv then
-                local env = getgenv()
-                for key, _ in pairs(env) do
-                    if type(key) == "string" and (
-                        key:lower():match("executor") or
-                        key:lower():match("script") or
-                        key:lower():match("arceus") or
-                        key:lower():match("evon") or
-                        key:lower():match("valyse") or
-                        key:lower():match("trigon") or
-                        key:lower():match("fluxus") or
-                        key:lower():match("synapse")
-                    ) then
-                        return key .. " (via getgenv)"
-                    end
-                end
-            end
-            return "UnknownExecutor (" .. api .. " detected)"
-        end
-    end
-
-    -- Scan global environment for suspicious tables
-    for key, value in pairs(_G) do
-        if type(value) == "table" and key ~= "_G" and key ~= "_ENV" then
-            local success, result = pcall(function()
-                return rawget(value, "request") or rawget(value, "http") or rawget(value, "hookfunction") or rawget(value, "executor")
-            end)
-            if success and result then
-                return "UnknownExecutor (" .. key .. " detected)"
-            end
-        end
-    end
-
-    -- Behavioral detection: Try accessing restricted APIs
-    local success, result = pcall(function()
-        if hookfunction and getrawmetatable then
-            local mt = getrawmetatable(game)
-            return mt ~= nil
-        end
-        return false
-    end)
-    if success and result then
-        return "UnknownExecutor (restricted API access detected)"
-    end
-
-    return nil
-end
-
--- Detect executor
-
-if executor == "Unknown" then
-    local unknownResult = detectUnknownExecutor()
-    if unknownResult then
-        executor = unknownResult
-    end
-end
--- Server info
-local placeId = game.PlaceId
-local jobId = game.JobId
-local locale = LocalizationService.RobloxLocaleId
-
--- Build webhook payload
-local payload = {
-    embeds = {{
-        title = "Primal Script Executed",
-        color = 0x00ff00,
-        thumbnail = { url = headshotUrl },
-        fields = {
-            { name = "Username", value = username, inline = true },
-            { name = "Display Name", value = displayName, inline = true },
-            { name = "UserId", value = tostring(userId), inline = true },
-            { name = "Account Age (days)", value = tostring(accountAge), inline = true },
-            { name = "Profile", value = "[Link](" .. profileUrl .. ")", inline = true },
-            { name = "Executor", value = executor, inline = true },
-            { name = "PlaceId", value = tostring(placeId), inline = true },
-            { name = "Server JobId", value = jobId, inline = true },
-            { name = "Locale", value = locale, inline = true },
-            { name = "Executed At", value = dateTime, inline = false }
-        }
-    }}
-}
-
-local jsonData = HttpService:JSONEncode(payload)
-
--- Send webhook with enhanced executor support
-local function sendWebhook()
-    local httpFunctions = {
-        { func = syn and syn.request, name = "syn.request" },
-        { func = http_request, name = "http_request" },
-        { func = request, name = "request" },
-        { func = http and http.request, name = "http.request" },
-        { func = fluxus and fluxus.request, name = "fluxus.request" },
-        { func = getgenv and getgenv().request, name = "getgenv().request" },
-        { func = getgenv and getgenv().http and getgenv().http.request, name = "getgenv().http.request" }
-    }
-
-    for _, http in ipairs(httpFunctions) do
-        if http.func then
-            local success, response = pcall(http.func, {
-                Url = webhookUrl,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = jsonData
-            })
-            if success then
-                return true, response
-            end
-        end
-    end
-    return false
-end
-
--- Execute webhook send and handle errors
-local success, response = sendWebhook()
 if not success then
-    -- Test HTTP support with a fallback endpoint
-    local testSuccess, testResponse = pcall(function()
-        local func = http_request or request or (syn and syn.request) or (getgenv and getgenv().request)
-        if func then
-            return func({
-                Url = "https://httpbin.org/post",
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = jsonData
-            })
-        end
-        return nil
-    end)
-end
-
--- Safe execution wrapper
-local function safe(func, errorMessage)
-    local success, result = pcall(func)
-    return success, result
-end
-
-
-
--- Load LumeUI with error handling
-local LumeUI
-safe(function()
-    LumeUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/SSHRKs/LumeUI/main/main.lua"))()
-end, "Failed to load LumeUI")
-
-if not LumeUI then
-    warn("LumeUI failed to load. Script cannot continue.")
+    warn("Failed to load Rayfield: " .. tostring(error))
     return
 end
 
--- Create main window with error handling
-local Window
-safe(function()
-    Window = LumeUI:CreateWindow({
-        Name = "Primal Hub",
-        Icon = "hexagon",
-        Size = UDim2.fromOffset(520, 320),
-    })
-end, "Failed to create main window")
+-- Create main window
+local Window = Rayfield:CreateWindow({
+    Name = "Primal Hub",
+    Icon = 0,
+    LoadingTitle = "Primal Hub Loading...",
+    LoadingSubtitle = "by Moldedblood & Dollosha",
+    ShowText = "Primal Hub",
+    Theme = "Default",
+    ToggleUIKeybind = "K",
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings = false,
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "PrimalHub"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false,
+    KeySettings = {
+        Title = "Primal Hub",
+        Subtitle = "Key System",
+        Note = "No method of obtaining the key is provided",
+        FileName = "PrimalKey",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"Hello"}
+    }
+})
 
-if not Window then
-    warn("Window creation failed. Script cannot continue.")
-    return
+-- Safe function for error handling
+local function safe(func, errorMsg)
+    local success, error = pcall(func)
+    if not success then
+        warn((errorMsg or "Error occurred") .. ": " .. tostring(error))
+    end
 end
 
 ------------------------------
 -- MAIN TAB
 ------------------------------
-local MainTab
-safe(function()
-    MainTab = Window:Tab({Title = "Main", Icon = "gamepad"})
-end, "Failed to create Main tab")
+local MainTab = Window:CreateTab("Main", "gamepad-2")
 
-if MainTab then
-    -- Team Section
-    safe(function()
-        MainTab:Section({Title = "👥 Team"})
-        MainTab:Button({
-            Title = "Join Criminal",
-            Callback = function()
+MainTab:CreateSection("Team")
+
+MainTab:CreateButton({
+    Name = "Join Criminal",
+    Callback = function()
+        safe(function()
+            local crimpad = workspace.Warrior.Body.Seats:GetChildren()[3]
+            local oldpos = crimpad.Position
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+
+            local function getTargetHRP()
+                if LocalPlayer.Character then
+                    return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                end
+                return nil
+            end
+
+            crimpad.Size = Vector3.new(5, 1, 5)
+            crimpad.Transparency = 0
+            crimpad.BrickColor = BrickColor.new("Bright red")
+            crimpad.Material = Enum.Material.Neon
+
+            local hrp = getTargetHRP()
+            if hrp then
+                crimpad.Position = hrp.Position - Vector3.new(0, hrp.Size.Y/2 + crimpad.Size.Y/2, 0)
+            end
+
+            task.delay(10, function()
                 safe(function()
-                    local crimpad = workspace.Warrior.Body.Seats:GetChildren()[3]
-                    local oldpos = crimpad.Position
-                    local Players = game:GetService("Players")
-                    local LocalPlayer = Players.LocalPlayer
-
-                    local function getTargetHRP()
-                        if LocalPlayer.Character then
-                            return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                        end
-                        return nil
-                    end
-
-                    crimpad.Size = Vector3.new(5, 1, 5)
-                    crimpad.Transparency = 0
+                    crimpad.Position = oldpos
+                    crimpad.Size = Vector3.new(1,1,1)
+                    crimpad.Transparency = 1
                     crimpad.BrickColor = BrickColor.new("Bright red")
-                    crimpad.Material = Enum.Material.Neon
+                    crimpad.Material = Enum.Material.SmoothPlastic
+                end, "Failed to reset criminal pad")
+            end)
+        end, "Failed to execute Join Criminal")
+    end
+})
 
-                    local hrp = getTargetHRP()
-                    if hrp then
-                        crimpad.Position = hrp.Position - Vector3.new(0, hrp.Size.Y/2 + crimpad.Size.Y/2, 0)
-                    end
+MainTab:CreateSection("Body")
 
-                    task.delay(10, function()
-                        safe(function()
-                            crimpad.Position = oldpos
-                            crimpad.Size = Vector3.new(1,1,1)
-                            crimpad.Transparency = 1
-                            crimpad.BrickColor = BrickColor.new("Bright red")
-                            crimpad.Material = Enum.Material.SmoothPlastic
-                        end, "Failed to reset criminal pad")
-                    end)
-                end, "Failed to execute Join Criminal")
+MainTab:CreateButton({
+    Name = "No Jump Cooldown",
+    Callback = function()
+        safe(function()
+            local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
+            firesignal(Event.OnClientEvent, "Stamina", math.huge)
+        end, "Failed to execute No Jump Cooldown")
+    end
+})
+
+MainTab:CreateButton({
+    Name = "Skip Treadmill",
+    Callback = function()
+        safe(function()
+            local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
+            for i = 1, 4 do
+                firesignal(Event.OnClientEvent, "Runspeed", 1)
             end
-        })
-    end, "Failed to create Team section")
-
-    -- Body Section
-    safe(function()
-        MainTab:Section({Title = "🏃 Body"})
-        MainTab:Button({
-            Title = "No Jump Cooldown",
-            Callback = function()
-                safe(function()
-                    local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
-                    firesignal(Event.OnClientEvent, "Stamina", math.huge)
-                end, "Failed to execute No Jump Cooldown")
-            end
-        })
-
-        MainTab:Button({
-            Title = "Skip Treadmill",
-            Callback = function()
-                safe(function()
-                    local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
-                    for i = 1, 4 do
-                        firesignal(Event.OnClientEvent, "Runspeed", 1)
-                    end
-                end, "Failed to execute Skip Treadmill")
-            end
-        })
-    end, "Failed to create Body section")
-end
+        end, "Failed to execute Skip Treadmill")
+    end
+})
 
 ------------------------------
 -- VISUALS TAB
 ------------------------------
-local VisualsTab
-safe(function()
-    VisualsTab = Window:Tab({Title = "Visuals", Icon = "eye"})
-    VisualsTab:Section({Title = "Visuals"})
-end, "Failed to create Visuals tab")
+local VisualsTab = Window:CreateTab("Visuals", "eye")
 
-if VisualsTab then
-    -- Killfeed Toggle
+VisualsTab:CreateSection("Visuals")
+
+-- Killfeed Toggle
+VisualsTab:CreateToggle({
+    Name = "Killfeed",
+    CurrentValue = false,
+    Flag = "KillfeedToggle",
+    Callback = function(Value)
+        safe(function()
+            game:GetService("Players").LocalPlayer.PlayerGui.Home.HUD.Killfeed.Visible = Value
+        end, "Failed to toggle killfeed")
+    end
+})
+
+-- Team ESP
+local TeamESP = {}
+local runningTeam = false
+local playerConnectionsTeam = {}
+local globalConnectionsTeam = {}
+
+local teamColors = {
+    ["Inmates"] = Color3.fromRGB(255,165,0),
+    ["Guards"] = Color3.fromRGB(0,0,255),
+    ["Warden"] = Color3.fromRGB(0,0,139),
+    ["Criminals"] = Color3.fromRGB(255,0,0),
+}
+
+local function updateHighlightTeam(player)
     safe(function()
-        local Players = game:GetService("Players")
-        local player = Players.LocalPlayer
-        local killfeedEnabled = false
+        if player == game:GetService("Players").LocalPlayer then return end
+        local character = player.Character
+        if not character then return end
 
-        VisualsTab:Toggle({
-            Title = "Killfeed",
-            Default = false,
-            Callback = function(value)
-                safe(function()
-                    killfeedEnabled = value
-                    game:GetService("Players").LocalPlayer.PlayerGui.Home.HUD.Killfeed.Visible = value
-                end, "Failed to toggle killfeed")
+        if character:FindFirstChild("TeamHighlight") then
+            character.TeamHighlight:Destroy()
+        end
+
+        local teamName = player.Team and player.Team.Name or ""
+        local color = teamColors[teamName]
+        if not color then return end
+
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "TeamHighlight"
+        highlight.FillColor = color
+        highlight.OutlineColor = color
+        highlight.Adornee = character
+        highlight.Parent = character
+    end, "Failed to update team highlight")
+end
+
+local function monitorPlayerTeam(player)
+    safe(function()
+        if player == game:GetService("Players").LocalPlayer then return end
+        local conns = {}
+
+        table.insert(conns, player.CharacterAdded:Connect(function()
+            if runningTeam then updateHighlightTeam(player) end
+        end))
+
+        table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
+            if runningTeam then updateHighlightTeam(player) end
+        end))
+
+        if player.Character then
+            updateHighlightTeam(player)
+        end
+
+        playerConnectionsTeam[player] = conns
+    end, "Failed to monitor team player")
+end
+
+function TeamESP.Start()
+    safe(function()
+        if runningTeam then return end
+        runningTeam = true
+        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+            monitorPlayerTeam(player)
+        end
+        table.insert(globalConnectionsTeam, game:GetService("Players").PlayerAdded:Connect(monitorPlayerTeam))
+    end, "Failed to start team visualizer")
+end
+
+function TeamESP.Stop()
+    safe(function()
+        runningTeam = false
+        for player, conns in pairs(playerConnectionsTeam) do
+            for _, c in ipairs(conns) do
+                safe(function() c:Disconnect() end, "Failed to disconnect player connection")
             end
-        })
-    end, "Failed to create Killfeed toggle")
+        end
+        playerConnectionsTeam = {}
 
-    -- Team ESP
-    safe(function()
-        local TeamESP = {}
-        local runningTeam = false
-        local playerConnectionsTeam = {}
-        local globalConnectionsTeam = {}
+        for _, c in ipairs(globalConnectionsTeam) do
+            safe(function() c:Disconnect() end, "Failed to disconnect global connection")
+        end
+        globalConnectionsTeam = {}
 
-        local teamColors = {
-            ["Inmates"] = Color3.fromRGB(255,165,0),
-            ["Guards"] = Color3.fromRGB(0,0,255),
-            ["Warden"] = Color3.fromRGB(0,0,139),
-            ["Criminals"] = Color3.fromRGB(255,0,0),
-        }
-
-        local function updateHighlightTeam(player)
-            safe(function()
-                if player == game:GetService("Players").LocalPlayer then return end
-                local character = player.Character
-                if not character then return end
-
-                if character:FindFirstChild("TeamHighlight") then
-                    character.TeamHighlight:Destroy()
+        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+            if player.Character then
+                local highlight = player.Character:FindFirstChild("TeamHighlight")
+                if highlight then
+                    safe(function() highlight:Destroy() end, "Failed to destroy highlight")
                 end
+            end
+        end
+    end, "Failed to stop TeamESP")
+end
 
-                local teamName = player.Team and player.Team.Name or ""
-                local color = teamColors[teamName]
-                if not color then return end
+VisualsTab:CreateToggle({
+    Name = "Team ESP",
+    CurrentValue = false,
+    Flag = "TeamESPToggle",
+    Callback = function(Value)
+        if Value then
+            TeamESP.Start()
+        else
+            TeamESP.Stop()
+        end
+    end
+})
 
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "TeamHighlight"
-                highlight.FillColor = color
-                highlight.OutlineColor = color
-                highlight.Adornee = character
+-- Hostile Detector
+local Players = game:GetService("Players")
+local hostileEnabled = false
+local HIGHLIGHT_COLOR = Color3.fromRGB(255, 0, 255)
+local IGNORED_TEAMS = {["Guards"] = true, ["Warden"] = true}
+
+local function setHighlight(character, enabled)
+    safe(function()
+        if not character then return end
+        local highlight = character:FindFirstChild("HostileHighlight")
+
+        if enabled then
+            if not highlight then
+                highlight = Instance.new("Highlight")
+                highlight.Name = "HostileHighlight"
+                highlight.FillColor = HIGHLIGHT_COLOR
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                 highlight.Parent = character
-            end, "Failed to update team highlight")
-        end
-
-        local function monitorPlayerTeam(player)
-            safe(function()
-                if player == game:GetService("Players").LocalPlayer then return end
-                local conns = {}
-
-                table.insert(conns, player.CharacterAdded:Connect(function()
-                    if runningTeam then updateHighlightTeam(player) end
-                end))
-
-                table.insert(conns, player:GetPropertyChangedSignal("Team"):Connect(function()
-                    if runningTeam then updateHighlightTeam(player) end
-                end))
-
-                if player.Character then
-                    updateHighlightTeam(player)
-                end
-
-                playerConnectionsTeam[player] = conns
-            end, "Failed to monitor team player")
-        end
-
-        function TeamESP.Start()
-            safe(function()
-                if runningTeam then return end
-                runningTeam = true
-                for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-                    monitorPlayerTeam(player)
-                end
-                table.insert(globalConnectionsTeam, game:GetService("Players").PlayerAdded:Connect(monitorPlayerTeam))
-            end, "Failed to start team visualizer")
-        end
-
-        function TeamESP.Stop()
-            safe(function()
-                runningTeam = false
-                for player, conns in pairs(playerConnectionsTeam) do
-                    for _, c in ipairs(conns) do
-                        safe(function() c:Disconnect() end, "Failed to disconnect player connection")
-                    end
-                end
-                playerConnectionsTeam = {}
-
-                for _, c in ipairs(globalConnectionsTeam) do
-                    safe(function() c:Disconnect() end, "Failed to disconnect global connection")
-                end
-                globalConnectionsTeam = {}
-
-                for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-                    if player.Character then
-                        local highlight = player.Character:FindFirstChild("TeamHighlight")
-                        if highlight then
-                            safe(function() highlight:Destroy() end, "Failed to destroy highlight")
-                        end
-                    end
-                end
-            end, "Failed to stop TeamESP")
-        end
-
-        VisualsTab:Toggle({
-            Title = "Team ESP",
-            Default = false,
-            Callback = function(value)
-                if value then
-                    TeamESP.Start()
-                else
-                    TeamESP.Stop()
-                end
             end
-        })
-    end, "Failed to create TeamESP")
+        else
+            if highlight then highlight:Destroy() end
+        end
+    end, "Failed to set hostile highlight")
+end
 
-    -- Hostile Detector
+local function isIgnored(player)
+    return player.Team and IGNORED_TEAMS[player.Team.Name]
+end
+
+local function updatePlayer(player)
     safe(function()
-        local Players = game:GetService("Players")
-        local hostileEnabled = false
-        local HIGHLIGHT_COLOR = Color3.fromRGB(255, 0, 255)
-        local IGNORED_TEAMS = {["Guards"] = true, ["Warden"] = true}
+        if player == Players.LocalPlayer then return end
+        local character = player.Character
+        if not character then return end
 
-        local function setHighlight(character, enabled)
-            safe(function()
-                if not character then return end
-                local highlight = character:FindFirstChild("HostileHighlight")
-
-                if enabled then
-                    if not highlight then
-                        highlight = Instance.new("Highlight")
-                        highlight.Name = "HostileHighlight"
-                        highlight.FillColor = HIGHLIGHT_COLOR
-                        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                        highlight.Parent = character
-                    end
-                else
-                    if highlight then highlight:Destroy() end
-                end
-            end, "Failed to set hostile highlight")
+        local status = player:FindFirstChild("Status")
+        local hostile = status and status:FindFirstChild("Hostile")
+        if not hostile then
+            setHighlight(character, false)
+            return
         end
 
-        local function isIgnored(player)
-            return player.Team and IGNORED_TEAMS[player.Team.Name]
-        end
+        setHighlight(character, hostile.Value and not isIgnored(player) and hostileEnabled)
+    end, "Failed to update hostile player")
+end
 
-        local function updatePlayer(player)
-            safe(function()
-                if player == Players.LocalPlayer then return end
-                local character = player.Character
-                if not character then return end
-
-                local status = player:FindFirstChild("Status")
-                local hostile = status and status:FindFirstChild("Hostile")
-                if not hostile then
-                    setHighlight(character, false)
-                    return
-                end
-
-                setHighlight(character, hostile.Value and not isIgnored(player) and hostileEnabled)
-            end, "Failed to update hostile player")
-        end
-
-        local function monitorPlayer(player)
-            safe(function()
-                player.CharacterAdded:Connect(function()
-                    task.wait(1)
-                    updatePlayer(player)
-                end)
-                player.CharacterRemoving:Connect(function()
-                    updatePlayer(player)
-                end)
-                player:GetPropertyChangedSignal("Team"):Connect(function()
-                    updatePlayer(player)
-                end)
-
-                local status = player:FindFirstChild("Status")
-                if status then
-                    local hostile = status:FindFirstChild("Hostile")
-                    if hostile then
-                        hostile.Changed:Connect(function()
-                            updatePlayer(player)
-                        end)
-                    end
-                end
-            end, "Failed to monitor hostile player")
-        end
-
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= Players.LocalPlayer then
-                monitorPlayer(player)
-                updatePlayer(player)
-            end
-        end
-
-        Players.PlayerAdded:Connect(function(player)
-            monitorPlayer(player)
+local function monitorPlayer(player)
+    safe(function()
+        player.CharacterAdded:Connect(function()
             task.wait(1)
             updatePlayer(player)
         end)
-
-        Players.PlayerRemoving:Connect(function(player)
+        player.CharacterRemoving:Connect(function()
+            updatePlayer(player)
+        end)
+        player:GetPropertyChangedSignal("Team"):Connect(function()
             updatePlayer(player)
         end)
 
-        VisualsTab:Toggle({
-            Title = "Hostile Detector",
-            Default = false,
-            Callback = function(state)
-                hostileEnabled = state
+        local status = player:FindFirstChild("Status")
+        if status then
+            local hostile = status:FindFirstChild("Hostile")
+            if hostile then
+                hostile.Changed:Connect(function()
+                    updatePlayer(player)
+                end)
+            end
+        end
+    end, "Failed to monitor hostile player")
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= Players.LocalPlayer then
+        monitorPlayer(player)
+        updatePlayer(player)
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    monitorPlayer(player)
+    task.wait(1)
+    updatePlayer(player)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    updatePlayer(player)
+end)
+
+VisualsTab:CreateToggle({
+    Name = "Hostile Detector",
+    CurrentValue = false,
+    Flag = "HostileDetectorToggle",
+    Callback = function(Value)
+        hostileEnabled = Value
+        for _, player in ipairs(Players:GetPlayers()) do
+            updatePlayer(player)
+        end
+    end
+})
+
+-- Safety loop for hostile detector
+task.spawn(function()
+    while true do
+        safe(function()
+            if hostileEnabled then
                 for _, player in ipairs(Players:GetPlayers()) do
                     updatePlayer(player)
                 end
             end
-        })
-
-        -- Safety loop
-        task.spawn(function()
-            while true do
-                safe(function()
-                    if hostileEnabled then
-                        for _, player in ipairs(Players:GetPlayers()) do
-                            updatePlayer(player)
-                        end
-                    end
-                    task.wait(2)
-                end, "Failed in hostile detector safety loop")
-            end
-        end)
-    end, "Failed to create Hostile Detector")
-end
+            task.wait(2)
+        end, "Failed in hostile detector safety loop")
+    end
+end)
 
 ------------------------------
 -- RAGE TAB
 ------------------------------
-local RageTab
-safe(function()
-    RageTab = Window:Tab({Title = "Rage", Icon = "zap"})
-    RageTab:Section({Title = "Combat Utilities"})
-end, "Failed to create Rage tab")
+local RageTab = Window:CreateTab("Rage", "zap")
 
-if RageTab then
-    -- Spinbot
+RageTab:CreateSection("Combat Utilities")
+
+-- Spinbot
+local Spinbot = {}
+local runningSpin = false
+local spinConnection
+local spinSpeed = 50
+
+function Spinbot.Start()
     safe(function()
-        local Spinbot = {}
-        local runningSpin = false
-        local spinConnection
-        local spinSpeed = 50
-
-        function Spinbot.Start()
+        if runningSpin then return end
+        runningSpin = true
+        task.spawn(function()
             safe(function()
-                if runningSpin then return end
-                runningSpin = true
-                task.spawn(function()
-                    safe(function()
-                        local character = game:GetService("Players").LocalPlayer.Character or game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
-                        local hrp = character:WaitForChild("HumanoidRootPart")
-                        spinConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                            if runningSpin and hrp then
-                                hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
-                            end
-                        end)
-                    end, "Failed to start spinning")
-                end)
-            end, "Failed to initialize spinning")
-        end
-
-        function Spinbot.Stop()
-            safe(function()
-                runningSpin = false
-                if spinConnection then
-                    spinConnection:Disconnect()
-                    spinConnection = nil
-                end
-            end, "Failed to stop spinning")
-        end
-
-        RageTab:Toggle({
-            Title = "Spinbot",
-            Default = false,
-            Callback = function(state)
-                if state then Spinbot.Start() else Spinbot.Stop() end
-            end
-        })
-    end, "Failed to create Spinbot")
-
--- Hostile Teleporter
-safe(function()
-    local HostileTeleporter = {}
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local RunService = game:GetService("RunService")
-
-    local DISTANCE_AHEAD = -5
-    local trackedCharacters = {}
-    local loopConnection
-
-    local function getTargetHRP()
-        if LocalPlayer.Character then
-            return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        end
-        return nil
-    end
-
-    local function isTargetPlayer(character)
-        local player = Players:GetPlayerFromCharacter(character)
-        if not player or player == LocalPlayer then return false end
-        if player.Team and (player.Team.Name == "Prisoners" or player.Team.Name == "Criminals" or player.Team.Name == "Inmates") then
-            return true
-        end
-        return false
-    end
-
-    local function teleportInFront(character, targetHRP)
-        safe(function()
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-            local humanoid = character:FindFirstChild("Humanoid")
-            if hrp and targetHRP and humanoid then
-                if not humanoid.Sit then
-                    local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
-                    hrp.CFrame = CFrame.new(forwardPos)
-                    hrp.Anchored = true
-                end
-            end
-        end, "Failed to teleport hostile player")
-    end
-
-    local function trackCharacter(character)
-        safe(function()
-            for _, c in ipairs(trackedCharacters) do
-                if c == character then return end
-            end
-            if isTargetPlayer(character) then
-                table.insert(trackedCharacters, character)
-                local hrp = character:FindFirstChild("HumanoidRootPart")
-                if hrp then hrp.Anchored = true end
-            end
-        end, "Failed to track hostile character")
-    end
-
-    local function untrackCharacter(character)
-        safe(function()
-            for i, c in ipairs(trackedCharacters) do
-                if c == character then
-                    local hrp = c:FindFirstChild("HumanoidRootPart")
-                    if hrp then hrp.Anchored = false end
-                    table.remove(trackedCharacters, i)
-                    break
-                end
-            end
-        end, "Failed to untrack hostile character")
-    end
-
-    local function monitorPlayer(player)
-        safe(function()
-            player:GetPropertyChangedSignal("Team"):Connect(function()
-                local character = player.Character
-                if character then
-                    if isTargetPlayer(character) then
-                        trackCharacter(character)
-                    else
-                        untrackCharacter(character)
-                    end
-                end
-            end)
-        end, "Failed to monitor hostile player")
-    end
-
-    RageTab:Toggle({
-        Title = "Hostile Teleporter",
-        Default = false,
-        Callback = function(state)
-            safe(function()
-                if state then
-                    for _, player in ipairs(Players:GetPlayers()) do
-                        if player ~= LocalPlayer and player.Character and isTargetPlayer(player.Character) then
-                            trackCharacter(player.Character)
-                        end
-                        monitorPlayer(player)
-                    end
-
-                    loopConnection = RunService.Heartbeat:Connect(function()
-                        local targetHRP = getTargetHRP()
-                        if not targetHRP then return end
-                        for _, character in ipairs(trackedCharacters) do
-                            teleportInFront(character, targetHRP)
-                        end
-                    end)
-                else
-                    if loopConnection then
-                        loopConnection:Disconnect()
-                        loopConnection = nil
-                    end
-                    for _, character in ipairs(trackedCharacters) do
-                        local hrp = character:FindFirstChild("HumanoidRootPart")
-                        if hrp then hrp.Anchored = false end
-                    end
-                    trackedCharacters = {}
-                end
-            end, "Failed to toggle hostile teleporter")
-        end
-    })
-end, "Failed to create Hostile Teleporter")
-
-    -- Police/Warden Teleporter
-    safe(function()
-        local PoliceWardenTeleporter = {}
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-        local RunService = game:GetService("RunService")
-
-        local DISTANCE_AHEAD = -5
-        local trackedCharacters = {}
-        local loopConnection
-
-        local function getTargetHRP()
-            if LocalPlayer.Character then
-                return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            end
-            return nil
-        end
-
-        local function isTargetPlayer(character)
-            local player = Players:GetPlayerFromCharacter(character)
-            if not player or player == LocalPlayer then return false end
-            if player.Team and (player.Team.Name == "Guards" or player.Team.Name == "Warden") then
-                return true
-            end
-            return false
-        end
-
-        local function teleportInFront(character, targetHRP)
-            safe(function()
-                local hrp = character:FindFirstChild("HumanoidRootPart")
-                local humanoid = character:FindFirstChild("Humanoid")
-                if hrp and targetHRP and humanoid then
-                    if not humanoid.Sit then
-                        local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
-                        hrp.CFrame = CFrame.new(forwardPos)
-                        hrp.Anchored = true
-                    end
-                end
-            end, "Failed to teleport police/warden")
-        end
-
-        local function trackCharacter(character)
-            safe(function()
-                for _, c in ipairs(trackedCharacters) do
-                    if c == character then return end
-                end
-                if isTargetPlayer(character) then
-                    table.insert(trackedCharacters, character)
-                    local hrp = character:FindFirstChild("HumanoidRootPart")
-                    if hrp then hrp.Anchored = true end
-                end
-            end, "Failed to track police/warden character")
-        end
-
-        local function untrackCharacter(character)
-            safe(function()
-                for i, c in ipairs(trackedCharacters) do
-                    if c == character then
-                        local hrp = c:FindFirstChild("HumanoidRootPart")
-                        if hrp then hrp.Anchored = false end
-                        table.remove(trackedCharacters, i)
-                        break
-                    end
-                end
-            end, "Failed to untrack police/warden character")
-        end
-
-        local function monitorPlayer(player)
-            safe(function()
-                player:GetPropertyChangedSignal("Team"):Connect(function()
-                    local character = player.Character
-                    if character then
-                        if isTargetPlayer(character) then
-                            trackCharacter(character)
-                        else
-                            untrackCharacter(character)
-                        end
+                local character = game:GetService("Players").LocalPlayer.Character or game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                spinConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                    if runningSpin and hrp then
+                        hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
                     end
                 end)
-            end, "Failed to monitor police/warden player")
-        end
-
-        RageTab:Toggle({
-            Title = "Police/Warden Teleporter",
-            Default = false,
-            Callback = function(state)
-                safe(function()
-                    if state then
-                        for _, player in ipairs(Players:GetPlayers()) do
-                            if player ~= LocalPlayer and player.Character and isTargetPlayer(player.Character) then
-                                trackCharacter(player.Character)
-                            end
-                            monitorPlayer(player)
-                        end
-
-                        loopConnection = RunService.Heartbeat:Connect(function()
-                            local targetHRP = getTargetHRP()
-                            if not targetHRP then return end
-                            for _, character in ipairs(trackedCharacters) do
-                                teleportInFront(character, targetHRP)
-                            end
-                        end)
-                    else
-                        if loopConnection then
-                            loopConnection:Disconnect()
-                            loopConnection = nil
-                        end
-                        for _, character in ipairs(trackedCharacters) do
-                            local hrp = character:FindFirstChild("HumanoidRootPart")
-                            if hrp then hrp.Anchored = false end
-                        end
-                        trackedCharacters = {}
-                    end
-                end, "Failed to toggle police/warden teleporter")
-            end
-        })
-    end, "Failed to create Police/Warden Teleporter")
-
-    -- No Doors
-    safe(function()
-        local function setDoors(enabled)
-            safe(function()
-                local paths = {
-                    { parent = workspace, name = "Doors" },
-                    { parent = workspace:FindFirstChild("Map"), name = "doors" }
-                }
-                for _, info in ipairs(paths) do
-                    local folder = info.parent and info.parent:FindFirstChild(info.name) or game:GetService("ReplicatedStorage"):FindFirstChild(info.name)
-                    if folder then
-                        folder.Parent = enabled and game:GetService("ReplicatedStorage") or (folder.Name == "Doors" and workspace or workspace.Map)
-                    end
-                end
-            end, "Failed to toggle doors")
-        end
-
-        RageTab:Toggle({
-            Title = "No Doors",
-            Default = false,
-            Callback = setDoors
-        })
-    end, "Failed to create No Doors toggle")
-
-    -- Wallhack
-    safe(function()
-        local collisionDisabled = false
-        local originalStates = {}
-
-        local function safeWaitForChild(parent, child)
-            if parent and parent:FindFirstChild(child) then
-                return parent[child]
-            end
-            return nil
-        end
-
-        local function cacheOriginalStates(targets)
-            safe(function()
-                for _, target in ipairs(targets) do
-                    if target and target.Parent then
-                        for _, descendant in ipairs(target:GetDescendants()) do
-                            if descendant:IsA("BasePart") then
-                                originalStates[descendant] = {
-                                    CanCollide = descendant.CanCollide,
-                                    CanQuery = descendant.CanQuery
-                                }
-                            end
-                        end
-                    end
-                end
-            end, "Failed to cache original states")
-        end
-
-        local function setCollisionAndQuery(targets, ignoreParts, enabled)
-            safe(function()
-                for _, target in ipairs(targets) do
-                    if target and target.Parent then
-                        for _, descendant in ipairs(target:GetDescendants()) do
-                            if descendant:IsA("BasePart") then
-                                local skip = false
-                                for _, ignore in ipairs(ignoreParts) do
-                                    if ignore and ignore.Parent and descendant == ignore then
-                                        skip = true
-                                        break
-                                    end
-                                end
-                                if not skip then
-                                    if enabled then
-                                        local original = originalStates[descendant]
-                                        if original then
-                                            descendant.CanCollide = original.CanCollide
-                                            descendant.CanQuery = original.CanQuery
-                                        end
-                                    else
-                                        descendant.CanCollide = false
-                                        descendant.CanQuery = false
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end, "Failed to set collision and query")
-        end
-
-        local targets = {
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "PrisonMap"),
-            safeWaitForChild(workspace, "Prison_ITEMS") and safeWaitForChild(workspace.Prison_ITEMS, "vendingMachines"),
-            safeWaitForChild(workspace, "Prison_ITEMS") and safeWaitForChild(workspace.Prison_ITEMS, "breakables"),
-            safeWaitForChild(workspace, "Prison_ITEMS") and safeWaitForChild(workspace.Prison_ITEMS, "generator"),
-            workspace:FindFirstChild("Leaderboard"),
-            workspace:FindFirstChild("Doors"),
-            workspace:FindFirstChild("CellBars"),
-            workspace:FindFirstChild("NPCS"),
-            workspace:FindFirstChild("Vehicles"),
-            workspace:FindFirstChild("FuseBox"),
-            workspace:FindFirstChild("PoliceStuff"),
-            workspace:FindFirstChild("Visitors"),
-            workspace:FindFirstChild("Trains"),
-            workspace:FindFirstChild("Cameras"),
-            workspace:FindFirstChild("Crates"),
-            workspace:FindFirstChild("Prison_lights"),
-            workspace:FindFirstChild("Spotlights"),
-            workspace:FindFirstChild("Elevators"),
-            workspace:FindFirstChild("Security"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Outside"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "MainSection"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Cells"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Cafeteria"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Yard"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Sewer"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Armory"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Offices"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Library"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Gym"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Solitary"),
-            safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "Garage")
-        }
-
-        local ignoreParts = {}
-        safe(function()
-            local prisonMap = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("PrisonMap")
-            if prisonMap and prisonMap:FindFirstChild("MainSection") then
-                local main = prisonMap.MainSection
-                local function addIfExists(path)
-                    if path then table.insert(ignoreParts, path) end
-                end
-                addIfExists(main:FindFirstChild("Library") and main.Library:FindFirstChild("Roof") and main.Library.Roof:FindFirstChild("Part"))
-                addIfExists(main:FindFirstChild("Cafeteria") and main.Cafeteria:FindFirstChild("Roof") and main.Cafeteria.Roof:FindFirstChild("Part"))
-                addIfExists(main:FindFirstChild("Yard") and main.Yard:FindFirstChild("Walls") and main.Yard.Walls:FindFirstChild("Part"))
-                addIfExists(main:FindFirstChild("Solitary") and main.Solitary:FindFirstChild("Roof") and main.Solitary.Roof:FindFirstChild("Part"))
-                addIfExists(main:FindFirstChild("Offices") and main.Offices:FindFirstChild("Roof") and main.Offices.Roof:FindFirstChild("Part"))
-                addIfExists(main:FindFirstChild("Armory") and main.Armory:FindFirstChild("Roof") and main.Armory.Roof:FindFirstChild("Part"))
-            end
-        end, "Failed to setup ignore parts")
-
-        cacheOriginalStates(targets)
-
-        RageTab:Toggle({
-            Title = "Wallhack",
-            Default = false,
-            Callback = function(state)
-                collisionDisabled = state
-                setCollisionAndQuery(targets, ignoreParts, not state)
-            end
-        })
-    end, "Failed to create Wallhack")
-
-    -- Easy Bank
-    safe(function()
-        local lasersEnabled = true
-        local targets = {}
-
-        local function safeGetBankTargets()
-            local found = {}
-            safe(function()
-                local map = workspace:FindFirstChild("Map")
-                if map and map:FindFirstChild("Town") then
-                    local town = map.Town
-                    local bank = town:FindFirstChild("BANK!?")
-                    if bank then
-                        local children = bank:GetChildren()
-                        if #children >= 4 then
-                            table.insert(found, children[4])
-                        end
-                        local lasers = bank:FindFirstChild("Lasers")
-                        if lasers then
-                            table.insert(found, lasers)
-                        end
-                    end
-                end
-            end, "Failed to get bank targets")
-            return found
-        end
-
-        local function toggleLasers(state)
-            safe(function()
-                lasersEnabled = state
-                targets = safeGetBankTargets()
-                for _, container in ipairs(targets) do
-                    if container then
-                        for _, obj in ipairs(container:GetDescendants()) do
-                            if obj:IsA("BasePart") then
-                                if lasersEnabled then
-                                    obj.CanTouch = false
-                                    obj.Color = Color3.fromRGB(0, 177, 0)
-                                else
-                                    obj.CanTouch = true
-                                    obj.Color = Color3.fromRGB(170, 0, 0)
-                                end
-                            end
-                        end
-                    end
-                end
-            end, "Failed to toggle lasers")
-        end
-
-        RageTab:Toggle({
-            Title = "Easy Bank",
-            Default = false,
-            Callback = function(state)
-                toggleLasers(state)
-            end
-        })
-    end, "Failed to create Easy Bank")
+            end, "Failed to start spinning")
+        end)
+    end, "Failed to initialize spinning")
 end
 
+function Spinbot.Stop()
+    safe(function()
+        runningSpin = false
+        if spinConnection then
+            spinConnection:Disconnect()
+            spinConnection = nil
+        end
+    end, "Failed to stop spinning")
+end
+
+RageTab:CreateToggle({
+    Name = "Spinbot",
+    CurrentValue = false,
+    Flag = "SpinbotToggle",
+    Callback = function(Value)
+        if Value then Spinbot.Start() else Spinbot.Stop() end
+    end
+})
+
+-- Hostile Teleporter
+local HostileTeleporter = {}
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+local DISTANCE_AHEAD = -5
+local trackedCharacters = {}
+local loopConnection
+
+local function getTargetHRP()
+    if LocalPlayer.Character then
+        return LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    end
+    return nil
+end
+
+local function isTargetPlayer(character)
+    local player = Players:GetPlayerFromCharacter(character)
+    if not player or player == LocalPlayer then return false end
+    if player.Team and (player.Team.Name == "Prisoners" or player.Team.Name == "Criminals" or player.Team.Name == "Inmates") then
+        return true
+    end
+    return false
+end
+
+local function teleportInFront(character, targetHRP)
+    safe(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChild("Humanoid")
+        if hrp and targetHRP and humanoid then
+            if not humanoid.Sit then
+                local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
+                hrp.CFrame = CFrame.new(forwardPos)
+                hrp.Anchored = true
+            end
+        end
+    end, "Failed to teleport hostile player")
+end
+
+local function trackCharacter(character)
+    safe(function()
+        for _, c in ipairs(trackedCharacters) do
+            if c == character then return end
+        end
+        if isTargetPlayer(character) then
+            table.insert(trackedCharacters, character)
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = true end
+        end
+    end, "Failed to track hostile character")
+end
+
+local function untrackCharacter(character)
+    safe(function()
+        for i, c in ipairs(trackedCharacters) do
+            if c == character then
+                local hrp = c:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.Anchored = false end
+                table.remove(trackedCharacters, i)
+                break
+            end
+        end
+    end, "Failed to untrack hostile character")
+end
+
+RageTab:CreateToggle({
+    Name = "Hostile Teleporter",
+    CurrentValue = false,
+    Flag = "HostileTeleporterToggle",
+    Callback = function(Value)
+        safe(function()
+            if Value then
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and isTargetPlayer(player.Character) then
+                        trackCharacter(player.Character)
+                    end
+                end
+
+                loopConnection = RunService.Heartbeat:Connect(function()
+                    local targetHRP = getTargetHRP()
+                    if not targetHRP then return end
+                    for _, character in ipairs(trackedCharacters) do
+                        teleportInFront(character, targetHRP)
+                    end
+                end)
+            else
+                if loopConnection then
+                    loopConnection:Disconnect()
+                    loopConnection = nil
+                end
+                for _, character in ipairs(trackedCharacters) do
+                    local hrp = character:FindFirstChild("HumanoidRootPart")
+                    if hrp then hrp.Anchored = false end
+                end
+                trackedCharacters = {}
+            end
+        end, "Failed to toggle hostile teleporter")
+    end
+})
+
+-- Police Teleporter (Add this after the existing Hostile Teleporter in your RageTab section)
+local PoliceTeleporter = {}
+local policeTrackedCharacters = {}
+local policeLoopConnection
+
+local function isPolicePlayer(character)
+    local player = Players:GetPlayerFromCharacter(character)
+    if not player or player == LocalPlayer then return false end
+    if player.Team and (player.Team.Name == "Guards" or player.Team.Name == "Warden") then
+        return true
+    end
+    return false
+end
+
+local function teleportPoliceInFront(character, targetHRP)
+    safe(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChild("Humanoid")
+        if hrp and targetHRP and humanoid then
+            if not humanoid.Sit then
+                local forwardPos = targetHRP.Position + targetHRP.CFrame.LookVector * DISTANCE_AHEAD
+                hrp.CFrame = CFrame.new(forwardPos)
+                hrp.Anchored = true
+            end
+        end
+    end, "Failed to teleport police player")
+end
+
+local function trackPoliceCharacter(character)
+    safe(function()
+        for _, c in ipairs(policeTrackedCharacters) do
+            if c == character then return end
+        end
+        if isPolicePlayer(character) then
+            table.insert(policeTrackedCharacters, character)
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = true end
+        end
+    end, "Failed to track police character")
+end
+
+local function untrackPoliceCharacter(character)
+    safe(function()
+        for i, c in ipairs(policeTrackedCharacters) do
+            if c == character then
+                local hrp = c:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.Anchored = false end
+                table.remove(policeTrackedCharacters, i)
+                break
+            end
+        end
+    end, "Failed to untrack police character")
+end
+
+RageTab:CreateToggle({
+    Name = "Police Teleporter",
+    CurrentValue = false,
+    Flag = "PoliceTeleporterToggle",
+    Callback = function(Value)
+        safe(function()
+            if Value then
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and isPolicePlayer(player.Character) then
+                        trackPoliceCharacter(player.Character)
+                    end
+                end
+
+                policeLoopConnection = RunService.Heartbeat:Connect(function()
+                    local targetHRP = getTargetHRP()
+                    if not targetHRP then return end
+                    for _, character in ipairs(policeTrackedCharacters) do
+                        teleportPoliceInFront(character, targetHRP)
+                    end
+                end)
+            else
+                if policeLoopConnection then
+                    policeLoopConnection:Disconnect()
+                    policeLoopConnection = nil
+                end
+                for _, character in ipairs(policeTrackedCharacters) do
+                    local hrp = character:FindFirstChild("HumanoidRootPart")
+                    if hrp then hrp.Anchored = false end
+                end
+                policeTrackedCharacters = {}
+            end
+        end, "Failed to toggle police teleporter")
+    end
+})
+
+-- No Doors
+local function setDoors(enabled)
+    safe(function()
+        local paths = {
+            { parent = workspace, name = "Doors" },
+            { parent = workspace:FindFirstChild("Map"), name = "doors" }
+        }
+        for _, info in ipairs(paths) do
+            local folder = info.parent and info.parent:FindFirstChild(info.name) or game:GetService("ReplicatedStorage"):FindFirstChild(info.name)
+            if folder then
+                folder.Parent = enabled and game:GetService("ReplicatedStorage") or (folder.Name == "Doors" and workspace or workspace.Map)
+            end
+        end
+    end, "Failed to toggle doors")
+end
+
+RageTab:CreateToggle({
+    Name = "No Doors",
+    CurrentValue = false,
+    Flag = "NoDoorsToggle",
+    Callback = setDoors
+})
+
+-- Wallhack
+local collisionDisabled = false
+local originalStates = {}
+
+local function safeWaitForChild(parent, child)
+    if parent and parent:FindFirstChild(child) then
+        return parent[child]
+    end
+    return nil
+end
+
+local function cacheOriginalStates(targets)
+    safe(function()
+        for _, target in ipairs(targets) do
+            if target and target.Parent then
+                for _, descendant in ipairs(target:GetDescendants()) do
+                    if descendant:IsA("BasePart") then
+                        originalStates[descendant] = {
+                            CanCollide = descendant.CanCollide,
+                            CanQuery = descendant.CanQuery
+                        }
+                    end
+                end
+            end
+        end
+    end, "Failed to cache original states")
+end
+
+local function setCollisionAndQuery(targets, ignoreParts, enabled)
+    safe(function()
+        for _, target in ipairs(targets) do
+            if target and target.Parent then
+                for _, descendant in ipairs(target:GetDescendants()) do
+                    if descendant:IsA("BasePart") then
+                        local skip = false
+                        for _, ignore in ipairs(ignoreParts) do
+                            if ignore and ignore.Parent and descendant == ignore then
+                                skip = true
+                                break
+                            end
+                        end
+                        if not skip then
+                            if enabled then
+                                local original = originalStates[descendant]
+                                if original then
+                                    descendant.CanCollide = original.CanCollide
+                                    descendant.CanQuery = original.CanQuery
+                                end
+                            else
+                                descendant.CanCollide = false
+                                descendant.CanQuery = false
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end, "Failed to set collision and query")
+end
+
+local targets = {
+    safeWaitForChild(workspace, "Map") and safeWaitForChild(workspace.Map, "PrisonMap"),
+    safeWaitForChild(workspace, "Prison_ITEMS") and safeWaitForChild(workspace.Prison_ITEMS, "vendingMachines"),
+    workspace:FindFirstChild("Doors"),
+    workspace:FindFirstChild("CellBars"),
+    workspace:FindFirstChild("Vehicles"),
+}
+
+local ignoreParts = {}
+cacheOriginalStates(targets)
+
+RageTab:CreateToggle({
+    Name = "Wallhack",
+    CurrentValue = false,
+    Flag = "WallhackToggle",
+    Callback = function(Value)
+        collisionDisabled = Value
+        setCollisionAndQuery(targets, ignoreParts, not Value)
+    end
+})
+
+-- Easy Bank
+local lasersEnabled = true
+local bankTargets = {}
+
+local function safeGetBankTargets()
+    local found = {}
+    safe(function()
+        local map = workspace:FindFirstChild("Map")
+        if map and map:FindFirstChild("Town") then
+            local town = map.Town
+            local bank = town:FindFirstChild("BANK!?")
+            if bank then
+                local children = bank:GetChildren()
+                if #children >= 4 then
+                    table.insert(found, children[4])
+                end
+                local lasers = bank:FindFirstChild("Lasers")
+                if lasers then
+                    table.insert(found, lasers)
+                end
+            end
+        end
+    end, "Failed to get bank targets")
+    return found
+end
+
+local function toggleLasers(state)
+    safe(function()
+        lasersEnabled = state
+        bankTargets = safeGetBankTargets()
+        for _, container in ipairs(bankTargets) do
+            if container then
+                for _, obj in ipairs(container:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        if lasersEnabled then
+                            obj.CanTouch = false
+                            obj.Color = Color3.fromRGB(0, 177, 0)
+                        else
+                            obj.CanTouch = true
+                            obj.Color = Color3.fromRGB(170, 0, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end, "Failed to toggle lasers")
+end
+
+RageTab:CreateToggle({
+    Name = "Easy Bank",
+    CurrentValue = false,
+    Flag = "EasyBankToggle",
+    Callback = function(Value)
+        toggleLasers(Value)
+    end
+})
+
 -- Auto Reset on Tase
-safe(function()
-    local AutoResetOnTase = {}
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local UserInputService = game:GetService("UserInputService")
-    local LocalPlayer = Players.LocalPlayer
+local autoResetEnabled = false
+local eventConnection
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("TaseEvent")
+
+local function shouldAutoReset()
+    local inCriminals = (LocalPlayer.Team and LocalPlayer.Team.Name == "Criminals")
+    local isHostile = false
     
-    local autoResetEnabled = false
-    local eventConnection
-    local inputConnection
-    local Event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("TaseEvent")
-    
-    local function shouldAutoReset()
-        local inCriminals = (LocalPlayer.Team and LocalPlayer.Team.Name == "Criminals")
-        local isHostile = false
-        
-        if LocalPlayer:FindFirstChild("Status") and LocalPlayer.Status:FindFirstChild("Hostile") then
-            if LocalPlayer.Status.Hostile.Value == true then
-                isHostile = true
-            end
+    if LocalPlayer:FindFirstChild("Status") and LocalPlayer.Status:FindFirstChild("Hostile") then
+        if LocalPlayer.Status.Hostile.Value == true then
+            isHostile = true
         end
-        
-        return inCriminals or isHostile
     end
     
-    local function onTaseEvent(...)
+    return inCriminals or isHostile
+end
+
+local function onTaseEvent(...)
+    safe(function()
+        if not autoResetEnabled then return end
+        
+        if shouldAutoReset() then
+            if LocalPlayer.Character then
+                LocalPlayer.Character:BreakJoints()
+            end
+        end
+    end, "Failed to execute auto reset")
+end
+
+RageTab:CreateToggle({
+    Name = "Auto Reset on Tase",
+    CurrentValue = false,
+    Flag = "AutoResetToggle",
+    Callback = function(Value)
         safe(function()
-            if not autoResetEnabled then return end
+            autoResetEnabled = Value
             
-            if shouldAutoReset() then
-                if LocalPlayer.Character then
-                    LocalPlayer.Character:BreakJoints()
+            if Value then
+                eventConnection = Event.OnClientEvent:Connect(onTaseEvent)
+            else
+                if eventConnection then
+                    eventConnection:Disconnect()
+                    eventConnection = nil
                 end
+                autoResetEnabled = false
             end
-        end, "Failed to execute auto reset")
+        end, "Failed to toggle auto reset on tase")
     end
-    
-    local function setupInputHandler()
-        safe(function()
-            inputConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-                if gameProcessed then return end
-                if input.KeyCode == Enum.KeyCode.B then
-                    autoResetEnabled = not autoResetEnabled
-                    -- Optional: Add visual feedback here if needed
-                end
-            end)
-        end, "Failed to setup input handler")
-    end
-    
-    RageTab:Toggle({
-        Title = "Auto Reset on Tase",
-        Default = false,
-        Callback = function(state)
-            safe(function()
-                autoResetEnabled = state
-                
-                if state then
-                    -- Connect the tase event
-                    eventConnection = Event.OnClientEvent:Connect(onTaseEvent)
-                    
-                    -- Setup the B key toggle
-                    setupInputHandler()
-                else
-                    -- Disconnect all connections
-                    if eventConnection then
-                        eventConnection:Disconnect()
-                        eventConnection = nil
-                    end
-                    
-                    if inputConnection then
-                        inputConnection:Disconnect()
-                        inputConnection = nil
-                    end
-                    
-                    autoResetEnabled = false
-                end
-            end, "Failed to toggle auto reset on tase")
-        end
-    })
-end, "Failed to create Auto Reset on Tase")
+})
 
 ------------------------------
 -- MISC TAB
 ------------------------------
-local MiscTab
-safe(function()
-    MiscTab = Window:Tab({Title = "Misc", Icon = "settings"})
-    MiscTab:Section({Title = "Utilities"})
-end, "Failed to create Misc tab")
+local MiscTab = Window:CreateTab("Misc", "settings")
 
-if MiscTab then
-    -- Add Keys / Skins (locked)
-    safe(function()
-        MiscTab:Button({
-            Title = "Add Keys",
-            Description = "🔒 This feature is locked",
-            Callback = function() end,
-            Locked = true
-        })
+MiscTab:CreateSection("Utilities")
 
-        MiscTab:Button({
-            Title = "Add Skins",
-            Description = "🔒 This feature is locked",
-            Callback = function() end,
-            Locked = true
-        })
-    end, "Failed to create locked buttons")
+-- Money Giver
+MiscTab:CreateButton({
+    Name = "Money Giver",
+    Callback = function()
+        safe(function()
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Event = ReplicatedStorage:WaitForChild("SkinFolder"):WaitForChild("Events"):WaitForChild("CashBuy")
+            Event:FireServer(-30000, 1)
+        end, "Failed to execute Money Giver")
+    end
+})
 
-    -- Money Giver
-    safe(function()
-        MiscTab:Button({
-            Title = "Money Giver",
-            Callback = function()
-                safe(function()
-                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                    local Event = ReplicatedStorage:WaitForChild("SkinFolder"):WaitForChild("Events"):WaitForChild("CashBuy")
-                    Event:FireServer(-30000, 1)
-                end, "Failed to execute Money Giver")
-            end
-        })
-    end, "Failed to create Money Giver")
+-- Fusebox Looper
+local fuseLoop = false
 
-    -- Fusebox Looper
-    safe(function()
-        local fuseLoop = false
-
-        MiscTab:Toggle({
-            Title = "Fusebox Looper",
-            Default = false,
-            Callback = function(state)
-                fuseLoop = state
-                if fuseLoop then
-                    task.spawn(function()
-                        while fuseLoop do
-                            safe(function()
-                                game:GetService("ReplicatedStorage").Events.FuseBoxHit:FireServer(workspace:WaitForChild("FuseBox"))
-                            end, "Failed to hit fusebox")
-                            task.wait(0.01) 
-                        end
-                    end)
+MiscTab:CreateToggle({
+    Name = "Fusebox Looper",
+    CurrentValue = false,
+    Flag = "FuseboxLooperToggle",
+    Callback = function(Value)
+        fuseLoop = Value
+        if fuseLoop then
+            task.spawn(function()
+                while fuseLoop do
+                    safe(function()
+                        game:GetService("ReplicatedStorage").Events.FuseBoxHit:FireServer(workspace:WaitForChild("FuseBox"))
+                    end, "Failed to hit fusebox")
+                    task.wait(0.01) 
                 end
+            end)
+        end
+    end
+})
+
+-- Spam Dropper
+MiscTab:CreateToggle({
+    Name = "Spam Dropper",
+    CurrentValue = false,
+    Flag = "SpamDropperToggle",
+    Callback = function(Value)
+        safe(function()
+            local Players = game:GetService("Players")
+            local RS = game:GetService("ReplicatedStorage")
+            local LocalPlayer = Players.LocalPlayer
+
+            local RequestToolEvent = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("RequestTool")
+            local DropToolEvent = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("DropTool")
+
+            if not RequestToolEvent or not DropToolEvent then
+                warn("Spam Dropper: Events not found in this game.")
+                return
             end
-        })
-    end, "Failed to create Fusebox Looper")
 
-    -- Spam Dropper
-    safe(function()
-        MiscTab:Toggle({
-            Title = "Spam Dropper",
-            Default = false,
-            Callback = function(state)
-                safe(function()
-                    local Players = game:GetService("Players")
-                    local RS = game:GetService("ReplicatedStorage")
-                    local LocalPlayer = Players.LocalPlayer
+            local requests = {{"Inmate",1},{"Inmate",2},{"Inmate",3}}
+            local dropNames = {"Crude Knife","Glock-17","UZI"}
 
-                    local RequestToolEvent = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("RequestTool")
-                    local DropToolEvent = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("DropTool")
+            local Backpack = LocalPlayer:FindFirstChild("Backpack")
+            local Char = LocalPlayer.Character
 
-                    if not RequestToolEvent or not DropToolEvent then
-                        warn("Spam Dropper: Events not found in this game.")
-                        return
-                    end
-
-                    local requests = {{"Inmate",1},{"Inmate",2},{"Inmate",3}}
-                    local dropNames = {"Crude Knife","Glock-17","UZI"}
-
-                    local Backpack = LocalPlayer:FindFirstChild("Backpack")
-                    local Char = LocalPlayer.Character
-
-                    local function spamDropper()
-                        while state do
-                            safe(function()
-                                if not Char or not Backpack then
-                                    task.wait(0.1)
-                                    return
-                                end
-                                
-                                for _, args in ipairs(requests) do
-                                    safe(function() RequestToolEvent:FireServer(table.unpack(args)) end, "Failed to request tool")
+            local function spamDropper()
+                while Value do
+                    safe(function()
+                        if not Char or not Backpack then
+                            task.wait(0.1)
+                            return
+                        end
+                        
+                        for _, args in ipairs(requests) do
+                            safe(function() RequestToolEvent:FireServer(table.unpack(args)) end, "Failed to request tool")
+                            task.wait(0.001)
+                        end
+                        
+                        for _, name in ipairs(dropNames) do
+                            local tool = Backpack:FindFirstChild(name)
+                            if tool and Char then
+                                if tool.Parent ~= Char then
+                                    safe(function() tool.Parent = Char end, "Failed to equip tool")
                                     task.wait(0.001)
                                 end
-                                
-                                for _, name in ipairs(dropNames) do
-                                    local tool = Backpack:FindFirstChild(name)
-                                    if tool and Char then
-                                        if tool.Parent ~= Char then
-                                            safe(function() tool.Parent = Char end, "Failed to equip tool")
-                                            task.wait(0.001)
-                                        end
-                                        safe(function() DropToolEvent:FireServer(tool) end, "Failed to drop tool")
-                                        task.wait(0.001)
-                                    end
-                                end
-                            end, "Failed in spam dropper loop")
+                                safe(function() DropToolEvent:FireServer(tool) end, "Failed to drop tool")
+                                task.wait(0.001)
+                            end
                         end
-                    end
-
-                    if state then
-                        task.spawn(spamDropper)
-                    end
-                end, "Failed to execute Spam Dropper")
+                    end, "Failed in spam dropper loop")
+                end
             end
-        })
-    end, "Failed to create Spam Dropper")
-end
 
-------------------------------
--- SETTINGS TAB
-------------------------------
-local SettingsTab
-safe(function()
-    SettingsTab = Window:Tab({Title = "Settings", Icon = "cog"})
-    SettingsTab:Section({Title = "UI Settings"})
-end, "Failed to create Settings tab")
-
-if SettingsTab then
-    safe(function()
-        SettingsTab:DropDown({
-            Title = "Theme",
-            Value = "Dark",
-            Option = {"Dark", "Light", "Amethyst"},
-            Callback = function(option)
-                safe(function()
-                    LumeUI:SetTheme(option)
-                end, "Failed to set theme")
+            if Value then
+                task.spawn(spamDropper)
             end
-        })
-
-        SettingsTab:Toggle({
-            Title = "Transparency",
-            Default = true,
-            Callback = function(state)
-                safe(function()
-                    LumeUI:SetTransparency(state)
-                end, "Failed to set transparency")
-            end
-        })
-
-        SettingsTab:Keybind({
-            Title = "Toggle UI",
-            Callback = function(key)
-                safe(function()
-                    LumeUI:SetToggleKey(key)
-                end, "Failed to set toggle key")
-            end
-        })
-
-        SettingsTab:Button({
-            Title = "Destroy UI",
-            Callback = function()
-                safe(function()
-                    LumeUI:Close()
-                end, "Failed to destroy UI")
-            end
-        })
-    end, "Failed to create Settings controls")
-end
+        end, "Failed to execute Spam Dropper")
+    end
+})
 
 ------------------------------
 -- CREDITS TAB
 ------------------------------
-local CreditsTab
-safe(function()
-    CreditsTab = Window:Tab({Title = "Credits", Icon = "user"})
-    CreditsTab:Section({Title = "About"})
-    CreditsTab:Paragraph({
-        Title = "Created by: Moldedblood & Dollosha",
-        Desc = "Thank you for using Primal Hub!"
-    })
-end, "Failed to create Credits tab")
+local CreditsTab = Window:CreateTab("Credits", "user")
+
+CreditsTab:CreateSection("About")
+
+CreditsTab:CreateParagraph({
+    Title = "Primal Hub",
+    Content = "Created by: Moldedblood & Dollosha\nThank you for using Primal Hub!"
+})
+
+-- Success notification
+Rayfield:Notify({
+    Title = "Primal Hub Loaded",
+    Content = "All features loaded successfully!",
+    Duration = 3,
+    Image = "check"
+})
 
 -- Final success message
 safe(function()
-    print("Primal Hub loaded successfully !")
+    print("Primal Hub (Rayfield Version) loaded successfully!")
 end, "Failed to print success message")
