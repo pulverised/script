@@ -29,14 +29,59 @@ local executorList = {
     Volcano = function() return Volcano ~= nil end,
     Solara = function() return Solara ~= nil end,
     Hydrogen = function() return Hydrogen ~= nil end,
-    Codex = function() return Codex ~= nil end
+    Codex = function() return Codex ~= nil end,
+    Synapse = function() return syn ~= nil end,
+    Fluxus = function() return fluxus ~= nil or (getgenv and getgenv().Fluxus ~= nil) end,
+    Electron = function() return Electron ~= nil or (getgenv and getgenv().Electron ~= nil) end,
+    Comet = function() return Comet ~= nil end,
+    ScriptWare = function() return scriptware ~= nil or getscriptware ~= nil end
 }
 
+-- Generic executor detection
+local function detectUnknownExecutor()
+    local commonExecutorAPIs = {
+        "getgenv", "syn", "http", "http_request", "request", "getrawmetatable",
+        "setrawmetatable", "getnamecallmethod", "setnamecallmethod", "hookfunction",
+        "newcclosure", "islclosure", "isluau", "getrenv", "fireclickdetector",
+        "firesignal", "mouse1click", "mouse2click", "gethui", "secure_call"
+    }
+
+    for _, api in ipairs(commonExecutorAPIs) do
+        local success, result = pcall(function()
+            return _G[api] ~= nil or (getgenv and getgenv()[api] ~= nil)
+        end)
+        if success and result then
+            return "UnknownExecutor (" .. api .. " detected)"
+        end
+    end
+
+    for key, value in pairs(_G) do
+        if type(value) == "table" and key ~= "_G" and key ~= "_ENV" then
+            local success, result = pcall(function()
+                return rawget(value, "request") or rawget(value, "http") or rawget(value, "hookfunction")
+            end)
+            if success and result then
+                return "UnknownExecutor (" .. key .. " detected)"
+            end
+        end
+    end
+
+    return nil
+end
+
+-- Detect executor
 for name, checkFunc in pairs(executorList) do
     local success, result = pcall(checkFunc)
     if success and result then
         executor = name
         break
+    end
+end
+
+if executor == "Unknown" then
+    local unknownResult = detectUnknownExecutor()
+    if unknownResult then
+        executor = unknownResult
     end
 end
 
@@ -68,23 +113,41 @@ local payload = {
 
 local jsonData = HttpService:JSONEncode(payload)
 
--- Send webhook
-if syn then
-    syn.request({
-        Url = webhookUrl,
-        Method = "POST",
-        Headers = {["Content-Type"] = "application/json"},
-        Body = jsonData
-    })
-elseif http_request then
-    http_request({
-        Url = webhookUrl,
-        Method = "POST",
-        Headers = {["Content-Type"] = "application/json"},
-        Body = jsonData
-    })
-else
+-- Send webhook with enhanced executor support
+local function sendWebhook()
+    local httpFunctions = {
+        { func = syn and syn.request, name = "syn.request" },
+        { func = http_request, name = "http_request" },
+        { func = request, name = "request" },
+        { func = http and http.request, name = "http.request" },
+        { func = fluxus and fluxus.request, name = "fluxus.request" }
+    }
+
+    for _, http in ipairs(httpFunctions) do
+        if http.func then
+            local success, response = pcall(http.func, {
+                Url = webhookUrl,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+            if success then
+                print("Webhook sent successfully using " .. http.name)
+                return true, response
+            else
+                warn("Failed to send webhook with " .. http.name .. ": " .. tostring(response))
+            end
+        end
+    end
+
     warn("Executor does not support HTTP requests")
+    return false, "No supported HTTP function found"
+end
+
+-- Execute webhook send and handle errors
+local success, response = sendWebhook()
+if not success then
+    warn("Webhook send failed: " .. tostring(response))
 end
 
 -- Load LumeUI (raw link)
