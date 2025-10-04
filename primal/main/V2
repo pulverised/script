@@ -205,12 +205,16 @@ end
 local Rayfield
 local success, error = pcall(function()
     Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+    if sirhurt_create_secure_function then 
+        Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua"))()
+    end
 end)
 
 if not success then
     warn("Failed to load Rayfield: " .. tostring(error))
     return
 end
+
 
 -- Create main window
 local Window = Rayfield:CreateWindow({
