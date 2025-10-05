@@ -947,6 +947,71 @@ local MiscTab = Window:CreateTab("Misc", "settings")
 
 MiscTab:CreateSection("Utilities")
 
+-- Add All Gun Skins
+MiscTab:CreateButton({
+    Name = "Add All Gun Skins",
+    Callback = function()
+        safe(function()
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local tooltipEvent = ReplicatedStorage:FindFirstChild("Events") and ReplicatedStorage.Events:FindFirstChild("Tooltip")
+            local awardSkin = ReplicatedStorage:FindFirstChild("SkinFolder") and ReplicatedStorage.SkinFolder:FindFirstChild("Events") and ReplicatedStorage.SkinFolder.Events:FindFirstChild("AwardSkin")
+            
+            if not awardSkin then
+                warn("AwardSkin event not found")
+                return
+            end
+            
+            if tooltipEvent then
+                firesignal(tooltipEvent.OnClientEvent, "Added all gun skins!")
+            end
+            
+            local skins = {"24k Gold", "24k Gold Pistol", "Anoidzed Red", "Galaxy", "Super Soaker", "The Patriot", "Woodland"}
+            for _, skin in ipairs(skins) do
+                safe(function()
+                    awardSkin:InvokeServer(skin)
+                end, "Failed to add skin: " .. skin)
+            end
+            
+            Rayfield:Notify({
+                Title = "Gun Skins",
+                Content = "All gun skins added successfully!",
+                Duration = 3,
+                Image = "check"
+            })
+        end, "Failed to execute Add All Gun Skins")
+    end
+})
+
+-- Add 10 Keys
+MiscTab:CreateButton({
+    Name = "Add 10 Keys",
+    Callback = function()
+        safe(function()
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local tooltipEvent = ReplicatedStorage:FindFirstChild("Events") and ReplicatedStorage.Events:FindFirstChild("Tooltip")
+            local rankupEvent = ReplicatedStorage:FindFirstChild("Rankup")
+            
+            if not rankupEvent then
+                warn("Rankup event not found")
+                return
+            end
+            
+            if tooltipEvent then
+                firesignal(tooltipEvent.OnClientEvent, "Added 10 keys!")
+            end
+            
+            rankupEvent:FireServer(10)
+            
+            Rayfield:Notify({
+                Title = "Keys",
+                Content = "10 keys added successfully!",
+                Duration = 3,
+                Image = "key"
+            })
+        end, "Failed to execute Add 10 Keys")
+    end
+})
+
 -- Money Giver
 MiscTab:CreateButton({
     Name = "Money Giver",
@@ -955,33 +1020,16 @@ MiscTab:CreateButton({
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local Event = ReplicatedStorage:WaitForChild("SkinFolder"):WaitForChild("Events"):WaitForChild("CashBuy")
             Event:FireServer(-30000, 1)
+            
+            Rayfield:Notify({
+                Title = "Money",
+                Content = "Money added successfully!",
+                Duration = 3,
+                Image = "dollar-sign"
+            })
         end, "Failed to execute Money Giver")
     end
 })
-
--- No Doors
-local function setDoors(enabled)
-    safe(function()
-        local paths = {
-            { parent = workspace, name = "Doors" },
-            { parent = workspace:FindFirstChild("Map"), name = "doors" }
-        }
-        for _, info in ipairs(paths) do
-            local folder = info.parent and info.parent:FindFirstChild(info.name) or game:GetService("ReplicatedStorage"):FindFirstChild(info.name)
-            if folder then
-                folder.Parent = enabled and game:GetService("ReplicatedStorage") or (folder.Name == "Doors" and workspace or workspace.Map)
-            end
-        end
-    end, "Failed to toggle doors")
-end
-
-MiscTab:CreateToggle({
-    Name = "No Doors",
-    CurrentValue = false,
-    Flag = "NoDoorsToggle",
-    Callback = setDoors
-})
-
 
 -- Fusebox Looper
 local fuseLoop = false
@@ -1006,18 +1054,12 @@ MiscTab:CreateToggle({
 })
 
 -- Spam Dropper
-local spamDropperEnabled = false
-
 MiscTab:CreateToggle({
     Name = "Spam Dropper",
     CurrentValue = false,
     Flag = "SpamDropperToggle",
     Callback = function(Value)
         safe(function()
-            spamDropperEnabled = Value
-            
-            if not Value then return end
-            
             local Players = game:GetService("Players")
             local RS = game:GetService("ReplicatedStorage")
             local LocalPlayer = Players.LocalPlayer
@@ -1033,25 +1075,23 @@ MiscTab:CreateToggle({
             local requests = {{"Inmate",1},{"Inmate",2},{"Inmate",3}}
             local dropNames = {"Crude Knife","Glock-17","UZI"}
 
+            local Backpack = LocalPlayer:FindFirstChild("Backpack")
+            local Char = LocalPlayer.Character
+
             local function spamDropper()
-                while spamDropperEnabled do
+                while Value do
                     safe(function()
-                        local Backpack = LocalPlayer:FindFirstChild("Backpack")
-                        local Char = LocalPlayer.Character
-                        
                         if not Char or not Backpack then
                             task.wait(0.1)
                             return
                         end
                         
                         for _, args in ipairs(requests) do
-                            if not spamDropperEnabled then break end
                             safe(function() RequestToolEvent:FireServer(table.unpack(args)) end, "Failed to request tool")
                             task.wait(0.001)
                         end
                         
                         for _, name in ipairs(dropNames) do
-                            if not spamDropperEnabled then break end
                             local tool = Backpack:FindFirstChild(name)
                             if tool and Char then
                                 if tool.Parent ~= Char then
@@ -1063,13 +1103,12 @@ MiscTab:CreateToggle({
                             end
                         end
                     end, "Failed in spam dropper loop")
-                    
-                    if not spamDropperEnabled then break end
-                    task.wait(0.001)
                 end
             end
 
-            task.spawn(spamDropper)
+            if Value then
+                task.spawn(spamDropper)
+            end
         end, "Failed to execute Spam Dropper")
     end
 })
@@ -1203,7 +1242,7 @@ local function moveShieldsBackToPlayers()
         for ownerName, data in pairs(shieldData) do
             local sh = data.shieldFolder
             if not sh then
-                warn("Shield Remover: Missing shield instance for", ownerName)
+                print('')
             else
                 -- Try to find the owner's current model in workspace.Players
                 local targetModel = playersFolder:FindFirstChild(ownerName)
@@ -1212,23 +1251,14 @@ local function moveShieldsBackToPlayers()
                     if torso then
                         if sh.Parent ~= torso then
                             local ok, err = pcall(function() sh.Parent = torso end)
-                            if not ok then
-                                warn("Shield Remover: Failed to return shield to", ownerName, ":", err)
-                            else
-                                print("Shield Remover: Returned shield to", ownerName)
-                            end
+
                         end
-                    else
-                        warn("Shield Remover: Owner model found but no Torso for", ownerName)
                     end
-                else
-                    -- Owner model not found - keep shield in EveryShield and warn
-                    warn("Shield Remover: Could not find owner model for", ownerName, "- leaving shield in EveryShield")
                 end
             end
         end
         shieldsToggled = false
-    end, "Failed to move shields back to players")
+    end)
 end
 
 local function toggleShields()
@@ -1242,12 +1272,10 @@ local function toggleShields()
         
         if not shieldsToggled then
             -- Turn ON: collect from torsos then move to EveryShield
-            print("Shield Remover: Turning ON - collecting shields...")
             collectShieldsFromWorkspace()
             moveShieldsToStorage()
         else
             -- Turn OFF: move the previously-collected shields back to their owners
-            print("Shield Remover: Turning OFF - returning shields...")
             moveShieldsBackToPlayers()
         end
     end, "Failed to toggle shields")
@@ -1275,23 +1303,16 @@ local function setupChildAddedMonitoring()
                                 shieldFolder = shieldFolder,
                                 ownerName = child.Name
                             }
-                            local ok, err = pcall(function() shieldFolder.Parent = everyShieldFolder end)
-                            if ok then
-                                print("Shield Remover: Auto-moved new player's shield for", child.Name)
-                            else
-                                warn("Shield Remover: Failed to auto-move shield for", child.Name, ":", err)
-                            end
                         end
                     end
-                end, "Failed to handle new player shield")
+                end)
             end)
         end
-    end, "Failed to setup child added monitoring")
+    end)
 end
 
 function ShieldRemover.Start()
     safe(function()
-        print("Shield Remover: Starting...")
         if initializeShieldSystem() then
             setupChildAddedMonitoring()
             toggleShields()
@@ -1303,7 +1324,6 @@ end
 
 function ShieldRemover.Stop()
     safe(function()
-        print("Shield Remover: Stopping...")
         if shieldsToggled then
             toggleShields()
         end
