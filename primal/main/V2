@@ -315,14 +315,21 @@ MainTab:CreateButton({
     end
 })
 
+local treadmillUsed = false
+
 MainTab:CreateButton({
     Name = "Skip Treadmill",
     Callback = function()
+        if treadmillUsed then
+            return
+        end
+        
         safe(function()
             local Event = game:GetService("ReplicatedStorage").Events.UpdateStat
             for i = 1, 4 do
                 firesignal(Event.OnClientEvent, "Runspeed", 1)
             end
+            treadmillUsed = true
         end, "Failed to execute Skip Treadmill")
     end
 })
@@ -1113,9 +1120,36 @@ MiscTab:CreateToggle({
     end
 })
 
+
+-- No Doors
+local function setDoors(enabled)
+    safe(function()
+        local paths = {
+            { parent = workspace, name = "Doors" },
+            { parent = workspace:FindFirstChild("Map"), name = "doors" }
+        }
+        for _, info in ipairs(paths) do
+            local folder = info.parent and info.parent:FindFirstChild(info.name) or game:GetService("ReplicatedStorage"):FindFirstChild(info.name)
+            if folder then
+                folder.Parent = enabled and game:GetService("ReplicatedStorage") or (folder.Name == "Doors" and workspace or workspace.Map)
+            end
+        end
+    end, "Failed to toggle doors")
+end
+
+MiscTab:CreateToggle({
+    Name = "No Doors",
+    CurrentValue = false,
+    Flag = "NoDoorsToggle",
+    Callback = setDoors
+})
+
+
 -- Easy Bank
 local lasersEnabled = true
 local bankTargets = {}
+local depositGoldOriginalCFrame = nil
+local depositGoldLoop = nil
 
 local function safeGetBankTargets()
     local found = {}
@@ -1161,16 +1195,69 @@ local function toggleLasers(state)
     end, "Failed to toggle lasers")
 end
 
+local function startDepositGoldTeleport()
+    safe(function()
+        local depositGold = workspace:FindFirstChild("IGNORE")
+        if depositGold then
+            depositGold = depositGold:FindFirstChild("DepositGold")
+        end
+        
+        if depositGold and depositGold:IsA("BasePart") then
+            -- Store original CFrame if not already stored
+            if not depositGoldOriginalCFrame then
+                depositGoldOriginalCFrame = depositGold.CFrame
+            end
+            
+            -- Start the teleport loop with 1 second intervals
+            task.spawn(function()
+                depositGoldLoop = true
+                while depositGoldLoop do
+                    local player = game.Players.LocalPlayer
+                    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local hrp = player.Character.HumanoidRootPart
+                        if depositGold and depositGold.Parent then
+                            -- Position it 5 studs in front of the player
+                            depositGold.CFrame = hrp.CFrame * CFrame.new(0, 0, -5)
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+        end
+    end, "Failed to start DepositGold teleport")
+end
+
+local function stopDepositGoldTeleport()
+    safe(function()
+        -- Stop the loop
+        depositGoldLoop = false
+        
+        -- Restore original position
+        local depositGold = workspace:FindFirstChild("IGNORE")
+        if depositGold then
+            depositGold = depositGold:FindFirstChild("DepositGold")
+        end
+        
+        if depositGold and depositGold:IsA("BasePart") and depositGoldOriginalCFrame then
+            depositGold.CFrame = depositGoldOriginalCFrame
+        end
+    end, "Failed to stop DepositGold teleport")
+end
+
 MiscTab:CreateToggle({
     Name = "Easy Bank",
     CurrentValue = false,
     Flag = "EasyBankToggle",
     Callback = function(Value)
         toggleLasers(Value)
+        
+        if Value then
+            startDepositGoldTeleport()
+        else
+            stopDepositGoldTeleport()
+        end
     end
 })
-
-
 -- Shield Remover
 local ShieldRemover = {}
 local shieldsToggled = false
