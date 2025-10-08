@@ -45,7 +45,6 @@ local executorList = {
 local function debugExecutorChecks()
     for name, checkFunc in pairs(executorList) do
         local success, result = pcall(checkFunc)
-        print(name .. ": " .. (success and tostring(result) or "Error: " .. tostring(result)))
     end
 end
 
@@ -1299,7 +1298,6 @@ local function collectShieldsFromWorkspace()
                             shieldFolder = shieldFolder,
                             ownerName = model.Name
                         }
-                        print("Shield Remover: Collected shield for", model.Name)
                     end
                 end
             end
@@ -1313,11 +1311,6 @@ local function moveShieldsToStorage()
             local sh = data.shieldFolder
             if sh and sh.Parent ~= everyShieldFolder then
                 local ok, err = pcall(function() sh.Parent = everyShieldFolder end)
-                if not ok then
-                    warn("Shield Remover: Failed to move shield to EveryShield:", err)
-                else
-                    print("Shield Remover: Moved shield to EveryShield for", data.ownerName)
-                end
             end
         end
         shieldsToggled = true
@@ -1452,8 +1445,3 @@ Rayfield:Notify({
     Duration = 3,
     Image = "check"
 })
-
--- Final success message
-safe(function()
-    print("Primal Hub (Rayfield Version) loaded successfully!")
-end, "Failed to print success message")
