@@ -888,7 +888,7 @@ local autoOpenDoorsConnection
 local touchState = 1
 
 RageTab:CreateToggle({
-    Name = "Auto Open Doors (Guards / Warden / Keycard only)",
+    Name = "Doors Spammer (Guards / Warden / Keycard only)",
     CurrentValue = false,
     Flag = "AutoOpenDoorsToggle",
     Callback = function(Value)
