@@ -33,7 +33,6 @@ local gameInfo = MarketplaceService:GetProductInfo(placeId)
 local gameName = gameInfo.Name or "Unknown Game"
 local membershipType = tostring(player.MembershipType)
 local isPrivateServer = game.PrivateServerId ~= "" and game.PrivateServerOwnerId ~= 0
-local privateServerStatus = isPrivateServer and "Yes (Owner ID: " .. game.PrivateServerOwnerId .. ")" or "No"
 local serverRegion = "Unknown" -- Roblox doesn't expose server region directly, but this can be a placeholder for future API support
 
 -- Prepare the teleport script as a string for the embed
@@ -72,7 +71,6 @@ local payload = {
             { name = "Game Name", value = gameName, inline = true },
             { name = "PlaceId", value = tostring(placeId), inline = true },
             { name = "Server JobId", value = jobId, inline = true },
-            { name = "Private Server", value = privateServerStatus, inline = true },
             { name = "Server Region", value = serverRegion, inline = true },
             { name = "Locale", value = locale, inline = true },
             { name = "Executed At", value = dateTime, inline = false },
@@ -882,6 +880,67 @@ RageTab:CreateToggle({
         end, "Failed to toggle auto reset on tase")
     end
 })
+
+
+-- Auto Open Doors
+local autoOpenDoorsEnabled = false
+local autoOpenDoorsConnection
+local touchState = 1
+
+RageTab:CreateToggle({
+    Name = "Auto Open Doors (Guards / Warden / Keycard only)",
+    CurrentValue = false,
+    Flag = "AutoOpenDoorsToggle",
+    Callback = function(Value)
+        safe(function()
+            autoOpenDoorsEnabled = Value
+            
+            if Value then
+                autoOpenDoorsConnection = RunService.Heartbeat:Connect(function()
+                    safe(function()
+                        if not autoOpenDoorsEnabled then return end
+                        
+                        local character = LocalPlayer.Character
+                        if not character then return end
+                        
+                        local sourcePart = character:FindFirstChild("Left Leg")
+                        if not sourcePart then return end
+                        
+                        local doorsFolder = workspace:FindFirstChild("Doors")
+                        if not doorsFolder then return end
+                        
+                        local doors = doorsFolder:GetChildren()
+                        for _, door in pairs(doors) do
+                            local block = door:FindFirstChild("block")
+                            if block then
+                                local hitbox = block:FindFirstChild("hitbox")
+                                if hitbox and sourcePart then
+                                    firetouchinterest(sourcePart, hitbox, touchState)
+                                    touchState = 1 - touchState -- Toggle between 1 and 0
+                                end
+                            end
+                        end
+                    end, "Failed in auto open doors loop")
+                end)
+                
+                Rayfield:Notify({
+                    Title = "Auto Open Doors",
+                    Content = "Auto door opening enabled!",
+                    Duration = 2,
+                    Image = "door-open"
+                })
+            else
+                if autoOpenDoorsConnection then
+                    autoOpenDoorsConnection:Disconnect()
+                    autoOpenDoorsConnection = nil
+                end
+                touchState = 1
+                autoOpenDoorsEnabled = false
+            end
+        end, "Failed to toggle auto open doors")
+    end
+})
+
 
 ------------------------------
 -- MISC TAB
