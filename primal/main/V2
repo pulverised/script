@@ -888,7 +888,7 @@ local autoOpenDoorsConnection
 local touchState = 1
 
 RageTab:CreateToggle({
-    Name = "Doors Spammer (Guards / Warden / Keycard only)",
+    Name = "Auto Open Doors (Guards / Warden / Keycard only)",
     CurrentValue = false,
     Flag = "AutoOpenDoorsToggle",
     Callback = function(Value)
@@ -1143,8 +1143,8 @@ MiscTab:CreateToggle({
 -- Easy Bank
 local lasersEnabled = true
 local bankTargets = {}
-local depositGoldOriginalCFrame = nil
-local depositGoldLoop = nil
+local depositGoldConnection = nil
+local depositTouchState = 1
 
 local function safeGetBankTargets()
     local found = {}
@@ -1190,56 +1190,53 @@ local function toggleLasers(state)
     end, "Failed to toggle lasers")
 end
 
-local function startDepositGoldTeleport()
+local function startDepositGoldInteraction()
     safe(function()
         local depositGold = workspace:FindFirstChild("IGNORE")
         if depositGold then
             depositGold = depositGold:FindFirstChild("DepositGold")
         end
         
-        if depositGold and depositGold:IsA("BasePart") then
-            -- Store original CFrame if not already stored
-            if not depositGoldOriginalCFrame then
-                depositGoldOriginalCFrame = depositGold.CFrame
-            end
-            
-            -- Start the teleport loop with 1 second intervals
-            task.spawn(function()
-                depositGoldLoop = true
-                while depositGoldLoop do
-                    local player = game.Players.LocalPlayer
-                    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                        local hrp = player.Character.HumanoidRootPart
-                        if depositGold and depositGold.Parent then
-                            -- Position it 5 studs in front of the player
-                            depositGold.CFrame = hrp.CFrame * CFrame.new(0, 0, -5)
-                        end
-                    end
-                    task.wait(1)
+        if not depositGold or not depositGold:IsA("BasePart") then
+            warn("DepositGold not found")
+            return
+        end
+        
+        depositGoldConnection = RunService.Heartbeat:Connect(function()
+            safe(function()
+                local character = LocalPlayer.Character
+                if not character then return end
+                
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+                
+                -- Check if DepositGold still exists
+                local depositGoldCheck = workspace:FindFirstChild("IGNORE")
+                if depositGoldCheck then
+                    depositGoldCheck = depositGoldCheck:FindFirstChild("DepositGold")
                 end
-            end)
-        end
-    end, "Failed to start DepositGold teleport")
+                
+                if depositGoldCheck and depositGoldCheck:IsA("BasePart") then
+                    -- Fire touch interest with HumanoidRootPart
+                    firetouchinterest(hrp, depositGoldCheck, depositTouchState)
+                    depositTouchState = 1 - depositTouchState -- Toggle between 1 and 0
+                end
+            end, "Failed in deposit gold interaction loop")
+        end)
+    end, "Failed to start DepositGold interaction")
 end
 
-local function stopDepositGoldTeleport()
+local function stopDepositGoldInteraction()
     safe(function()
-        -- Stop the loop
-        depositGoldLoop = false
-        
-        -- Restore original position
-        local depositGold = workspace:FindFirstChild("IGNORE")
-        if depositGold then
-            depositGold = depositGold:FindFirstChild("DepositGold")
+        if depositGoldConnection then
+            depositGoldConnection:Disconnect()
+            depositGoldConnection = nil
         end
-        
-        if depositGold and depositGold:IsA("BasePart") and depositGoldOriginalCFrame then
-            depositGold.CFrame = depositGoldOriginalCFrame
-        end
-    end, "Failed to stop DepositGold teleport")
+        depositTouchState = 1
+    end, "Failed to stop DepositGold interaction")
 end
 
-MiscTab:CreateToggle({
+RageTab:CreateToggle({
     Name = "Easy Bank",
     CurrentValue = false,
     Flag = "EasyBankToggle",
@@ -1247,12 +1244,19 @@ MiscTab:CreateToggle({
         toggleLasers(Value)
         
         if Value then
-            startDepositGoldTeleport()
+            startDepositGoldInteraction()
+            Rayfield:Notify({
+                Title = "Easy Bank",
+                Content = "Bank lasers disabled and auto-deposit enabled!",
+                Duration = 3,
+                Image = "landmark"
+            })
         else
-            stopDepositGoldTeleport()
+            stopDepositGoldInteraction()
         end
     end
 })
+
 -- Shield Remover
 local ShieldRemover = {}
 local shieldsToggled = false
