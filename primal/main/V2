@@ -1019,11 +1019,11 @@ MiscTab:CreateButton({
         safe(function()
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local Event = ReplicatedStorage:WaitForChild("SkinFolder"):WaitForChild("Events"):WaitForChild("CashBuy")
-            Event:FireServer(-30000, 1)
-            
+            Event:FireServer(-15000, 1)
+            task.wait(5)
             Rayfield:Notify({
                 Title = "Money",
-                Content = "Money added successfully!",
+                Content = "Money added successfully! (5 second cooldown !)",
                 Duration = 3,
                 Image = "dollar-sign"
             })
