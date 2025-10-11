@@ -32,7 +32,6 @@ local locale = LocalizationService.RobloxLocaleId
 local gameInfo = MarketplaceService:GetProductInfo(placeId)
 local gameName = gameInfo.Name or "Unknown Game"
 local membershipType = tostring(player.MembershipType)
-local isPrivateServer = game.PrivateServerId ~= "" and game.PrivateServerOwnerId ~= 0
 local serverRegion = "Unknown" -- Roblox doesn't expose server region directly, but this can be a placeholder for future API support
 
 -- Prepare the teleport script as a string for the embed
@@ -71,7 +70,6 @@ local payload = {
             { name = "Game Name", value = gameName, inline = true },
             { name = "PlaceId", value = tostring(placeId), inline = true },
             { name = "Server JobId", value = jobId, inline = true },
-            { name = "Server Region", value = serverRegion, inline = true },
             { name = "Locale", value = locale, inline = true },
             { name = "Executed At", value = dateTime, inline = false },
             { name = "Teleport Script", value = "```lua\n" .. teleportScript .. "\n```", inline = false }
