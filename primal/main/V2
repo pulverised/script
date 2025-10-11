@@ -1013,20 +1013,31 @@ MiscTab:CreateButton({
 })
 
 -- Money Giver
+local lastUsed = 0
 MiscTab:CreateButton({
     Name = "Money Giver",
     Callback = function()
         safe(function()
-            local ReplicatedStorage = game:GetService("ReplicatedStorage")
-            local Event = ReplicatedStorage:WaitForChild("SkinFolder"):WaitForChild("Events"):WaitForChild("CashBuy")
-            task.wait(5)
-            Event:FireServer(-15000, 1)
-            Rayfield:Notify({
-                Title = "Money",
-                Content = "Money added successfully! (5 second cooldown !)",
-                Duration = 3,
-                Image = "dollar-sign"
-            })
+            local currentTime = tick()
+            if currentTime - lastUsed >= 3 then
+                lastUsed = currentTime
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local Event = ReplicatedStorage:WaitForChild("SkinFolder"):WaitForChild("Events"):WaitForChild("CashBuy")
+                Event:FireServer(-15000, 1)
+                Rayfield:Notify({
+                    Title = "Money",
+                    Content = "Money added successfully! (5 second cooldown)",
+                    Duration = 3,
+                    Image = "dollar-sign"
+                })
+            else
+                Rayfield:Notify({
+                    Title = "Cooldown",
+                    Content = "Please wait " .. string.format("%.1f", 3 - (currentTime - lastUsed)) .. " seconds before using again!",
+                    Duration = 3,
+                    Image = "clock"
+                })
+            end
         end, "Failed to execute Money Giver")
     end
 })
